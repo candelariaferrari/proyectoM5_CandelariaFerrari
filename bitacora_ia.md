@@ -272,3 +272,32 @@ Después de analizar las propuestas, decidí incorporar las mejoras relacionadas
 * modelar un usuario no autenticado como `null`, en lugar de utilizar `role: 'guest'`.
 
 No incorporé por el momento la propuesta de modificar `CartItem` para almacenar únicamente `productId` en lugar del objeto `Product`, ya que considero que para la etapa actual del proyecto la estructura existente resulta más sencilla de manejar. Esta decisión podrá revisarse si las necesidades de sincronización entre el carrito y los productos cambian.
+
+
+### Iteración: incorporación de `displayName` en `User`
+
+**Contexto:**
+Al revisar el tipo `User` surgió la necesidad de contar con el nombre del usuario para futuras funcionalidades, como un perfil, un saludo personalizado o una vista de administración. También quería que el modelo fuera compatible con la futura integración con Firebase.
+
+**Prompt (resumido):**
+
+> Si posteriormente necesito crear un registro para cada usuario, ¿debería agregar un nombre al tipo `User`?
+>
+> Quiero evaluar si conviene utilizar `name` o `displayName` y si este campo debería ser obligatorio u opcional, teniendo en cuenta la futura integración con Firebase.
+
+**Qué decidí:**
+
+Decidí utilizar `displayName` como campo opcional:
+
+```ts
+export type User = {
+  uid: string;
+  email: string;
+  displayName?: string;
+  role: UserRole;
+};
+```
+
+Elegí `displayName` para mantener la misma convención de nombres que Firebase y hacerlo opcional para contemplar el caso en que el usuario no tenga un nombre disponible.
+
+Si el dato no existe, la interfaz podrá mostrar un saludo genérico, por ejemplo **"Hola"**, en lugar de asumir que siempre existe un nombre.
