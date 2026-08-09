@@ -1,6 +1,7 @@
 import { createContext, useMemo, useState } from "react";
 import type { CartItem } from "../types/cartItem.types";
 import type { Product } from "../types/product.types";
+import { useAuth } from "../hooks/useAuth"; //integración real sin props
 
 // types -> que cosas voy a necesitar compartir/transportar, estos types van aca porque son de uso interno
 interface CartContextType {
@@ -18,44 +19,51 @@ export const CartContext = createContext<CartContextType | undefined>(
 
 // Provider, va a retornar el contexto, es un componente de react
 export const CartProvider = ({ children }: { children: React.ReactNode }) => {
-  //estados (son globales), setItems es el que cambia el estado
-  const [items, setItems] = useState<CartItem[]>([]); //empieza vacio porque no tengo productos cargados
+  const { user } = useAuth();
+  const userKey = user?.uid ?? "guest"; // clave para separar carritos
+
+  const [cartsByUser, setCartsByUser] = useState<Record<string, CartItem[]>>({});
+
+  const items = cartsByUser[userKey] ?? []; // el carrito "activo" se deriva, no se guarda aparte
 
   //acciones (logica que modifica los estados)
   const addToCart = (product: Product) => {
-    //recibe producto
-    setItems((prev) => {
-      //validar cantidad de mismo producto, se trae el estado previo:
-      const existing = prev.find((item) => item.product.id === product.id);
-      if (existing) {
-        return prev.map((item) =>
-          item.product.id === product.id
-            ? { ...item, quantity: item.quantity + 1 }
-            : item
-        ); //si existe le agrega uno, y si no agrega el item nuevo
-      }
-      return [...prev, { product, quantity: 1 }];
+    setCartsByUser((prev) => {
+      const currentItems = prev[userKey] ?? [];
+      const existing = currentItems.find((item) => item.product.id === product.id);
+      const updatedItems = existing
+        ? currentItems.map((item) =>
+          item.product.id === product.id ? { ...item, quantity: item.quantity + 1 } : item
+        )
+        : [...currentItems, { product, quantity: 1 }];
+
+      return { ...prev, [userKey]: updatedItems }; // solo toca la entrada de este usuario
     });
   };
 
   const removeFromCart = (id: string) => {
-    //traigo todo lo que esta en el carrito
-    setItems((prev) => prev.filter((item) => item.product.id !== id)); //filter devuelve array nuevo
+    setCartsByUser((prev) => {
+      const currentItems = prev[userKey] ?? [];
+      const updatedItems = currentItems.filter((item) => item.product.id !== id);
+      return { ...prev, [userKey]: updatedItems }; // actualiza solo el carrito de este usuario, sin tocar los de los demás
+    });
   };
 
   const clearCart = () => {
-    setItems([]); //aca react esta cambiando el estado
+    setCartsByUser((prev) => {
+      return { ...prev, [userKey]: [] }; // vacía el carrito de este usuario, los demás quedan intactos
+    });
   };
 
   //hook useMemo 
-  const value = useMemo(()=>{
-    return{
-      items, 
+  const value = useMemo(() => {
+    return {
+      items,
       addToCart,
       removeFromCart,
       clearCart
     }
-  },[items]) //va a renderizar si cambia items
+  }, [items, userKey]) // el objeto value solo se recalcula si cambia items, para no re-renderizar a los consumidores de useCart sin necesidad
 
   return (
     <CartContext.Provider
@@ -67,4 +75,3 @@ export const CartProvider = ({ children }: { children: React.ReactNode }) => {
 };
 
 
-//custom hook
