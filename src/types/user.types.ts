@@ -3,6 +3,8 @@ export type UserRole = "admin" | "client";
 
 export type User = {
   uid: string;  // Firebase Authentication cuando se conecte el servicio real.
+  displayName?: string;
   email: string;
   role: UserRole;
+  
 };
