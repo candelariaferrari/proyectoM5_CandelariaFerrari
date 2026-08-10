@@ -301,3 +301,54 @@ export type User = {
 Elegí `displayName` para mantener la misma convención de nombres que Firebase y hacerlo opcional para contemplar el caso en que el usuario no tenga un nombre disponible.
 
 Si el dato no existe, la interfaz podrá mostrar un saludo genérico, por ejemplo **"Hola"**, en lugar de asumir que siempre existe un nombre.
+
+
+## Comprensión del flujo entre hooks y tests
+
+### Contexto técnico
+
+Al implementar los tests de `useProducts`, uno de los tests fallaba aunque el hook funcionaba correctamente. El problema estaba relacionado con que el mensaje del `throw` definido en el hook no coincidía con el texto utilizado en el `toThrow()` del test.
+
+### Prompt (resumido)
+
+> Explicame cómo es el flujo entre un hook que utiliza `useContext` y su test con `renderHook` y `toThrow`.
+>
+> Quiero entender por qué el test falla cuando el mensaje del error definido en el hook tiene una palabra diferente a la que estoy utilizando en el test, y si existe alguna forma de evitar que el test sea demasiado dependiente del texto exacto del error.
+
+### Qué decidí
+
+Entendí que el mensaje definido en el `throw` del hook y el mensaje utilizado en `toThrow()` son dos strings independientes que deben coincidir para que la comparación funcione.
+
+También entendí que existen dos alternativas:
+
+* comprobar el mensaje específico del error, haciendo el test más preciso pero también más sensible a cambios de texto;
+* utilizar `toThrow()` sin especificar el mensaje, verificando únicamente que el hook efectivamente lance un error.
+
+Para este caso decidí mantener la comprobación del mensaje, copiando el texto exacto utilizado en el hook, ya que permite verificar de forma más específica el comportamiento esperado.
+
+Esta situación también me ayudó a entender que un test puede fallar aunque la lógica principal del código sea correcta, simplemente porque la expectativa definida en el test no coincide con el comportamiento que se está comprobando.
+
+
+## Decisión sobre carrito de usuario invitado
+
+### Contexto técnico
+
+Al integrar `useAuth` con `useCart` surgió la necesidad de definir qué debía suceder cuando un usuario no autenticado intentara agregar productos al carrito.
+
+Las alternativas eran bloquear el carrito hasta iniciar sesión o permitir que el usuario lo arme como invitado y solicitar autenticación posteriormente.
+
+### Prompt
+
+> ¿Cuál es una mejor práctica en e-commerce: bloquear el agregado al carrito hasta que el usuario esté logueado, o permitir armar el carrito como invitado y pedir login recién al momento de comprar?
+>
+> Analizá las ventajas y desventajas de ambas alternativas teniendo en cuenta la experiencia de usuario y la arquitectura del carrito.
+
+### Qué decidí
+
+Decidí permitir que los usuarios **armen el carrito como invitados**, utilizando la clave `"guest"` para identificarlo.
+
+La autenticación se solicitará recién al momento de continuar con el checkout, donde realmente será necesaria para identificar al usuario y completar la compra.
+
+Consideré que esta alternativa reduce la fricción durante la navegación y permite que el usuario explore y arme su carrito sin necesidad de registrarse previamente.
+
+Para esta etapa del proyecto no es necesario implementar el checkout, pero dejé definida esta decisión arquitectónica para utilizarla cuando se desarrolle esa funcionalidad.
