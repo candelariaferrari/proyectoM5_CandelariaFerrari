@@ -4,7 +4,7 @@ import type { Product } from "../types/product.types";
 interface ProductsContextType {
   products: Product[];
 }
-
+// eslint-disable-next-line react-refresh/only-export-components
 export const ProductsContext = createContext<ProductsContextType | undefined>(
   undefined,
 );

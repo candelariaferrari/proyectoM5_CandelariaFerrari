@@ -6,7 +6,7 @@ export const useAuth = () => {
   const context = useContext(AuthContext);
 
   // Guard: evita usar el contexto fuera del Provider
-  if (context === undefined) {
+  if (!context) {
     throw new Error("useAuth debe utilizarse dentro de un AuthProvider");
   }
 
