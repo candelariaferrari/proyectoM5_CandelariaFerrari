@@ -352,3 +352,52 @@ La autenticación se solicitará recién al momento de continuar con el checkout
 Consideré que esta alternativa reduce la fricción durante la navegación y permite que el usuario explore y arme su carrito sin necesidad de registrarse previamente.
 
 Para esta etapa del proyecto no es necesario implementar el checkout, pero dejé definida esta decisión arquitectónica para utilizarla cuando se desarrolle esa funcionalidad.
+
+
+## Optimización de `CartContext`: `useMemo` y `useCallback`
+
+### Contexto técnico
+
+Al memorizar el `value` de `CartContext` utilizando `useMemo`, ESLint indicó que faltaban `addToCart`, `removeFromCart` y `clearCart` en las dependencias.
+
+Al agregarlas apareció un problema adicional: estas funciones se recreaban en cada render porque no estaban memoizadas, por lo que el `useMemo` volvía a ejecutarse constantemente.
+
+### Prompt
+
+> Agregué `addToCart`, `removeFromCart` y `clearCart` como dependencias del `useMemo`, pero ESLint indica que estas funciones cambian en cada render.
+>
+> ¿Por qué sucede esto y cuál sería la forma correcta de resolverlo, más allá de simplemente eliminar el warning?
+
+### Qué decidí
+
+Decidí utilizar `useCallback` para memorizar las tres funciones, utilizando `[userKey]` como dependencia, y `useMemo` para memorizar también `items`.
+
+De esta manera, las funciones mantienen su referencia mientras no cambie el usuario activo y el `value` del contexto no se recalcula innecesariamente en cada render.
+
+Esta situación me permitió entender que el warning de ESLint no era solamente algo que había que ocultar, sino que estaba señalando un problema real en la cadena de memorización entre `useCallback` y `useMemo`.
+
+Modelado de categoryId y minAge en Product
+Contexto
+
+Al migrar el catálogo de Patagonix a MUNDO (juguetería), tuve que redefinir las categorías y agregar un dato nuevo: la edad recomendada de cada juguete.
+
+Prompt
+
+Quiero mostrar la edad recomendada de cada juguete como un badge tipo "+3 años" en la UI, pero también poder filtrar por edad más adelante. ¿Conviene guardarlo como texto libre ("3-5 años") o como número?
+
+Qué decidí
+
+Elegí minAge: number, porque el mismo dato numérico me sirve para las dos cosas: en la UI lo formateo como "+3 años", y queda filtrable/ordenable en Firestore sin tener que parsear texto. Después, para evitar cargar valores sueltos por error (como pasó con "admin" mal tipeado en otro lado del proyecto), lo restringí a un union type con los hitos reales de juguetería: 1 | 3 | 6 | 8 | 10 | 12, en vez de dejarlo como number libre — mismo criterio que ya habíamos usado con CategoryId.
+
+Bug de Rules of Hooks: return condicional antes de un hook
+Contexto
+
+Al debuggear la conexión con Firestore, agregué un useEffect de prueba en App.tsx, pero tenía un if (loading) return <p>Cargando...</p> ubicado antes de ese hook.
+
+Prompt
+
+La consola me tira un warning de "change in the order of Hooks" en App.tsx. ¿Por qué pasa esto?
+
+Qué aprendí
+
+El return condicional cortaba el render antes de llegar al useEffect: en el primer render (loading=true) React nunca lo ejecutaba, en el segundo (loading=false) sí — entonces React detecta un hook distinto en cada render y rompe la regla de que los hooks siempre deben llamarse en el mismo orden. La solución fue eliminar el useEffect de debug una vez confirmado que los datos llegaban bien; en general, todo return condicional debe ir siempre después de todos los hooks del componente, nunca en el medio.
