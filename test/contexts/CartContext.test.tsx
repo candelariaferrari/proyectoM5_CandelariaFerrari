@@ -39,7 +39,7 @@ test("el carrito de invitado y el de un usuario logueado están separados", () =
 
   // Se loguea
   act(() => { //es una regla de Testing Library para que React termine de procesar el cambio antes de que vos revises el resultado.
-    result.current.auth.login("client");
+    result.current.auth.login("customer");
   });
 
   // El carrito del usuario logueado es otro carrito (vacío), no el de invitado

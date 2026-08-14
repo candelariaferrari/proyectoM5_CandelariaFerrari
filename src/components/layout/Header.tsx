@@ -21,7 +21,7 @@ export const Header = () => {
         </>
       ) : (
         <button
-          onClick={() => login("client")}
+          onClick={() => login("customer")}
           className="text-sm font-bold text-white bg-punch-red px-4 py-2 rounded-pill"
         >
           Iniciar sesión
