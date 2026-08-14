@@ -401,3 +401,16 @@ La consola me tira un warning de "change in the order of Hooks" en App.tsx. ¿Po
 Qué aprendí
 
 El return condicional cortaba el render antes de llegar al useEffect: en el primer render (loading=true) React nunca lo ejecutaba, en el segundo (loading=false) sí — entonces React detecta un hook distinto en cada render y rompe la regla de que los hooks siempre deben llamarse en el mismo orden. La solución fue eliminar el useEffect de debug una vez confirmado que los datos llegaban bien; en general, todo return condicional debe ir siempre después de todos los hooks del componente, nunca en el medio.
+
+Adaptación del seeder de productos al modelo de MUNDO
+Contexto
+
+El profe compartió un seeder base para poblar Firestore, pero estaba armado para un catálogo de ropa/calzado y con una interfaz de Product distinta a la mía (sin rating, sin minAge, con el campo image en vez de imageUrl).
+
+Prompt
+
+Tengo este seeder del profesor, pero mi Product tiene categoryId, minAge y rating obligatorios, y mis 30 productos ya están armados con mis propios datos. ¿Qué le falta adaptar para que funcione con mi modelo?
+
+Qué decidí
+
+Reemplacé el catálogo genérico por mis 30 juguetes reales, y le sumé dos cosas que el seeder original ya traía y que me convenía mantener: nameLower (indispensable para la búsqueda por prefijo que exige la consigna, ya que Firestore no soporta contains) y updatedAt con serverTimestamp() para trazabilidad de cambios. También cambié de IDs autogenerados a IDs fijos (p001...p030) tomados de mi propio array, para que el seeder sea reproducible y no genere productos duplicados si lo corro dos veces sin querer.
