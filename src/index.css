@@ -1,38 +1,41 @@
-@import url("https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700;800&family=Nunito:wght@400;600;700;800&display=swap");
 @import "tailwindcss";
 
 /*
-  Design tokens tomados de la guía de estilos de Patagonix. 
+  Design tokens tomados del mockup real de MUNDO (MUNDO Ecommerce Mockup.dc.html).
   Al vivir en un bloque @theme,
   Tailwind v4 genera clases utilitarias automáticamente:
-  bg-punch-red, text-oxford-navy, font-sans, rounded-card, etc.
+  bg-mostaza, text-azul-noche, font-heading, rounded-card, etc.
 */
 @theme {
-  --font-sans: "Manrope", system-ui, sans-serif;
+  --font-sans: "Nunito", system-ui, sans-serif;
+  --font-heading: "Baloo 2", cursive;
 
-  /* Paleta base */
-  --color-punch-red: #e63946; /* Acento primario: CTAs, precios, badges, activos */
-  --color-honeydew: #f1faee; /* Fondo base de pantallas (variante clara) */
-  --color-frosted-blue: #a8dadc; /* Bordes suaves, chips inactivos con borde */
-  --color-cerulean: #457b9d; /* Degradados secundarios, textos "en stock" */
-  --color-oxford-navy: #1d3557; /* Texto principal y sombras del marco */
+  /* Paleta base (Sistema de colores de MUNDO) */
+  --color-mostaza: #e7b93c; /* Primary: acciones principales, botones, links activos */
+  --color-azul-cobalto: #3155c6; /* Secondary: categorías, navegación secundaria */
+  --color-rosa-coral: #e97878; /* Accent: destacados, ofertas, badges, llamadas de atención */
+  --color-verde-menta: #3f9c74; /* Extra: éxito / estados positivos */
+  --color-crema: #fff9ef; /* Neutral: fondo base */
+  --color-gris-claro: #f2f2f0; /* Neutral: superficies, inputs, chips */
+  --color-azul-noche: #17233c; /* Neutral: texto principal */
 
   /* Derivados */
-  --color-bg-cool: #f3f9f1; /* Fondo del lienzo exterior */
-  --color-card-surface: #eef6f6; /* Fondos de inputs y chips inactivos */
-  --color-stock-ok: #d8eef0; /* Tag de estado "En stock" */
-  --color-stock-low: #fbe2e4; /* Tag de estado "Stock bajo" */
-  --color-danger: #c1121f; /* Cerrar sesión, cancelado */
+  --color-bg-cool: #fff9ef; /* Fondo del lienzo exterior */
+  --color-card-surface: #f2f2f0; /* Fondos de inputs y placeholders de imagen */
+  --color-stock-ok: #e3f3ec; /* Tag de estado "En stock" (tinte de verde-menta) */
+  --color-stock-low: #fce9e9; /* Tag de estado "Stock bajo" (tinte de rosa-coral) */
+  --color-danger: #e97878; /* Cerrar sesión, cancelado — mismo tono que rosa-coral, el mockup no define un rojo de error aparte */
 
-  /* Radios (ver Border-radius en la guía) */
+  /* Radios (medidos del mockup real) */
   --radius-pill: 999px; /* chips, botones, tags de estado */
-  --radius-card-lg: 24px; /* cards grandes, hero banner */
-  --radius-card: 20px; /* cards de producto */
-  --radius-input: 16px; /* inputs, botones primarios */
+  --radius-card-lg: 40px; /* hero banner */
+  --radius-card: 18px; /* cards de producto */
+  --radius-input: 18px; /* inputs — el mockup no distingue un radio propio, reutiliza el de card */
 
   /* Sombras */
-  --shadow-card: 0 8px 20px -12px rgba(29, 53, 87, 0.25);
-  --shadow-cta: 0 10px 24px -8px rgba(230, 57, 70, 0.55);
+  --shadow-card: 0 8px 20px -12px rgba(23, 35, 60, 0.25);
+  --shadow-cta: 0 10px 24px -8px rgba(231, 185, 60, 0.55);
 }
 
 body {
