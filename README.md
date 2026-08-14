@@ -1,4 +1,4 @@
-# Patagonix — E-commerce Kickoff (Módulo 5)
+# MUNDO — E-commerce Kickoff (Módulo 5)
 
 Bases arquitectónicas de un e-commerce escalable, construidas con **Vite + React 18 + TypeScript** y **Context API** como estado global.
 
@@ -8,7 +8,7 @@ Esta entrega corresponde a la Homework de la Clase 1 del Módulo 5. El objetivo 
 
 * React 18 + TypeScript + Vite
 * React Router DOM (navegación)
-* Tailwind CSS v4 (tokens de diseño de Patagonix — paleta, tipografía Manrope, radios, sombras)
+* Tailwind CSS v4 (tokens de diseño de MUNDO — paleta, tipografías Baloo 2 / Nunito, radios, sombras)
 * Context API (estado global)
 * Vitest + React Testing Library (tests)
 * ESLint (typescript-eslint + react-hooks + react-refresh)
