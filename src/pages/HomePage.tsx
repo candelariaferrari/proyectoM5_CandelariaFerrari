@@ -18,10 +18,17 @@ export const HomePage = () => {
 
   return (
     <div className="pb-10">
-      {/* La crema es solo del hero (como en el mockup); el resto del body queda blanco. */}
-      <div className="bg-crema">
+      {/* La crema es solo del hero (como en el mockup); el resto del body queda blanco.
+          En mobile es una tarjeta con margen y bordes redondeados en las 4 puntas
+          (no ocupa todo el ancho); desde md vuelve a ser la franja completa de
+          siempre. Los círculos decorativos van sueltos acá (no dentro del bloque
+          de la foto) porque en mobile se ven igual aunque la foto esté oculta. */}
+      <div className="relative overflow-hidden bg-crema mx-4 mt-4 rounded-card-lg md:mx-0 md:mt-0 md:rounded-none">
+        <div className="md:hidden absolute -right-8 top-6 w-40 h-40 rounded-full bg-mostaza opacity-60" />
+        <div className="md:hidden absolute -right-6 -bottom-10 w-32 h-32 rounded-full bg-azul-cobalto opacity-20" />
+
         <div className="max-w-[1280px] mx-auto px-6 grid md:grid-cols-2 items-stretch">
-          <div className="flex flex-col gap-5 justify-center py-10 md:py-14 md:pr-10">
+          <div className="relative flex flex-col gap-5 justify-center py-10 md:py-14 md:pr-10">
             <h1 className="font-heading font-extrabold text-5xl md:text-6xl leading-[1.05] text-azul-noche">
               Jugar.
               <br />
@@ -38,7 +45,7 @@ export const HomePage = () => {
             >
               Explorar colección →
             </Link>
-            <div className="flex gap-7 mt-3 flex-wrap">
+            <div className="hidden md:flex gap-7 mt-3 flex-wrap">
               {PERKS.map((perk) => (
                 <div key={perk.title} className="flex flex-col gap-0.5 max-w-[130px]">
                   <span className="text-xs font-extrabold text-azul-noche">{perk.title}</span>
@@ -48,7 +55,7 @@ export const HomePage = () => {
             </div>
           </div>
 
-          <div className="relative flex items-center justify-center p-6 overflow-hidden min-h-[360px] md:min-h-[440px]">
+          <div className="hidden md:flex relative items-center justify-center p-6 overflow-hidden min-h-[360px] md:min-h-[440px]">
             <div className="absolute -right-0 top-2 w-56 h-56 rounded-full bg-mostaza opacity-60" />
             <div className="absolute left-8 bottom-16 w-20 h-20 rounded-full bg-azul-cobalto opacity-20" />
             <div className="relative w-[80%] h-[88%] rounded-card-lg overflow-hidden shadow-card">
