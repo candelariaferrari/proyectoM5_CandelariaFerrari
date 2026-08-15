@@ -1,3 +1,4 @@
+import { Link } from "react-router-dom";
 import type { Product } from "../types/product.types";
 import { useCart } from "../hooks/useCart"; // 👈 sin esto en props, evita el prop drilling
 
@@ -10,11 +11,23 @@ export const ProductCard = ({ product }: ProductCardProps) => {
 
   return (
     <div className="bg-white rounded-card p-3 flex flex-col gap-1.5 shadow-card">
-      <div className="w-full aspect-square rounded-input bg-card-surface" />
+      <Link to={`/producto/${product.id}`}>
+        <div className="w-full aspect-square rounded-input bg-card-surface overflow-hidden">
+          {product.imageUrl && (
+            <img src={product.imageUrl} alt={product.name} className="w-full h-full object-cover" />
+          )}
+        </div>
+      </Link>
       <div className="text-[10px] uppercase tracking-wide text-azul-cobalto font-semibold">
         {product.categoryId}
       </div>
-      <div className="font-bold text-sm leading-tight text-azul-noche">{product.name}</div>
+      <Link to={`/producto/${product.id}`} className="font-bold text-sm leading-tight text-azul-noche">
+        {product.name}
+      </Link>
+      <div className="flex items-center gap-1 text-xs text-azul-noche/70">
+        <span>★ {product.rating.rate.toFixed(1)}</span>
+        <span>({product.rating.count})</span>
+      </div>
       <div className="font-bold text-sm text-azul-noche">${product.price.toLocaleString("es-AR")}</div>
       <button
         onClick={() => addToCart(product)}
