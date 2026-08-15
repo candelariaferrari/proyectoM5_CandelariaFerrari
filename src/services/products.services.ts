@@ -1,6 +1,6 @@
 import { collection, getDocs, doc, getDoc, query, where, orderBy } from "firebase/firestore";
 import { db } from "../config/firebase";
-import type { Product } from "../types/product.types";
+import type { Product, CategoryId } from "../types/product.types";
 
 // Obtener todos los productos
 export const getProducts = async (): Promise<Product[]> => { //funcion asyncrona porque pedimos algo que esta por fuera 
@@ -29,7 +29,7 @@ export const getProductsById = async (
 
 // Obtener productos por categoria ordenados por precio: 
 export const getProductsByCategory = async (
-  category: string
+  category: CategoryId
 ): Promise<Product[]> => {
   const q = query(
     collection(db, "products"), //trae toda la coleection

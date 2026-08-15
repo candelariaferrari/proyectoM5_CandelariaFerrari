@@ -1,10 +1,12 @@
-import { createContext, useEffect, useMemo, useState } from "react";
-import type { Product } from "../types/product.types";
-import { getProducts } from "../services/products.services";
+import { createContext, useEffect, useMemo, useState, useCallback } from "react";
+import type { Product, CategoryId } from "../types/product.types";
+import { getProducts, getProductsByCategory } from "../services/products.services";
 
 interface ProductsContextType {
   products: Product[];
-  loading: boolean; //si esta en true voy a consutlar los datos, si viene en false es que ya busco
+  loading: boolean;
+  categoryFilter: CategoryId | null;
+  setCategoryFilter: (category: CategoryId | null) => void;
 }
 
 // eslint-disable-next-line react-refresh/only-export-components
@@ -15,26 +17,40 @@ export const ProductsContext = createContext<ProductsContextType | undefined>(
 export const ProductsProvider = ({
   children,
 }: {
-  children: React.ReactNode
+  children: React.ReactNode;
 }) => {
-  //const DEFAULT_PRODUCT_IMAGE = "https://www.freeiconspng.com/img/2114";
-
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
+  const [categoryFilter, setCategoryFilterState] = useState<CategoryId | null>(
+    null,
+  );
 
-  useEffect(()=>{
-    getProducts() //mapeaba y le agrega el id 
-    .then(setProducts)
-    .finally(()=> setLoading(false)) //cambia el loading a false porque ya termino la consulta
-  },[]);
+  // Cada vez que cambia categoryFilter mostramos loading
+  // de nuevo y volvemos a pedir a Firestore con la query que corresponda.
+  useEffect(() => {
+    setLoading(true);
 
-  const value = useMemo(()=> //para que no altere si nohay cambios
-    ({products, loading}),[products,loading]);
+    const fetchProducts = categoryFilter
+      ? getProductsByCategory(categoryFilter)
+      : getProducts();
+
+    fetchProducts.then(setProducts).finally(() => setLoading(false));
+  }, [categoryFilter]);
+
+  // useCallback para que esta función mantenga su referencia entre renders
+  // y no rompa la memoización del value de abajo.
+  const setCategoryFilter = useCallback((category: CategoryId | null) => {
+    setCategoryFilterState(category);
+  }, []);
+
+  const value = useMemo(
+    () => ({ products, loading, categoryFilter, setCategoryFilter }),
+    [products, loading, categoryFilter, setCategoryFilter],
+  );
 
   return (
     <ProductsContext.Provider value={value}>
       {children}
     </ProductsContext.Provider>
-  )
-}
-
+  );
+};
