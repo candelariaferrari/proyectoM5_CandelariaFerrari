@@ -27,6 +27,14 @@
   --color-stock-low: #fce9e9; /* Tag de estado "Stock bajo" (tinte de rosa-coral) */
   --color-danger: #e97878; /* Cerrar sesión, cancelado — mismo tono que rosa-coral, el mockup no define un rojo de error aparte */
 
+  /* Variantes oscuras de la paleta, solo para texto sobre fondo blanco/claro
+     (ej. el nombre de categoría en una card de producto). Los colores base
+     (mostaza, rosa-coral) son muy claros para usarse como texto: no tienen
+     contraste suficiente. Estas son versiones más oscuras del mismo tono. */
+  --color-verde-texto: #2f7a56; /* Pensar */
+  --color-mostaza-texto: #8a6208; /* Crear */
+  --color-rosa-texto: #b84747; /* Compartir */
+
   /* Radios (medidos del mockup real) */
   --radius-pill: 999px; /* chips, botones, tags de estado */
   --radius-card-lg: 40px; /* hero banner */
