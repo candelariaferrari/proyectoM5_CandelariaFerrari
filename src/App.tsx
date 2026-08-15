@@ -1,18 +1,14 @@
 // src/App.tsx
 import { Header } from "./components/layout/Header";
-import { ProductsPage } from "./pages/ProductsPage";
-
+import { AppRoutes } from "./routes/AppRoutes";
 
 function App(): JSX.Element {
- 
-
   return (
     <div className="min-h-screen bg-bg-cool">
       <Header />
-      <ProductsPage />
+      <AppRoutes />
     </div>
   );
 }
 
 export default App;
-
