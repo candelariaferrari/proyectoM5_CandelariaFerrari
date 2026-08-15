@@ -1,0 +1,46 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    //* HELPERS
+    function isSignedIn() {
+      return request.auth != null;
+    }
+    function isAdmin() {
+      return isSignedIn()
+        && exists(/databases/$(database)/documents/users/$(request.auth.uid))
+        && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == "admin";
+    }
+
+    //* PRODUCTS
+    match /products/{productId} {
+      // Catálogo público
+      allow read: if true;
+      // Solo el admin gestiona el catálogo
+      allow create, update, delete: if isAdmin();
+    }
+
+    //* USERS
+    match /users/{userId} {
+      // Cada usuario lee solo su propio perfil
+      allow read: if isSignedIn() && request.auth.uid == userId;
+      // creamos el perfil desde el cliente al registrarse
+      // (services/users.services.ts, patrón "get or create"), así que
+      // necesitamos permitir crear (no editar) el propio doc.
+      allow create: if isSignedIn() && request.auth.uid == userId;
+      allow update, delete: if false;
+    }
+
+    //* ORDERS
+    match /orders/{orderId} {
+      // El usuario crea su propia orden
+      allow create: if isSignedIn() && request.resource.data.userId == request.auth.uid;
+      // Admin ve todas; el usuario ve solo las suyas
+      allow read: if isAdmin() || (isSignedIn() && resource.data.userId == request.auth.uid);
+      // Admin solo puede tocar el status (y updatedAt)
+      allow update: if isAdmin()
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(["status", "updatedAt"]);
+      // Las órdenes son inmutables (no se borran)
+      allow delete: if false;
+    }
+  }
+}
