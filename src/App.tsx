@@ -4,7 +4,7 @@ import { AppRoutes } from "./routes/AppRoutes";
 
 function App(): JSX.Element {
   return (
-    <div className="min-h-screen bg-bg-cool">
+    <div className="min-h-screen bg-white">
       <Header />
       <AppRoutes />
     </div>
