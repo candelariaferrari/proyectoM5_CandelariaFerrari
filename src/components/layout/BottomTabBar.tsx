@@ -1,0 +1,92 @@
+import { useState } from "react";
+import { Link, useLocation } from "react-router-dom";
+import { useAuth } from "../../hooks/useAuth";
+import { useCart } from "../../hooks/useCart";
+import { AuthModal } from "../AuthModal";
+import { HomeIcon, SearchIcon, CartIcon, ListIcon, UserIcon } from "../ui/icons";
+
+interface BottomTabBarProps {
+  onSearchClick: () => void;
+}
+
+export const BottomTabBar = ({ onSearchClick }: BottomTabBarProps) => {
+  const location = useLocation();
+  const { user, isAuthenticated, logout } = useAuth();
+  const { items } = useCart();
+  const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
+  const [isProfileOpen, setIsProfileOpen] = useState(false);
+  const cartCount = items.reduce((total, item) => total + item.quantity, 0);
+  const isHome = location.pathname === "/";
+
+  const handleProfileClick = () => {
+    if (isAuthenticated) {
+      setIsProfileOpen((open) => !open);
+    } else {
+      setIsAuthModalOpen(true);
+    }
+  };
+
+  return (
+    <>
+      <nav className="md:hidden fixed bottom-0 inset-x-0 bg-white border-t border-gris-claro flex items-stretch justify-around z-40">
+        <Link
+          to="/"
+          className={`flex flex-col items-center gap-0.5 py-2.5 flex-1 text-[11px] font-bold ${
+            isHome ? "text-azul-cobalto" : "text-azul-noche/50"
+          }`}
+        >
+          <HomeIcon size={20} />
+          Inicio
+        </Link>
+
+        <button
+          className="relative flex flex-col items-center gap-0.5 py-2.5 flex-1 text-[11px] font-bold text-azul-noche/30 cursor-not-allowed"
+          title="Todavía no hay página de carrito"
+        >
+          <CartIcon size={20} />
+          {cartCount > 0 && (
+            <span className="absolute top-1 right-[calc(50%-18px)] bg-rosa-coral text-white text-[9px] font-extrabold min-w-[15px] h-[15px] rounded-full flex items-center justify-center">
+              {cartCount}
+            </span>
+          )}
+          Carrito
+        </button>
+
+        <button
+          className="flex flex-col items-center gap-0.5 py-2.5 flex-1 text-[11px] font-bold text-azul-noche/30 cursor-not-allowed"
+          title="Próximamente"
+        >
+          <ListIcon size={20} />
+          Pedidos
+        </button>
+
+        <button
+          onClick={handleProfileClick}
+          className="flex flex-col items-center gap-0.5 py-2.5 flex-1 text-[11px] font-bold text-azul-noche/50"
+        >
+          <UserIcon size={20} />
+          Perfil
+        </button>
+      </nav>
+
+      {isProfileOpen && (
+        <div className="md:hidden fixed bottom-[52px] inset-x-0 bg-white border-t border-gris-claro px-6 py-4 flex items-center justify-between z-40">
+          <span className="text-sm text-azul-noche/70">
+            Hola{user?.displayName ? `, ${user.displayName}` : ""}
+          </span>
+          <button
+            onClick={() => {
+              logout();
+              setIsProfileOpen(false);
+            }}
+            className="text-sm font-bold text-danger px-3 py-2 rounded-pill"
+          >
+            Cerrar sesión
+          </button>
+        </div>
+      )}
+
+      {isAuthModalOpen && <AuthModal onClose={() => setIsAuthModalOpen(false)} />}
+    </>
+  );
+};

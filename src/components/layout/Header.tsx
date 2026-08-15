@@ -5,9 +5,13 @@ import { useCart } from "../../hooks/useCart";
 import { useProducts } from "../../hooks/useProducts";
 import { AuthModal } from "../AuthModal";
 import { SearchInput } from "../ui/SearchInput";
-import { UserIcon, CartIcon } from "../ui/icons";
+import { UserIcon, CartIcon, SearchIcon } from "../ui/icons";
 
-export const Header = () => {
+interface HeaderProps {
+  isMobileSearchOpen: boolean;
+  onToggleMobileSearch: () => void;
+}
+export const Header = ({ isMobileSearchOpen, onToggleMobileSearch }: HeaderProps) => {
   const { user, isAuthenticated, logout } = useAuth();
   const { items } = useCart();
   const { setSearchTerm } = useProducts();
@@ -24,58 +28,67 @@ export const Header = () => {
 
   return (
     <header>
-      <div className="bg-verde-menta text-white text-center py-2 text-xs font-bold">
+      <div className="bg-verde-menta text-white text-center py-2 text-xs font-bold px-4">
         Envíos gratis en compras mayores a $50.000
       </div>
-      <div className="flex items-center justify-between gap-6 px-6 py-4 max-w-[1280px] mx-auto flex-wrap border-b border-gris-claro">
-        <div className="flex items-center gap-7">
-          <Link to="/" className="flex flex-col leading-none">
-            <span className="font-heading font-extrabold text-4xl">
-              <span className="text-mostaza">M</span>
-              <span className="text-azul-cobalto">U</span>
-              <span className="text-rosa-coral">N</span>
-              <span className="text-azul-cobalto">D</span>
-              <span className="text-verde-menta">O</span>
-            </span>
-            <span className="text-[12px] font-bold text-azul-noche/60">Ideas para jugar.</span>
+
+      <div className="flex items-center justify-between gap-4 px-6 py-4 max-w-[1280px] mx-auto border-b border-gris-claro">
+        <Link to="/" className="flex flex-col leading-none">
+          <span className="font-heading font-extrabold text-3xl md:text-4xl">
+            <span className="text-mostaza">M</span>
+            <span className="text-azul-cobalto">U</span>
+            <span className="text-rosa-coral">N</span>
+            <span className="text-azul-cobalto">D</span>
+            <span className="text-verde-menta">O</span>
+          </span>
+          <span className="text-[10px] md:text-[12px] font-bold text-azul-noche/60">Ideas para jugar.</span>
+        </Link>
+
+        {/* A partir de md: todo el header completo, en una sola fila */}
+        <nav className="hidden md:flex items-center gap-5">
+          <Link to="/productos" className="text-md font-bold text-azul-noche">
+            Juguetes
           </Link>
+          <span className="text-md font-bold text-azul-noche/30 cursor-not-allowed" title="Próximamente">
+            Ofertas
+          </span>
+          <span className="text-md font-bold text-azul-noche/30 cursor-not-allowed" title="Próximamente">
+            Mis pedidos
+          </span>
+        </nav>
 
-          <nav className="hidden md:flex gap-5">
-            <Link to="/productos" className="text-md font-bold text-azul-noche">
-              Juguetes
-            </Link>
-            <span className="text-md font-bold text-azul-noche/30 cursor-not-allowed" title="Próximamente">
-              Ofertas
-            </span>
-            <span className="text-md font-bold text-azul-noche/30 cursor-not-allowed" title="Próximamente">
-              Mis pedidos
-            </span>
-          </nav>
-        </div>
-
-        <div className="flex-1 min-w-[160px] max-w-xs">
+        <div className="hidden md:block flex-1 min-w-[160px] max-w-xs">
           <SearchInput onSearch={handleSearch} placeholder="Buscar productos..." />
         </div>
 
         <div className="flex items-center gap-4">
           {isAuthenticated ? (
-            <>
-              <span className="text-sm text-azul-noche/70 hidden sm:inline">
+            <div className="hidden md:flex items-center gap-3">
+              <span className="text-sm text-azul-noche/70">
                 Hola{user?.displayName ? `, ${user.displayName}` : ""}
               </span>
               <button onClick={logout} className="text-sm font-bold text-danger px-3 py-2 rounded-pill">
                 Cerrar sesión
               </button>
-            </>
+            </div>
           ) : (
             <button
               onClick={() => setIsAuthModalOpen(true)}
-              className="w-9 h-9 rounded-full bg-card-surface flex items-center justify-center"
+              className="hidden md:flex w-9 h-9 rounded-full bg-card-surface items-center justify-center"
               aria-label="Iniciar sesión"
             >
               <UserIcon className="text-azul-noche" />
             </button>
           )}
+
+          {/* Lupa: solo en mobile (en desktop el buscador ya está siempre visible) */}
+          <button
+            onClick={onToggleMobileSearch}
+            className="md:hidden w-9 h-9 rounded-full bg-card-surface flex items-center justify-center"
+            aria-label="Buscar"
+          >
+            <SearchIcon className="text-azul-noche" />
+          </button>
 
           <div className="relative w-9 h-9 rounded-full bg-card-surface flex items-center justify-center">
             <CartIcon className="text-azul-noche" />
@@ -87,6 +100,12 @@ export const Header = () => {
           </div>
         </div>
       </div>
+
+      {isMobileSearchOpen && (
+        <div className="md:hidden px-6 py-3 border-b border-gris-claro bg-white">
+          <SearchInput onSearch={handleSearch} placeholder="Buscar productos..." />
+        </div>
+      )}
 
       {isAuthModalOpen && <AuthModal onClose={() => setIsAuthModalOpen(false)} />}
     </header>
