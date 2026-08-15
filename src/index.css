@@ -46,6 +46,10 @@
   --shadow-cta: 0 10px 24px -8px rgba(231, 185, 60, 0.55);
 }
 
+html, body {
+  overflow-x: hidden;
+}
+
 body {
   margin: 0;
 }
