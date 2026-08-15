@@ -376,41 +376,115 @@ De esta manera, las funciones mantienen su referencia mientras no cambie el usua
 
 Esta situación me permitió entender que el warning de ESLint no era solamente algo que había que ocultar, sino que estaba señalando un problema real en la cadena de memorización entre `useCallback` y `useMemo`.
 
-Modelado de categoryId y minAge en Product
-Contexto
+## Modelado de `categoryId` y `minAge` en `Product`
 
-Al migrar el catálogo de Patagonix a MUNDO (juguetería), tuve que redefinir las categorías y agregar un dato nuevo: la edad recomendada de cada juguete.
+### Contexto
 
-Prompt
+Al adaptar el catálogo de Patagonix a MUNDO (juguetería), tuve que redefinir las categorías y agregar la edad recomendada para cada producto.
 
-Quiero mostrar la edad recomendada de cada juguete como un badge tipo "+3 años" en la UI, pero también poder filtrar por edad más adelante. ¿Conviene guardarlo como texto libre ("3-5 años") o como número?
+### Prompt
 
-Qué decidí
+> Quiero mostrar la edad recomendada de cada juguete como un badge, por ejemplo `+3 años`, pero también poder filtrar por edad más adelante. ¿Conviene guardarlo como texto libre (`"3-5 años"`) o como número?
 
-Elegí minAge: number, porque el mismo dato numérico me sirve para las dos cosas: en la UI lo formateo como "+3 años", y queda filtrable/ordenable en Firestore sin tener que parsear texto. Después, para evitar cargar valores sueltos por error (como pasó con "admin" mal tipeado en otro lado del proyecto), lo restringí a un union type con los hitos reales de juguetería: 1 | 3 | 6 | 8 | 10 | 12, en vez de dejarlo como number libre — mismo criterio que ya habíamos usado con CategoryId.
+### Qué decidí
 
-Bug de Rules of Hooks: return condicional antes de un hook
-Contexto
+Decidí utilizar `minAge` como un valor numérico, ya que permite formatearlo en la UI y utilizarlo posteriormente para filtros y ordenamiento sin tener que interpretar texto.
 
-Al debuggear la conexión con Firestore, agregué un useEffect de prueba en App.tsx, pero tenía un if (loading) return <p>Cargando...</p> ubicado antes de ese hook.
+Además, para evitar valores arbitrarios, lo restringí mediante un union type con los hitos de edad definidos para el catálogo:
 
-Prompt
+```ts
+type MinAge = 1 | 3 | 6 | 8 | 10 | 12;
+```
 
-La consola me tira un warning de "change in the order of Hooks" en App.tsx. ¿Por qué pasa esto?
+Apliqué el mismo criterio utilizado para restringir `CategoryId`, priorizando tipos específicos sobre valores libres.
 
-Qué aprendí
+## Bug de Rules of Hooks: `return` condicional antes de un hook
 
-El return condicional cortaba el render antes de llegar al useEffect: en el primer render (loading=true) React nunca lo ejecutaba, en el segundo (loading=false) sí — entonces React detecta un hook distinto en cada render y rompe la regla de que los hooks siempre deben llamarse en el mismo orden. La solución fue eliminar el useEffect de debug una vez confirmado que los datos llegaban bien; en general, todo return condicional debe ir siempre después de todos los hooks del componente, nunca en el medio.
+### Contexto
 
-Adaptación del seeder de productos al modelo de MUNDO
-Contexto
+Al probar la conexión con Firestore, agregué temporalmente un `useEffect` en `App.tsx`. Sin embargo, tenía un `if (loading) return ...` antes de ese hook.
 
-El profe compartió un seeder base para poblar Firestore, pero estaba armado para un catálogo de ropa/calzado y con una interfaz de Product distinta a la mía (sin rating, sin minAge, con el campo image en vez de imageUrl).
+### Prompt
 
-Prompt
+> La consola muestra un warning de `"change in the order of Hooks"` en `App.tsx`. ¿Por qué ocurre y cómo debería corregirlo?
 
-Tengo este seeder del profesor, pero mi Product tiene categoryId, minAge y rating obligatorios, y mis 30 productos ya están armados con mis propios datos. ¿Qué le falta adaptar para que funcione con mi modelo?
+### Qué aprendí
 
-Qué decidí
+Entendí que los hooks deben ejecutarse siempre en el mismo orden en cada render.
 
-Reemplacé el catálogo genérico por mis 30 juguetes reales, y le sumé dos cosas que el seeder original ya traía y que me convenía mantener: nameLower (indispensable para la búsqueda por prefijo que exige la consigna, ya que Firestore no soporta contains) y updatedAt con serverTimestamp() para trazabilidad de cambios. También cambié de IDs autogenerados a IDs fijos (p001...p030) tomados de mi propio array, para que el seeder sea reproducible y no genere productos duplicados si lo corro dos veces sin querer.
+El `return` condicional hacía que, cuando `loading` era `true`, React saliera del componente antes de llegar al `useEffect`. En un render posterior, cuando `loading` cambiaba, el hook sí se ejecutaba, modificando el orden de ejecución.
+
+La solución fue eliminar el `useEffect` utilizado para debugging una vez comprobada la conexión con Firestore. Como regla general, los `return` condicionales deben ubicarse después de la declaración de los hooks del componente.
+
+## Adaptación del seeder de productos al modelo de MUNDO
+
+### Contexto
+
+El profesor proporcionó un seeder base para poblar Firestore, pero estaba preparado para un catálogo de ropa y calzado y utilizaba una interfaz `Product` diferente a la de mi proyecto.
+
+Mi modelo requiere `categoryId`, `minAge` y `rating`, además de utilizar `imageUrl` en lugar de `image`.
+
+### Prompt
+
+> Tengo este seeder del profesor, pero mi tipo `Product` tiene `categoryId`, `minAge` y `rating` obligatorios, y mis 30 productos ya están definidos con mis propios datos. ¿Qué debería adaptar para que el seeder funcione con mi modelo?
+
+### Qué decidí
+
+Reemplacé el catálogo original por mis 30 juguetes y adapté los campos al modelo de MUNDO.
+
+También mantuve `nameLower`, necesario para implementar la búsqueda por prefijo en Firestore, y `updatedAt` utilizando `serverTimestamp()` para registrar cuándo se actualiza cada producto.
+
+Finalmente, utilicé IDs fijos (`p001` a `p030`) definidos en mi propio array. Esto hace que el seeder sea reproducible y evita crear productos duplicados si se ejecuta nuevamente.
+
+## Cómo se asigna el rol `admin`
+
+### Contexto
+
+Firebase Authentication se encarga de la identidad del usuario, pero el proyecto necesita distinguir entre clientes y administrador.
+
+Como en este proyecto solamente existirá un usuario administrador, necesitaba definir cómo asignar ese rol sin crear un registro público de usuarios administradores.
+
+### Prompt
+
+> ¿Cómo conviene manejar el rol `admin` si solo va a existir un usuario administrador en todo el proyecto? Pensé en utilizar un email fijo como `mundo@jugueteria.com`. ¿Tiene sentido esta estrategia?
+
+### Qué decidí
+
+Decidí utilizar una constante `ADMIN_EMAIL` para identificar al único administrador.
+
+Durante el registro, al crear el documento `users/{uid}` en Firestore, la aplicación compara el email ingresado con esa constante:
+
+* Si coincide → `role: "admin"`
+* Si no coincide → `role: "customer"`
+
+De esta manera no existe una opción pública para registrarse como administrador y tampoco necesito modificar manualmente el rol desde Firestore después de cada registro.
+
+El rol se almacena igualmente en Firestore, donde posteriormente podrá ser utilizado por las reglas de seguridad para determinar qué operaciones puede realizar cada usuario.
+
+
+## Reglas de Firestore bloqueaban la creación del perfil de usuario
+
+### Contexto
+
+Después de integrar `AuthContext` con Firebase Authentication real, el usuario se registraba correctamente en Authentication, pero el documento correspondiente en `users/{uid}` no se creaba en Firestore.
+
+### Prompt
+
+> Firebase Auth registra correctamente al usuario, pero no se crea nada en la colección `users` de Firestore. En la consola del navegador aparece `FirebaseError: Missing or insufficient permissions`. ¿Por qué puede estar ocurriendo?
+
+### Qué aprendí
+
+Entendí que Firebase Authentication y Firestore son servicios independientes: que un usuario exista en Authentication no significa que tenga permisos para escribir en Firestore.
+
+Mis reglas tenían el acceso bloqueado por defecto mediante `allow write: if false`, salvo una excepción temporal utilizada para cargar el seed de productos. Como `users` no tenía una regla específica, la escritura era rechazada.
+
+La solución fue agregar una regla basada en la identidad autenticada:
+
+```text
+allow read, write: if request.auth != null
+                  && request.auth.uid == userId;
+```
+
+De esta manera, un usuario autenticado puede acceder únicamente a su propio documento dentro de `users/{uid}`.
+
+Esta situación me permitió entender la diferencia entre **autenticación** (quién es el usuario) y **autorización** (qué puede hacer ese usuario), y comprobar que las reglas de Firestore forman parte de la seguridad de la aplicación y no son simplemente una configuración adicional.
