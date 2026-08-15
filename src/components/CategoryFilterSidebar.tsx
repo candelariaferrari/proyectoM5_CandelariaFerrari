@@ -11,9 +11,6 @@ interface CategoryFilterSidebarProps {
   onClearFilters: () => void;
 }
 
-// Sidebar de la página de catálogo (/productos). A diferencia de las tiles de
-// la Home, acá el click no navega: actualiza el Context (categoryFilter) y la
-// URL al mismo tiempo, para que el filtro activo quede reflejado en ambos.
 export const CategoryFilterSidebar = ({
   categoryFilter,
   onSelectCategory,
@@ -24,13 +21,13 @@ export const CategoryFilterSidebar = ({
   onClearFilters,
 }: CategoryFilterSidebarProps) => {
   return (
-    <aside className="flex flex-col gap-6 h-fit">
+    <aside className="flex flex-col gap-6 md:h-fit">
       <div>
         <h3 className="text-xs font-bold uppercase text-azul-noche/60 mb-2">Tipo de juego</h3>
-        <div className="flex flex-col gap-1.5">
+        <div className="flex gap-2 overflow-x-auto pb-1 md:flex-col md:gap-1.5 md:overflow-visible md:pb-0">
           <button
             onClick={() => onSelectCategory(null)}
-            className={`text-left text-sm font-bold px-4 py-2.5 rounded-input ${
+            className={`shrink-0 text-left text-sm font-bold px-4 py-2.5 rounded-pill md:rounded-input ${
               categoryFilter === null ? "bg-azul-cobalto text-white" : "bg-card-surface text-azul-noche"
             }`}
           >
@@ -40,10 +37,7 @@ export const CategoryFilterSidebar = ({
             <button
               key={id}
               onClick={() => onSelectCategory(id)}
-              // Activa: fondo del color propio de esa categoría (igual que las
-              // tiles de la Home). Inactiva: fondo neutro con el texto en el
-              // color (oscuro) de la categoría.
-              className={`text-left text-sm font-bold px-4 py-2.5 rounded-input ${
+              className={`shrink-0 text-left text-sm font-bold px-4 py-2.5 rounded-pill md:rounded-input ${
                 categoryFilter === id
                   ? `${CATEGORY_INFO[id].color} text-white`
                   : `bg-card-surface ${CATEGORY_INFO[id].textColor}`
