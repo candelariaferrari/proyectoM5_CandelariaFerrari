@@ -508,3 +508,42 @@ El error no indicaba un problema en la lógica de mi consulta, sino que faltaba 
 La solución fue crear el índice desde el enlace proporcionado por Firebase, que ya incluye los campos necesarios.
 
 Esta situación me permitió entender que, al diseñar consultas en Firestore, también hay que considerar los índices que necesitan para ejecutarse correctamente.
+
+
+## La búsqueda por nombre ignora el filtro de categoría
+
+### Contexto
+
+Al implementar la búsqueda por nombre con debounce, tuve que definir qué debía ocurrir cuando el usuario ingresaba texto mientras ya tenía una categoría seleccionada.
+
+### Prompt
+
+> ¿Conviene combinar la búsqueda por nombre con el filtro de categoría activo, o hacer que la búsqueda tenga prioridad e ignore la categoría seleccionada?
+
+### Qué decidí
+
+Decidí que la búsqueda por texto tenga prioridad y que, mientras se busca por nombre, se ignore el filtro de categoría.
+
+Combinar ambos criterios en una misma consulta de Firestore agregaría complejidad e implicaría nuevos requisitos de indexación. Como la consigna plantea la búsqueda por nombre y el filtro por categoría como funcionalidades independientes, preferí mantenerlas separadas y utilizar la solución más simple para esta etapa.
+
+
+## `SearchInput` como componente genérico y reutilizable
+
+### Contexto
+
+El primer `SearchBar` que implementé utilizaba `useProducts()` internamente, por lo que estaba acoplado exclusivamente a la búsqueda de productos.
+
+### Prompt
+
+> Este `SearchBar` solo funciona para productos porque utiliza el context internamente. Más adelante voy a necesitar buscar también órdenes y usuarios desde el panel de administración. ¿Conviene mantenerlo así o separarlo?
+
+### Qué decidí
+
+Decidí separar las responsabilidades:
+
+* `SearchInput`, ubicado en `components/ui/`, se encarga únicamente del input y del debounce y recibe una función `onSearch` por props.
+* El componente que lo utiliza, actualmente `ProductsPage`, decide qué hacer con el texto ingresado.
+
+De esta manera, el componente no conoce ningún dominio específico y puede reutilizarse posteriormente para buscar productos, órdenes o usuarios sin duplicar la lógica de debounce.
+
+Esta decisión sigue el mismo criterio de separación entre componentes presentacionales y lógica de negocio que utilicé en otros componentes del proyecto.
