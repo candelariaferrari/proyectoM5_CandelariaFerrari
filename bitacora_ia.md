@@ -603,3 +603,30 @@ El detalle de producto necesitaba permitir agregar varias unidades, pero `addToC
 Extendí `addToCart` para aceptar una cantidad opcional con valor por defecto de **1**, manteniendo compatibilidad con los componentes que ya utilizaban esa función.
 
 De esta manera, `ProductCard` continúa agregando una unidad sin modificaciones y el detalle del producto puede incorporar múltiples unidades reutilizando la misma lógica del carrito.
+
+---
+
+## Desborde horizontal en mobile: `grid` y `position: fixed`
+
+### Contexto
+
+Al implementar el panel de resumen fijo del carrito para mobile, la aplicación comenzó a presentar scroll horizontal. El problema también se hacía visible al navegar a otras páginas: el header y la navegación inferior aparecían cortados.
+
+### Prompt
+
+> Al implementar el panel de resumen del carrito como un elemento fijo (position: fixed), apareció un scroll horizontal en mobile. El problema no se limita al carrito: el contenido del header y la bottom navbar también aparecen cortados, y al navegar con React Router a / el desborde continúa. En el carrito tengo un layout con CSS Grid y algunos elementos con contenido variable, como nombres de productos. También estoy utilizando overflow-hidden en algunos contenedores para evitar desbordes. Quiero que analices el problema y determines: qué elemento puede estar generando el ancho adicional; si el comportamiento de CSS Grid y su min-width implícito puede estar provocando el desborde; qué efecto tiene position: fixed sobre el overflow de sus elementos ancestros; si el problema puede quedar afectando al viewport y por qué sigue siendo visible después de cambiar de ruta.
+
+### Qué aprendí
+
+El problema terminó teniendo dos causas relacionadas.
+
+Primero, el `<section>` del carrito utilizaba `grid` sin definir explícitamente sus columnas en mobile. Los elementos de una grid pueden mantener un `min-width` implícito y un contenido largo, como el nombre de un producto, puede hacer que la columna crezca más allá del ancho disponible. La solución fue utilizar `min-width: 0` (`min-w-0`) para permitir que el contenido se adapte al ancho de su columna.
+
+Esto no resolvió completamente el problema porque el panel de resumen utilizaba `position: fixed`. Al estar posicionado respecto del viewport, el elemento no quedaba contenido por el `overflow-hidden` de un contenedor ancestro de la misma manera que un elemento normal del flujo.
+
+Finalmente, moví `overflow-x: hidden` a `html` y `body` en `index.css`, evitando que cualquier elemento pudiera generar scroll horizontal a nivel de la página.
+
+También entendí que el corte que aparecía al navegar a Inicio no significaba que esa página tuviera un problema propio. El desborde horizontal generado anteriormente seguía afectando el viewport, y React Router no reinicia automáticamente la posición del scroll al cambiar de ruta.
+
+Este debugging me permitió diferenciar entre un problema localizado en un componente y un problema de overflow que termina afectando toda la aplicación.
+
