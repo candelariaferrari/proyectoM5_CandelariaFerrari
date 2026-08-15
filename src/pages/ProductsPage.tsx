@@ -1,4 +1,5 @@
 import { ProductGrid } from "../components/ProductGrid";
+import { CategoryTiles } from "../components/CategoryTiles";
 
 export const ProductsPage = () => {
   return (
@@ -9,6 +10,7 @@ export const ProductsPage = () => {
         <div className="text-sm mt-2 opacity-90">Juguetes que despiertan la imaginación y acompañan cada etapa de su desarrollo.</div>
       </div>
       <h2 className="font-heading font-extrabold text-lg text-azul-noche mb-3">Productos</h2>
+      <CategoryTiles />
       <ProductGrid />      
     </section>
   );
