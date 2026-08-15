@@ -7,15 +7,12 @@ import { AuthModal } from "../AuthModal";
 import { SearchInput } from "../ui/SearchInput";
 import { UserIcon, CartIcon, SearchIcon } from "../ui/icons";
 
-interface HeaderProps {
-  isMobileSearchOpen: boolean;
-  onToggleMobileSearch: () => void;
-}
-export const Header = ({ isMobileSearchOpen, onToggleMobileSearch }: HeaderProps) => {
+export const Header = () => {
   const { user, isAuthenticated, logout } = useAuth();
   const { items } = useCart();
   const { setSearchTerm } = useProducts();
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
+  const [isMobileSearchOpen, setIsMobileSearchOpen] = useState(false);
   const cartCount = items.reduce((total, item) => total + item.quantity, 0);
   const navigate = useNavigate();
 
@@ -83,21 +80,25 @@ export const Header = ({ isMobileSearchOpen, onToggleMobileSearch }: HeaderProps
 
           {/* Lupa: solo en mobile (en desktop el buscador ya está siempre visible) */}
           <button
-            onClick={onToggleMobileSearch}
+            onClick={() => setIsMobileSearchOpen((open) => !open)}
             className="md:hidden w-9 h-9 rounded-full bg-card-surface flex items-center justify-center"
             aria-label="Buscar"
           >
             <SearchIcon className="text-azul-noche" />
           </button>
 
-          <div className="relative w-9 h-9 rounded-full bg-card-surface flex items-center justify-center">
+          <Link
+            to="/carrito"
+            className="relative w-9 h-9 rounded-full bg-card-surface flex items-center justify-center"
+            aria-label="Ver carrito"
+          >
             <CartIcon className="text-azul-noche" />
             {cartCount > 0 && (
               <span className="absolute -top-1 -right-1 bg-rosa-coral text-white text-[9px] font-extrabold min-w-[16px] h-4 rounded-full flex items-center justify-center">
                 {cartCount}
               </span>
             )}
-          </div>
+          </Link>
         </div>
       </div>
 

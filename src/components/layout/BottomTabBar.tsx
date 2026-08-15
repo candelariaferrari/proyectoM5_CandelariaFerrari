@@ -3,13 +3,9 @@ import { Link, useLocation } from "react-router-dom";
 import { useAuth } from "../../hooks/useAuth";
 import { useCart } from "../../hooks/useCart";
 import { AuthModal } from "../AuthModal";
-import { HomeIcon, SearchIcon, CartIcon, ListIcon, UserIcon } from "../ui/icons";
+import { HomeIcon, CartIcon, ListIcon, UserIcon } from "../ui/icons";
 
-interface BottomTabBarProps {
-  onSearchClick: () => void;
-}
-
-export const BottomTabBar = ({ onSearchClick }: BottomTabBarProps) => {
+export const BottomTabBar = () => {
   const location = useLocation();
   const { user, isAuthenticated, logout } = useAuth();
   const { items } = useCart();
@@ -17,6 +13,7 @@ export const BottomTabBar = ({ onSearchClick }: BottomTabBarProps) => {
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const cartCount = items.reduce((total, item) => total + item.quantity, 0);
   const isHome = location.pathname === "/";
+  const isCart = location.pathname === "/carrito";
 
   const handleProfileClick = () => {
     if (isAuthenticated) {
@@ -39,9 +36,11 @@ export const BottomTabBar = ({ onSearchClick }: BottomTabBarProps) => {
           Inicio
         </Link>
 
-        <button
-          className="relative flex flex-col items-center gap-0.5 py-2.5 flex-1 text-[11px] font-bold text-azul-noche/30 cursor-not-allowed"
-          title="Todavía no hay página de carrito"
+        <Link
+          to="/carrito"
+          className={`relative flex flex-col items-center gap-0.5 py-2.5 flex-1 text-[11px] font-bold ${
+            isCart ? "text-azul-cobalto" : "text-azul-noche/50"
+          }`}
         >
           <CartIcon size={20} />
           {cartCount > 0 && (
@@ -50,7 +49,7 @@ export const BottomTabBar = ({ onSearchClick }: BottomTabBarProps) => {
             </span>
           )}
           Carrito
-        </button>
+        </Link>
 
         <button
           className="flex flex-col items-center gap-0.5 py-2.5 flex-1 text-[11px] font-bold text-azul-noche/30 cursor-not-allowed"

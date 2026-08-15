@@ -9,6 +9,7 @@ interface CartContextType {
   //metodos
   addToCart: (producto: Product, quantity?: number) => void; //traigo el producto agregado, y cuántas unidades (por defecto 1)
   removeFromCart: (id: string) => void; //borro el producto especifico
+  updateQuantity: (id: string, quantity: number) => void; //cambio la cantidad de un item ya agregado 
   clearCart: () => void; //borro todo
 }
 
@@ -50,6 +51,17 @@ export const CartProvider = ({ children }: { children: React.ReactNode }) => {
     });
   }, [userKey]);
 
+  // Cambia la cantidad de un item puntual (lo usa la página de carrito con los botones +/-)
+  const updateQuantity = useCallback((id: string, quantity: number) => {
+    setCartsByUser((prev) => {
+      const currentItems = prev[userKey] ?? [];
+      const updatedItems = currentItems.map((item) =>
+        item.product.id === id ? { ...item, quantity } : item
+      );
+      return { ...prev, [userKey]: updatedItems };
+    });
+  }, [userKey]);
+
   const clearCart =  useCallback(() => {
     setCartsByUser((prev) => {
       return { ...prev, [userKey]: [] }; // vacía el carrito de este usuario, los demás quedan intactos
@@ -59,8 +71,8 @@ export const CartProvider = ({ children }: { children: React.ReactNode }) => {
 
   //hook useMemo 
     const value = useMemo(
-    () => ({ items, addToCart, removeFromCart, clearCart }),
-    [items, addToCart, removeFromCart, clearCart]
+    () => ({ items, addToCart, removeFromCart, updateQuantity, clearCart }),
+    [items, addToCart, removeFromCart, updateQuantity, clearCart]
   );
 // el objeto value solo se recalcula si cambia items, para no re-renderizar a los consumidores de useCart sin necesidad
 
