@@ -7,7 +7,7 @@ import { useAuth } from "../hooks/useAuth"; //integración real sin props
 interface CartContextType {
   items: CartItem[]; //array de items de carrito
   //metodos
-  addToCart: (producto: Product) => void; //traigo el producto agregado
+  addToCart: (producto: Product, quantity?: number) => void; //traigo el producto agregado, y cuántas unidades (por defecto 1)
   removeFromCart: (id: string) => void; //borro el producto especifico
   clearCart: () => void; //borro todo
 }
@@ -30,15 +30,15 @@ export const CartProvider = ({ children }: { children: React.ReactNode }) => {
 
   //acciones (logica que modifica los estados)
 
-  const addToCart = useCallback((product: Product) => {
+  const addToCart = useCallback((product: Product, quantity: number = 1) => {
     setCartsByUser((prev) => {
       const currentItems = prev[userKey] ?? [];
       const existing = currentItems.find((item) => item.product.id === product.id);
       const updatedItems = existing
         ? currentItems.map((item) =>
-            item.product.id === product.id ? { ...item, quantity: item.quantity + 1 } : item
+            item.product.id === product.id ? { ...item, quantity: item.quantity + quantity } : item
           )
-        : [...currentItems, { product, quantity: 1 }];
+        : [...currentItems, { product, quantity }];
       return { ...prev, [userKey]: updatedItems }; // solo toca la entrada de este usuario
     });
   }, [userKey]);
