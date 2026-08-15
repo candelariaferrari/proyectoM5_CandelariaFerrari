@@ -488,3 +488,23 @@ allow read, write: if request.auth != null
 De esta manera, un usuario autenticado puede acceder únicamente a su propio documento dentro de `users/{uid}`.
 
 Esta situación me permitió entender la diferencia entre **autenticación** (quién es el usuario) y **autorización** (qué puede hacer ese usuario), y comprobar que las reglas de Firestore forman parte de la seguridad de la aplicación y no son simplemente una configuración adicional.
+
+## Índice compuesto para filtrar por categoría y ordenar por precio
+
+### Contexto
+
+Al implementar el filtro por categoría, `getProductsByCategory` combinaba un `where("categoryId", "==", ...)` con un `orderBy("price", "asc")`.
+
+### Prompt
+
+> Al filtrar por categoría aparece `FirebaseError: The query requires an index`, junto con un link para crearlo. ¿Por qué ocurre y cómo debería resolverlo?
+
+### Qué aprendí
+
+Entendí que Firestore requiere un **índice compuesto** cuando una consulta combina condiciones sobre distintos campos, como un `where` sobre `categoryId` y un `orderBy` sobre `price`.
+
+El error no indicaba un problema en la lógica de mi consulta, sino que faltaba la estructura de índices necesaria para ejecutarla.
+
+La solución fue crear el índice desde el enlace proporcionado por Firebase, que ya incluye los campos necesarios.
+
+Esta situación me permitió entender que, al diseñar consultas en Firestore, también hay que considerar los índices que necesitan para ejecutarse correctamente.
