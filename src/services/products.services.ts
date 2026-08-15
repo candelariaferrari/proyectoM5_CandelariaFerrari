@@ -1,4 +1,4 @@
-import { collection, getDocs, doc, getDoc, query, where, orderBy } from "firebase/firestore";
+import { collection, getDocs, doc, getDoc, query, where, orderBy, startAt, endAt } from "firebase/firestore";
 import { db } from "../config/firebase";
 import type { Product, CategoryId } from "../types/product.types";
 
@@ -41,5 +41,23 @@ export const getProductsByCategory = async (
   return snapshot.docs.map((doc)=>({ 
     id: doc.id, //agrega el id del doc
     ...doc.data()//el doc
+  } as Product));
+};
+// Buscar productos por prefijo del nombre (Firestore no soporta "contains"):
+export const getProductsByNamePrefix = async (
+  prefix: string
+): Promise<Product[]> => {
+  const prefixLower = prefix.toLowerCase();
+  const q = query(
+    collection(db, "products"),
+    orderBy("nameLower"),
+    startAt(prefixLower),
+    endAt(prefixLower + "\uf8ff") // último caracter unicode posible: incluye todo lo que empiece con el prefijo
+  );
+  const snapshot = await getDocs(q);
+
+  return snapshot.docs.map((doc) => ({
+    id: doc.id,
+    ...doc.data(),
   } as Product));
 };
