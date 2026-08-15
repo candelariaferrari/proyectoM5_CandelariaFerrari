@@ -547,3 +547,59 @@ Decidí separar las responsabilidades:
 De esta manera, el componente no conoce ningún dominio específico y puede reutilizarse posteriormente para buscar productos, órdenes o usuarios sin duplicar la lógica de debounce.
 
 Esta decisión sigue el mismo criterio de separación entre componentes presentacionales y lógica de negocio que utilicé en otros componentes del proyecto.
+
+
+## Home separada del catálogo, con filtros sincronizados por URL
+
+### Contexto
+
+La página de productos reunía el hero, las categorías y el catálogo en una sola pantalla. Antes de avanzar con el diseño final, quería validar si convenía separar una Home inspiracional de un catálogo enfocado en la compra.
+
+### Prompt
+
+> Estoy intentando que la experiencia se parezca más a un e-commerce real. ¿Tiene sentido separar una Home con contenido inspiracional de un catálogo con filtros, o conviene mantener todo en una sola página?
+
+### Qué decidí
+
+Decidí separar la navegación en dos pantallas:
+
+* **`/`** → Home con hero, categorías destacadas y productos más elegidos.
+* **`/productos`** → Catálogo con filtros y listado completo.
+
+Además, los filtros de categoría se sincronizan mediante **query params** (`?categoria=x`) en lugar de mantenerse solo en estado local, permitiendo compartir, guardar y recuperar búsquedas desde la URL. El filtro por precio permanece del lado del cliente para evitar complejizar las consultas de Firestore con nuevos índices compuestos.
+
+---
+
+## Color propio por categoría con una única fuente de verdad
+
+### Contexto
+
+Quería que cada categoría tuviera una identidad visual propia, en lugar de utilizar un único color para toda la aplicación.
+
+### Prompt
+
+> ¿Podemos hacer que cada categoría conserve su propio color y que esa identidad visual se mantenga en distintos componentes del e-commerce?
+
+### Qué decidí
+
+Definí una paleta específica para cada categoría y una variante más oscura del mismo color para utilizar en textos sobre fondo blanco, garantizando un buen contraste.
+
+Toda la información de colores quedó centralizada en `constants/categories.ts`, evitando duplicar valores en distintos componentes y facilitando futuros cambios de diseño.
+
+---
+
+## Selector de cantidad reutilizando la misma acción del carrito
+
+### Contexto
+
+El detalle de producto necesitaba permitir agregar varias unidades, pero `addToCart` únicamente sumaba un producto por vez.
+
+### Prompt
+
+> El detalle del producto necesita un selector de cantidad. ¿Conviene crear una función nueva para agregar varias unidades o extender `addToCart` sin romper lo que ya funciona?
+
+### Qué decidí
+
+Extendí `addToCart` para aceptar una cantidad opcional con valor por defecto de **1**, manteniendo compatibilidad con los componentes que ya utilizaban esa función.
+
+De esta manera, `ProductCard` continúa agregando una unidad sin modificaciones y el detalle del producto puede incorporar múltiples unidades reutilizando la misma lógica del carrito.
