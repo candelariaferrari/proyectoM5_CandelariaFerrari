@@ -1,9 +1,12 @@
+import { useState } from "react";
 import { useAuth } from "../../hooks/useAuth";
 import { useCart } from "../../hooks/useCart";
+import { AuthModal } from "../AuthModal";
 
 export const Header = () => {
-  const { user, isAuthenticated, login, logout } = useAuth();
+  const { user, isAuthenticated, logout } = useAuth();
   const { items } = useCart();
+  const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const cartCount = items.reduce((total, item) => total + item.quantity, 0);
 
   return (
@@ -21,7 +24,7 @@ export const Header = () => {
         </>
       ) : (
         <button
-          onClick={() => login("customer")}
+          onClick={() => setIsAuthModalOpen(true)}
           className="text-sm font-bold text-white bg-mostaza px-4 py-2 rounded-pill"
         >
           Iniciar sesión
@@ -36,6 +39,8 @@ export const Header = () => {
           </span>
         )}
       </div>
+
+      {isAuthModalOpen && <AuthModal onClose={() => setIsAuthModalOpen(false)} />}
     </header>
   );
 };
