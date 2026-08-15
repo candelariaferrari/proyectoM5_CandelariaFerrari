@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom";
 import type { Product } from "../types/product.types";
+import { CATEGORY_INFO } from "../constants/categories";
 import { useCart } from "../hooks/useCart"; // 👈 sin esto en props, evita el prop drilling
 
 interface ProductCardProps {
@@ -8,6 +9,7 @@ interface ProductCardProps {
 
 export const ProductCard = ({ product }: ProductCardProps) => {
   const { addToCart } = useCart();
+  const category = CATEGORY_INFO[product.categoryId];
 
   return (
     <div className="bg-white rounded-card p-3 flex flex-col gap-1.5 shadow-card">
@@ -18,8 +20,8 @@ export const ProductCard = ({ product }: ProductCardProps) => {
           )}
         </div>
       </Link>
-      <div className="text-[10px] uppercase tracking-wide text-azul-cobalto font-semibold">
-        {product.categoryId}
+      <div className={`text-[10px] uppercase tracking-wide font-semibold ${category.textColor}`}>
+        {category.label}
       </div>
       <Link to={`/producto/${product.id}`} className="font-bold text-sm leading-tight text-azul-noche">
         {product.name}
@@ -28,7 +30,7 @@ export const ProductCard = ({ product }: ProductCardProps) => {
         <span>★ {product.rating.rate.toFixed(1)}</span>
         <span>({product.rating.count})</span>
       </div>
-      <div className="font-bold text-sm text-azul-noche">${product.price.toLocaleString("es-AR")}</div>
+      <div className="font-bold text-base text-azul-noche">${product.price.toLocaleString("es-AR")}</div>
       <button
         onClick={() => addToCart(product)}
         className="mt-1 text-xs font-bold text-white bg-mostaza rounded-pill py-2"

@@ -1,39 +1,40 @@
+import { Link } from "react-router-dom";
 import type { CategoryId } from "../types/product.types";
-import { useProducts } from "../hooks/useProducts";
+import { CATEGORY_INFO } from "../constants/categories";
+import { LightbulbIcon, PaletteIcon, HeartIcon, CompassIcon } from "./ui/icons";
 
-const CATEGORIES: { id: CategoryId; label: string; color: string }[] = [
-  { id: "pensar", label: "Pensar", color: "bg-verde-menta" },
-  { id: "crear", label: "Crear", color: "bg-mostaza" },
-  { id: "compartir", label: "Compartir", color: "bg-rosa-coral" },
-  { id: "explorar", label: "Explorar", color: "bg-azul-cobalto" },
-];
-
+const CATEGORY_ICONS: Record<CategoryId, typeof LightbulbIcon> = {
+  pensar: LightbulbIcon,
+  crear: PaletteIcon,
+  compartir: HeartIcon,
+  explorar: CompassIcon,
+};
 export const CategoryTiles = () => {
-  const { categoryFilter, setCategoryFilter } = useProducts();
-
   return (
-    <div className="flex gap-2 overflow-x-auto pb-2 mb-4">
-      <button
-        onClick={() => setCategoryFilter(null)}
-        className={`shrink-0 text-sm font-bold px-4 py-2 rounded-pill ${
-          categoryFilter === null
-            ? "bg-azul-noche text-white"
-            : "bg-card-surface text-azul-noche"
-        }`}
-      >
-        Todos
-      </button>
-      {CATEGORIES.map((cat) => (
-        <button
-          key={cat.id}
-          onClick={() => setCategoryFilter(cat.id)}
-          className={`shrink-0 text-sm font-bold px-4 py-2 rounded-pill text-white ${cat.color} ${
-            categoryFilter === cat.id ? "ring-2 ring-azul-noche" : ""
-          }`}
-        >
-          {cat.label}
-        </button>
-      ))}
+    <div>
+      <h2 className="font-heading font-extrabold text-3xl text-azul-noche text-center mb-6">
+        ¿Qué tipo de juego buscás?
+      </h2>
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+        {Object.entries(CATEGORY_INFO).map(([id, cat]) => {
+          const Icon = CATEGORY_ICONS[id as CategoryId];
+          return (
+            <Link
+              key={id}
+              to={`/productos?categoria=${id}`}
+              className={`${cat.color} text-white rounded-card p-5 flex flex-row justify-center aling-center gap-2 `}
+            >
+              <span className="w-12 h-12 rounded-full bg-white/25 flex items-center justify-center">
+                <Icon size={25} />
+              </span>
+              <span>
+                <p className="font-heading font-extrabold text-xl">{cat.label}</p>
+                <p className="text-[12px] opacity-90"> {cat.description}</p>
+              </span>
+            </Link>
+          );
+        })}
+      </div>
     </div>
   );
 };
