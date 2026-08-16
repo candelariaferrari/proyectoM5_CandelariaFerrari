@@ -659,7 +659,7 @@ Armando el panel de admin fui repitiendo cosas que ya existían del lado cliente
 
 ### Prompt
 
-> lo que si habiamos hablado que yo te dije que el navbar iba a tener links distintos en admin que si habia que ponerlos en variables, te acordas? con el bottomNavbar tambien lo mismo, reutilizar el de producto
+> lo que si habiamos hablado que yo te dije que el navbar iba a tener links distintos en admin que si habia que ponerlos en variables, te acordas? con el bottomTabBar tambien lo mismo, reutilizar el de producto
 >
 > al buscar productos en admin le falta el icono
 
@@ -672,3 +672,22 @@ En vez de arreglar cada caso por separado, busqué el patrón repetido en cada u
 - El buscador de productos del admin tenía un `<input>` plano sin ícono; en vez de agregarle un ícono a mano, reutilicé el componente `SearchInput` que ya existía del lado cliente (mismo look, mismo comportamiento).
 
 Aprendizaje: cuando encuentro el mismo problema (o casi) en dos o tres lugares seguidos, vale la pena parar un momento y sacarlo a un solo lugar en vez de parchear cada aparición — ahorra el próximo cambio también.
+
+
+## Qué pasa con el carrito de invitado al loguearse
+
+### Contexto
+
+Un usuario no logueado puede navegar y agregar productos al carrito libremente (mejor UX, es el estándar en e-commerce real: no pedirle cuenta hasta el momento de pagar). Pero como el carrito se guarda separado por usuario (`cartsByUser`, con clave `"guest"` para quien no tiene sesión), surgió la duda: ¿qué pasa con esos productos si el invitado se loguea después?
+
+### Prompt
+
+> estoy pensando si lo dejamos que agregue productos al carrito sin estar logueado, cuando inicie sesion va a perder los productos que tenga agregados porque no van a estar guardados a ningun usuario o no? entonces en ese caso, ¿sería que para agregar productos al carrito ya tiene que estar logueado?
+
+### Qué decidí
+
+Evaluamos dos caminos: exigir login para agregar al carrito (más simple de programar, pero mete fricción justo cuando el usuario recién está probando la app), o dejar agregar libremente y fusionar el carrito de invitado con el del usuario en el momento del login (más código, pero es el comportamiento esperado en cualquier tienda online real).
+
+Elegimos fusionar. En `CartContext` agregué un `useEffect` que detecta el instante exacto en que `userKey` pasa de `"guest"` a un uid real (usando un `useRef` para recordar cuál era el valor anterior, porque un componente no tiene memoria del render pasado por sí solo) y, en ese momento, combina los items del carrito de invitado con los del usuario — sumando cantidades si el producto se repite — y borra la entrada de invitado.
+
+Esto obligó a actualizar un test que ya existía (`CartContext.test.tsx`), que afirmaba como correcto el comportamiento viejo (carrito vacío al loguearse). Aprendizaje: un test no solo verifica que el código funcione, también documenta una decisión de producto — si la decisión cambia, el test tiene que cambiar con ella, no solo el código.
