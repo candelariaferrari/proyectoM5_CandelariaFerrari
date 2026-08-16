@@ -691,3 +691,33 @@ Evaluamos dos caminos: exigir login para agregar al carrito (más simple de prog
 Elegimos fusionar. En `CartContext` agregué un `useEffect` que detecta el instante exacto en que `userKey` pasa de `"guest"` a un uid real (usando un `useRef` para recordar cuál era el valor anterior, porque un componente no tiene memoria del render pasado por sí solo) y, en ese momento, combina los items del carrito de invitado con los del usuario — sumando cantidades si el producto se repite — y borra la entrada de invitado.
 
 Esto obligó a actualizar un test que ya existía (`CartContext.test.tsx`), que afirmaba como correcto el comportamiento viejo (carrito vacío al loguearse). Aprendizaje: un test no solo verifica que el código funcione, también documenta una decisión de producto — si la decisión cambia, el test tiene que cambiar con ella, no solo el código.
+
+
+---
+
+## Subir imágenes de producto a S3 con URLs prefirmadas
+
+### Contexto
+
+Hasta ahora el campo "imagen" del producto era un `<input type="url">` donde había que pegar un link ya existente. La guía oficial del proyecto pide que las imágenes se puedan subir de verdad desde el form, pero con una regla de seguridad clara: las credenciales de AWS nunca pueden estar en el código del frontend, porque cualquiera que abra las herramientas de desarrollador del navegador las vería y podría usarlas para borrar el bucket o subir lo que quiera a mi cuenta.
+
+### Prompt
+
+> sigamos con lo de S3,  tengo esto de anotaciones back from frontend: 1) crear carpeta `api`, 2) crear `presign.ts` con la config de S3, el nombre del bucket, los formatos permitidos, restringir el método a POST, sacar `filename` y `fileType` del body, validar que existan, generar una key única tipo `products/${randomUUID()}-${filename}`, crear la URL prefirmada con el método de S3, devolver un JSON con la URL pública y manejar errores; 3) cómo correr el backend: `npm install -g vercel`, `vercel login`, `vercel dev`; 4) crear un servicio que conecte S3 con Firestore: pedir la URL firmada, chequear que salió bien, subir el archivo directo a S3 con un PUT, devolver la URL pública
+
+### Qué aprendí
+
+El flujo se llama "URL prefirmada" y funciona así:
+
+1. El navegador le pide permiso a una función serverless propia (`api/presign.ts`, corre en Vercel) para subir un archivo, mandando solo el nombre y el tipo.
+2. Esa función es la única parte del sistema que tiene las credenciales de AWS (guardadas como variables de entorno del servidor, sin el prefijo `VITE_` para que Vite no las empaquete en el HTML/JS que baja el navegador). Con esas credenciales le pide a S3 una URL especial que sirve para subir un único archivo, a una ubicación fija, y que caduca en 60 segundos.
+3. El navegador usa esa URL para mandar el archivo directo a S3 (`fetch` con método `PUT`), sin pasar por mi servidor — así el archivo no consume ancho de banda mío.
+4. La URL pública resultante (armada con el nombre del bucket + la key) es lo que se guarda en Firestore como `imageUrl`.
+
+Para que esto funcione hubo que configurar varias cosas del lado de AWS, cada una con el principio de "mínimo privilegio necesario":
+
+- El bucket sigue privado por default; solo escribí una política que permite *lectura* pública (`s3:GetObject`) de lo que esté dentro de la carpeta `imgProducts/`, nada más.
+- Un usuario de IAM aparte (no la cuenta raíz) con permiso únicamente para *escribir* (`s3:PutObject`) en esa misma carpeta — ni puede borrar, ni puede tocar el resto del bucket.
+- Un CORS en el bucket, que es lo que le da permiso al navegador (un origen distinto a S3) para poder hacer ese `PUT` directo.
+
+También aprendí que las funciones de `/api` no las podés probar con `npm run dev` normal (eso es solo Vite, el frontend) — hace falta la CLI de Vercel (`vercel dev`) o, como terminamos haciendo, deployar directo a Vercel conectando el repo de GitHub, para probar la función real. Esto adelantó una tarea que iba a ser de las últimas del proyecto (el deploy), pero tuvo sentido hacerlo ahora para poder probar S3 de verdad.
