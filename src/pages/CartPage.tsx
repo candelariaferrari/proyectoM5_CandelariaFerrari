@@ -1,5 +1,8 @@
+import { useState } from "react";
 import { Link } from "react-router-dom";
 import { useCart } from "../hooks/useCart";
+import { useAuth } from "../hooks/useAuth";
+import { AuthModal } from "../components/AuthModal";
 import { CloseIcon, CartIcon } from "../components/ui/icons";
 
 // Mismo umbral que anunciamos en el banner del header ("Envíos gratis en
@@ -9,6 +12,8 @@ const FREE_SHIPPING_THRESHOLD = 50000;
 
 export const CartPage = () => {
   const { items, updateQuantity, removeFromCart, clearCart } = useCart();
+  const { isAuthenticated } = useAuth();
+  const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
 
   const total = items.reduce((sum, item) => sum + item.product.price * item.quantity, 0);
   const hasFreeShipping = total >= FREE_SHIPPING_THRESHOLD;
@@ -79,13 +84,27 @@ export const CartPage = () => {
         <span>${total.toLocaleString("es-AR")}</span>
       </div>
 
-      <button
-        disabled
-        title="Todavía no armamos el checkout (lo hacemos más adelante)"
-        className="text-sm font-extrabold text-azul-noche bg-mostaza px-7 py-3.5 rounded-pill shadow-cta"
-      >
-        Continuar compra
-      </button>
+      {isAuthenticated ? (
+        <button
+          disabled
+          title="Todavía no armamos el checkout (lo hacemos más adelante)"
+          className="text-sm font-extrabold text-azul-noche bg-mostaza px-7 py-3.5 rounded-pill shadow-cta"
+        >
+          Continuar compra
+        </button>
+      ) : (
+        <div className="flex flex-col gap-2">
+          <button
+            onClick={() => setIsAuthModalOpen(true)}
+            className="text-sm font-extrabold text-azul-noche bg-mostaza px-7 py-3.5 rounded-pill shadow-cta"
+          >
+            Continuar compra
+          </button>
+          <p className="text-xs text-azul-noche/50 text-center">
+            Necesitás iniciar sesión para continuar con la compra.
+          </p>
+        </div>
+      )}
     </>
   );
 
@@ -166,6 +185,8 @@ export const CartPage = () => {
       <div className="md:hidden fixed bottom-16 inset-x-0 z-30 bg-crema rounded-t-card-lg shadow-card px-5 py-4 flex flex-col gap-3">
         {summary}
       </div>
+
+      {isAuthModalOpen && <AuthModal onClose={() => setIsAuthModalOpen(false)} />}
     </section>
   );
 };
