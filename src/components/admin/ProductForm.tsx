@@ -1,6 +1,7 @@
-import { useState, type FormEvent } from "react";
+import { useState, type FormEvent, type ChangeEvent } from "react";
 import { Modal } from "../ui/Modal";
 import { createProduct, updateProduct } from "../../services/products.services";
+import { uploadProductImage } from "../../services/upload.services";
 import { CATEGORY_INFO, CATEGORY_IDS } from "../../constants/categories";
 import type { Product, CategoryId, MinAge } from "../../types/product.types";
 
@@ -22,8 +23,30 @@ export const ProductForm = ({ product, onClose, onSaved }: ProductFormProps) => 
   const [categoryId, setCategoryId] = useState<CategoryId>(product?.categoryId ?? CATEGORY_IDS[0]);
   const [minAge, setMinAge] = useState<MinAge>(product?.minAge ?? 1);
   const [imageUrl, setImageUrl] = useState(product?.imageUrl ?? "");
+  const [isUploadingImage, setIsUploadingImage] = useState(false);
+  const [imageError, setImageError] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
+
+  // Cuando el admin elige un archivo, lo subimos enseguida (no esperamos al
+  // submit del form): pedimos la URL prefirmada a nuestra función serverless
+  // y subimos la imagen directo a S3. Al terminar, guardamos la URL pública
+  // resultante en `imageUrl`, que es lo que después viaja a Firestore.
+  const handleImageChange = async (e: ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setImageError(null);
+    setIsUploadingImage(true);
+    try {
+      const publicUrl = await uploadProductImage(file);
+      setImageUrl(publicUrl);
+    } catch (err) {
+      setImageError(err instanceof Error ? err.message : "No pudimos subir la imagen");
+    } finally {
+      setIsUploadingImage(false);
+    }
+  };
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
@@ -144,15 +167,20 @@ export const ProductForm = ({ product, onClose, onSaved }: ProductFormProps) => 
         </div>
 
         <label className="text-sm font-bold text-azul-noche">
-          URL de imagen
+          Imagen
           <input
-            type="url"
-            placeholder="https://..."
-            value={imageUrl}
-            onChange={(e) => setImageUrl(e.target.value)}
+            type="file"
+            accept="image/jpeg,image/png,image/webp"
+            onChange={handleImageChange}
             className="w-full mt-1 border border-gris-claro rounded-input px-3 py-2 text-sm font-normal"
           />
         </label>
+
+        {isUploadingImage && <p className="text-xs text-azul-noche/60">Subiendo imagen...</p>}
+        {imageError && <p className="text-danger text-xs">{imageError}</p>}
+        {imageUrl && !isUploadingImage && (
+          <img src={imageUrl} alt="Vista previa" className="w-20 h-20 object-cover rounded-input border border-gris-claro" />
+        )}
 
         {error && <p className="text-danger text-xs">{error}</p>}
 
@@ -166,7 +194,7 @@ export const ProductForm = ({ product, onClose, onSaved }: ProductFormProps) => 
           </button>
           <button
             type="submit"
-            disabled={submitting}
+            disabled={submitting || isUploadingImage}
             className="flex-1 bg-mostaza text-azul-noche font-extrabold rounded-pill py-2 disabled:opacity-50"
           >
             {submitting ? "Guardando..." : "Guardar"}
