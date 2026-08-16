@@ -1,12 +1,16 @@
-import { useEffect, useMemo, useState } from "react";
+import { useState } from "react";
 import { useLocation } from "react-router-dom";
-import { getProducts, deleteProduct } from "../../services/products.services";
+import { deleteProduct } from "../../services/products.services";
 import { CATEGORY_INFO, CATEGORY_IDS } from "../../constants/categories";
 import { ProductForm } from "../../components/admin/ProductForm";
 import { PencilIcon, TrashIcon } from "../../components/ui/icons";
 import { SearchInput } from "../../components/ui/SearchInput";
 import { ProductImage } from "../../components/ui/ProductImage";
+import { useProductsPagination } from "../../hooks/useProductsPagination";
+import { Pagination } from "../../components/ui/Pagination";
 import type { CategoryId, Product } from "../../types/product.types";
+
+const PAGE_SIZE = 10;
 
 const LOW_STOCK_THRESHOLD = 5;
 
@@ -25,10 +29,8 @@ const StockBadge = ({ stock }: { stock: number }) => {
 
 export const AdminProductsPage = () => {
   const location = useLocation();
-  const [products, setProducts] = useState<Product[]>([]);
-  const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
-  const [categoryFilter, setCategoryFilter] = useState<CategoryId | null>(null);
+  const [categoryFilter, setCategoryFilterState] = useState<CategoryId | null>(null);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   // Si llegamos acá desde el botón "+ Nuevo producto" del Dashboard, el
   // form de alta se abre directo (ver Link con state en AdminDashboardPage).
@@ -37,27 +39,33 @@ export const AdminProductsPage = () => {
   );
   const [deletingId, setDeletingId] = useState<string | null>(null);
 
-  // Vive en estado local (no en ProductsContext) porque ese context está
-  // pensado para el catálogo filtrado del cliente, no para administrar
-  // el listado completo.
-  const fetchProducts = async () => {
-    setLoading(true);
-    const result = await getProducts();
-    setProducts(result);
-    setLoading(false);
+  // A diferencia del catálogo de cliente, acá categoría y búsqueda se
+  // combinan (no se pisan entre sí) -- por eso le mandamos las dos tal
+  // cual al hook, sin la lógica de prioridad que tiene ProductsContext.
+  const {
+    products,
+    loading,
+    currentPage,
+    totalPages,
+    totalCount,
+    goToNextPage,
+    goToPreviousPage,
+    refetch,
+  } = useProductsPagination({
+    categoryId: categoryFilter,
+    searchPrefix: search.toLowerCase(),
+    pageSize: PAGE_SIZE,
+  });
+
+  // No hace falta resetear la página a mano: `useCursorPagination` vuelve
+  // sola a la página 1 en cuanto cambia la categoría o la búsqueda.
+  const handleCategoryFilter = (category: CategoryId | null) => {
+    setCategoryFilterState(category);
   };
 
-  useEffect(() => {
-    fetchProducts();
-  }, []);
-
-  const filteredProducts = useMemo(() => {
-    return products.filter((product) => {
-      const matchesCategory = !categoryFilter || product.categoryId === categoryFilter;
-      const matchesSearch = product.name.toLowerCase().includes(search.toLowerCase());
-      return matchesCategory && matchesSearch;
-    });
-  }, [products, categoryFilter, search]);
+  const handleSearch = (term: string) => {
+    setSearch(term);
+  };
 
   const handleDelete = async (product: Product) => {
     const confirmed = window.confirm(`¿Borrar "${product.name}"? No se puede deshacer.`);
@@ -65,7 +73,7 @@ export const AdminProductsPage = () => {
 
     setDeletingId(product.id);
     await deleteProduct(product.id);
-    setProducts((prev) => prev.filter((p) => p.id !== product.id));
+    refetch();
     setDeletingId(null);
   };
 
@@ -83,12 +91,12 @@ export const AdminProductsPage = () => {
 
       <div className="flex flex-wrap items-center gap-3 mb-5">
         <div className="w-full sm:w-64">
-          <SearchInput onSearch={setSearch} placeholder="Buscar producto..." minLength={1} debounceMs={200} />
+          <SearchInput onSearch={handleSearch} placeholder="Buscar producto..." minLength={1} debounceMs={200} />
         </div>
 
         <div className="flex gap-2 overflow-x-auto">
           <button
-            onClick={() => setCategoryFilter(null)}
+            onClick={() => handleCategoryFilter(null)}
             className={`text-sm font-bold px-4 py-2 rounded-pill shrink-0 ${
               categoryFilter === null ? "bg-azul-cobalto text-white" : "bg-card-surface text-azul-noche/70"
             }`}
@@ -98,7 +106,7 @@ export const AdminProductsPage = () => {
           {CATEGORY_IDS.map((id) => (
             <button
               key={id}
-              onClick={() => setCategoryFilter(id)}
+              onClick={() => handleCategoryFilter(id)}
               className={`text-sm font-bold px-4 py-2 rounded-pill shrink-0 ${
                 categoryFilter === id ? `${CATEGORY_INFO[id].color} text-white` : "bg-card-surface text-azul-noche/70"
               }`}
@@ -109,7 +117,7 @@ export const AdminProductsPage = () => {
         </div>
 
         <span className="text-xs text-azul-noche/50 ml-auto shrink-0">
-          {filteredProducts.length} de {products.length} productos
+          {totalCount} producto(s)
         </span>
       </div>
 
@@ -129,7 +137,7 @@ export const AdminProductsPage = () => {
               </tr>
             </thead>
             <tbody>
-              {filteredProducts.map((product) => (
+              {products.map((product) => (
                 <tr key={product.id} className="border-t border-gris-claro">
                   <td className="py-3">
                     <div className="flex items-center gap-3">
@@ -175,11 +183,9 @@ export const AdminProductsPage = () => {
             </tbody>
           </table>
 
-          {/* Mobile: como el mockup — imagen, nombre, "categoría · precio" en
-              gris, badge de stock debajo, y los botones centrados a la
-              derecha de toda la tarjeta (no pegados arriba). */}
+          {/* Mobile */}
           <div className="md:hidden flex flex-col gap-3">
-            {filteredProducts.map((product) => (
+            {products.map((product) => (
               <div
                 key={product.id}
                 className="flex items-center gap-4 p-4 rounded-card bg-white shadow-card"
@@ -225,9 +231,15 @@ export const AdminProductsPage = () => {
             ))}
           </div>
 
-          {filteredProducts.length === 0 && (
+          {products.length === 0 && (
             <p className="text-sm text-azul-noche/50 text-center py-8">No hay productos que coincidan.</p>
           )}
+
+          <Pagination
+            currentPage={currentPage}
+            totalPages={totalPages}
+            onPageChange={(page) => (page > currentPage ? goToNextPage() : goToPreviousPage())}
+          />
         </>
       )}
 
@@ -238,7 +250,7 @@ export const AdminProductsPage = () => {
             setIsCreating(false);
             setEditingProduct(null);
           }}
-          onSaved={fetchProducts}
+          onSaved={refetch}
         />
       )}
     </section>

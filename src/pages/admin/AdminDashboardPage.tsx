@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { getProducts } from "../../services/products.services";
+import { countProducts } from "../../services/products.services";
 import { getUser } from "../../services/users.services";
 
 export const AdminDashboardPage = () => {
@@ -11,7 +11,7 @@ export const AdminDashboardPage = () => {
     // Solo mostramos lo que podemos calcular de verdad. Ventas y Órdenes
     // dependen de la colección "orders", que todavía no existe (eso es
     // parte del checkout, L8) — no vamos a inventar esos números.
-    getProducts().then((products) => setProductCount(products.length));
+    countProducts().then(setProductCount); // agregacion del lado del servidor: no hace falta traer los 60 productos solo para contarlos
     getUser().then((users) => setUserCount(users.length));
   }, []);
 
