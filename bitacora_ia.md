@@ -630,3 +630,45 @@ También entendí que el corte que aparecía al navegar a Inicio no significaba 
 
 Este debugging me permitió diferenciar entre un problema localizado en un componente y un problema de overflow que termina afectando toda la aplicación.
 
+
+---
+
+## Un error de lint que en realidad era un falso positivo
+
+### Contexto
+
+`npm run lint` marcaba error en dos efectos de fetch de datos (`ProductsContext` y `ProductDetailPage`) por llamar a `setLoading(true)` de forma sincrónica al arrancar el efecto — un patrón estándar de React para mostrar "cargando" mientras se pide de nuevo el dato cada vez que cambia una dependencia.
+
+### Prompt
+
+> npm run lint [pega el error `react-hooks/set-state-in-effect`]
+
+### Qué decidí
+
+Antes de reescribir el código, busqué la regla: es nueva (viene con `eslint-plugin-react-hooks` v7) y el propio equipo de React la tiene documentada como un falso positivo conocido para exactamente este patrón (github.com/react/react/issues/34743), sin una alternativa "limpia" recomendada todavía.
+
+En vez de complicar un efecto que ya estaba bien para complacer una regla inmadura, la desactivé puntualmente en esas dos líneas con `eslint-disable-next-line` y un comentario explicando por qué. Aprendizaje: un error de lint no siempre significa que el código esté mal — a veces significa que la regla todavía no contempla un caso legítimo.
+
+---
+
+## Reutilizar en vez de repetir en el panel de admin
+
+### Contexto
+
+Armando el panel de admin fui repitiendo cosas que ya existían del lado cliente: un `NavLink` a mano por cada item del nav (arriba y en el tab bar de mobile), el wordmark "MUNDO" con sus 5 colores copiado en dos lugares nuevos, y un input de búsqueda simple sin ícono.
+
+### Prompt
+
+> lo que si habiamos hablado que yo te dije que el navbar iba a tener links distintos en admin que si habia que ponerlos en variables, te acordas? con el bottomNavbar tambien lo mismo, reutilizar el de producto
+>
+> al buscar productos en admin le falta el icono
+
+### Qué decidí
+
+En vez de arreglar cada caso por separado, busqué el patrón repetido en cada uno:
+
+- Los items del nav de admin (desktop y mobile) ahora salen de un solo array `ADMIN_NAV_ITEMS`, en vez de un `NavLink` escrito a mano por cada botón en cada lugar.
+- El wordmark "MUNDO" (los 5 `span` de colores) se repetía en el Header de cliente y en los dos headers de admin — lo saqué a un componente `MundoLogo` compartido, cada uno solo le pasa el tamaño de letra.
+- El buscador de productos del admin tenía un `<input>` plano sin ícono; en vez de agregarle un ícono a mano, reutilicé el componente `SearchInput` que ya existía del lado cliente (mismo look, mismo comportamiento).
+
+Aprendizaje: cuando encuentro el mismo problema (o casi) en dos o tres lugares seguidos, vale la pena parar un momento y sacarlo a un solo lugar en vez de parchear cada aparición — ahorra el próximo cambio también.
