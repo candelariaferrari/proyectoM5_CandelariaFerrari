@@ -1,4 +1,4 @@
-import { createContext, useCallback, useMemo, useState } from "react";
+import { createContext, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { CartItem } from "../types/cartItem.types";
 import type { Product } from "../types/product.types";
 import { useAuth } from "../hooks/useAuth"; //integración real sin props
@@ -28,6 +28,49 @@ export const CartProvider = ({ children }: { children: React.ReactNode }) => {
 
   // memoizado con sus propias dependencias reales, para no recrearse en cada render
   const items = useMemo(() => cartsByUser[userKey] ?? [], [cartsByUser, userKey]); // el carrito "activo" se deriva, no se guarda aparte
+
+  // Guarda cuál era el userKey en el render anterior, para poder detectar el
+  // momento exacto en que se pasa de invitado a logueado (no se puede saber
+  // eso mirando solo el userKey actual).
+  const previousUserKeyRef = useRef(userKey);
+
+  useEffect(() => {
+    const previousUserKey = previousUserKeyRef.current;
+
+    // Si antes era "guest" y ahora es un uid real, el usuario se acaba de
+    // loguear (o registrar). Fusionamos lo que había en el carrito de
+    // invitado con su carrito de usuario, en vez de perderlo.
+    if (previousUserKey === "guest" && userKey !== "guest") {
+      setCartsByUser((prev) => {
+        const guestItems = prev["guest"] ?? [];
+        if (guestItems.length === 0) return prev; // no había nada que fusionar
+
+        const userItems = prev[userKey] ?? [];
+        const mergedItems = [...userItems];
+
+        guestItems.forEach((guestItem) => {
+          const existingIndex = mergedItems.findIndex(
+            (item) => item.product.id === guestItem.product.id
+          );
+          if (existingIndex >= 0) {
+            // Ya tenía este producto guardado: sumamos las cantidades en vez de duplicar la fila
+            mergedItems[existingIndex] = {
+              ...mergedItems[existingIndex],
+              quantity: mergedItems[existingIndex].quantity + guestItem.quantity,
+            };
+          } else {
+            mergedItems.push(guestItem);
+          }
+        });
+
+        const next = { ...prev, [userKey]: mergedItems };
+        delete next["guest"]; // ya se fusionó, no lo dejamos pisando el próximo invitado
+        return next;
+      });
+    }
+
+    previousUserKeyRef.current = userKey;
+  }, [userKey]);
 
   //acciones (logica que modifica los estados)
 

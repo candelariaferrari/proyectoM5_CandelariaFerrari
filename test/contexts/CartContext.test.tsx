@@ -41,14 +41,15 @@ vi.mock("../../src/services/users.services", () => ({
 
 // Producto de prueba inventado (con la forma real de Product)
 const mockProduct: Product = {
-  id: "p1",
-  name: "Zapatillas Runner Pro",
-  description: "Producto de prueba para el test",
-  price: 100,
-  stock: 10,
-  categoryId: "explorar",
-  minAge: 3,
-  rating: { rate: 4.5, count: 10 },
+   id: "p1",
+    name: "Bloques de Construcción Arcoíris",
+    description: "Producto de prueba para el test",
+    price: 22990,
+    stock: 24,
+    categoryId: "crear",
+    minAge: 3,
+    imageUrl: "",
+    rating: { rate: 4.8, count: 128 },
 };
 
 // Envuelve el hook bajo test con los dos providers necesarios.
@@ -58,7 +59,7 @@ const wrapper = ({ children }: { children: ReactNode }) => (
   </AuthProvider>
 );
 
-test("el carrito de invitado y el de un usuario logueado están separados", async () => {
+test("el carrito de invitado se fusiona con el del usuario al loguearse", async () => {
   const { result } = renderHook(
     () => ({ auth: useAuth(), cart: useCart() }),
     { wrapper } // componente invisible que llama a los 2 hooks
@@ -78,6 +79,9 @@ test("el carrito de invitado y el de un usuario logueado están separados", asyn
   });
 
   expect(result.current.auth.user?.uid).toBe("user-1");
-  // El carrito del usuario logueado es otro carrito (vacío), no el de invitado
-  expect(result.current.cart.items).toHaveLength(0);
+  // Lo que había agregado como invitado no se pierde: se fusiona con el
+  // carrito del usuario logueado.
+  expect(result.current.cart.items).toHaveLength(1);
+  expect(result.current.cart.items[0].product.id).toBe("p1");
+  expect(result.current.cart.items[0].quantity).toBe(1);
 });
