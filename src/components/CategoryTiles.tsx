@@ -1,14 +1,6 @@
 import { Link } from "react-router-dom";
-import type { CategoryId } from "../types/product.types";
 import { CATEGORY_INFO } from "../constants/categories";
-import { LightbulbIcon, PaletteIcon, HeartIcon, CompassIcon } from "./ui/icons";
 
-const CATEGORY_ICONS: Record<CategoryId, typeof LightbulbIcon> = {
-  pensar: LightbulbIcon,
-  crear: PaletteIcon,
-  compartir: HeartIcon,
-  explorar: CompassIcon,
-};
 export const CategoryTiles = () => {
   return (
     <div>
@@ -17,7 +9,7 @@ export const CategoryTiles = () => {
       </h2>
       <div className="flex gap-3 overflow-x-auto pb-2 -mx-6 px-6 md:mx-0 md:px-0 md:grid md:grid-cols-4 md:overflow-visible md:pb-0">
         {Object.entries(CATEGORY_INFO).map(([id, cat]) => {
-          const Icon = CATEGORY_ICONS[id as CategoryId];
+          const Icon = cat.icon;
           return (
             <Link
               key={id}

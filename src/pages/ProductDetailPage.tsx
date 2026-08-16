@@ -4,6 +4,7 @@ import type { Product } from "../types/product.types";
 import { getProductsById } from "../services/products.services";
 import { useCart } from "../hooks/useCart";
 import { CATEGORY_INFO } from "../constants/categories";
+import { ProductImage } from "../components/ui/ProductImage";
 
 export const ProductDetailPage = (): JSX.Element => {
   const { id } = useParams<{ id: string }>();
@@ -66,10 +67,13 @@ export const ProductDetailPage = (): JSX.Element => {
       </nav>
 
       <div className="grid gap-10 md:grid-cols-2">
-        <div className="w-full aspect-square rounded-card bg-card-surface overflow-hidden">
-          {product.imageUrl && (
-            <img src={product.imageUrl} alt={product.name} className="w-full h-full object-cover" />
-          )}
+        <div className="w-full aspect-square rounded-card overflow-hidden">
+          <ProductImage
+            imageUrl={product.imageUrl}
+            categoryId={product.categoryId}
+            alt={product.name}
+            className="w-full h-full"
+          />
         </div>
 
         <div className="flex flex-col gap-3">

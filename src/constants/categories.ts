@@ -1,4 +1,5 @@
 import type { CategoryId } from "../types/product.types";
+import { LightbulbIcon, PaletteIcon, HeartIcon, CompassIcon, type IconComponent } from "../components/ui/icons";
 
 // Fuente única de info de categorías (label, color, descripción), para no
 // repetir estos datos en CategoryTiles, CategoryFilterSidebar, ProductCard y
@@ -6,33 +7,39 @@ import type { CategoryId } from "../types/product.types";
 // - "color": bg sólido, para tiles/badges de fondo de color.
 // - "textColor": variante oscura del mismo tono, para usar como texto sobre
 //   fondo blanco/claro (mostaza y rosa-coral son muy claros para eso).
+// - "icon": el mismo ícono que ya se usaba a mano en CategoryTiles, ahora
+//   parte de la fuente única (lo reutiliza también ProductImage).
 export const CATEGORY_INFO: Record<
   CategoryId,
-  { label: string; description: string; color: string; textColor: string }
+  { label: string; description: string; color: string; textColor: string; icon: IconComponent }
 > = {
   pensar: {
     label: "Pensar",
     description: "Juegos de mesa y lógica",
     color: "bg-verde-menta",
     textColor: "text-verde-texto",
+    icon: LightbulbIcon,
   },
   crear: {
     label: "Crear",
     description: "Arte, manualidades y creatividad",
     color: "bg-mostaza",
     textColor: "text-mostaza-texto",
+    icon: PaletteIcon,
   },
   compartir: {
     label: "Compartir",
     description: "Para jugar en familia y con amigos",
     color: "bg-rosa-coral",
     textColor: "text-rosa-texto",
+    icon: HeartIcon,
   },
   explorar: {
     label: "Explorar",
     description: "Aire libre, movimiento y aventura",
     color: "bg-azul-cobalto",
     textColor: "text-azul-cobalto",
+    icon: CompassIcon,
   },
 };
 

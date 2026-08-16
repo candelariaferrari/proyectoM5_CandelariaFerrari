@@ -4,6 +4,7 @@ import { useCart } from "../hooks/useCart";
 import { useAuth } from "../hooks/useAuth";
 import { AuthModal } from "../components/AuthModal";
 import { CloseIcon, CartIcon } from "../components/ui/icons";
+import { ProductImage } from "../components/ui/ProductImage";
 
 // Mismo umbral que anunciamos en el banner del header ("Envíos gratis en
 // compras mayores a $50.000"). Si mañana cambia el monto, hay que tocarlo
@@ -124,10 +125,11 @@ export const CartPage = () => {
         <div className="flex flex-col gap-4">
           {items.map(({ product, quantity }) => (
             <div key={product.id} className="flex gap-4 p-4 rounded-card bg-white border border-gris-claro">
-              <img
-                src={product.imageUrl}
+              <ProductImage
+                imageUrl={product.imageUrl}
+                categoryId={product.categoryId}
                 alt={product.name}
-                className="w-20 h-20 rounded-card object-cover bg-card-surface shrink-0"
+                className="w-20 h-20 rounded-card shrink-0"
               />
 
               <div className="flex-1 min-w-0">

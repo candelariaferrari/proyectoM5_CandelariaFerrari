@@ -5,6 +5,7 @@ import { CATEGORY_INFO, CATEGORY_IDS } from "../../constants/categories";
 import { ProductForm } from "../../components/admin/ProductForm";
 import { PencilIcon, TrashIcon } from "../../components/ui/icons";
 import { SearchInput } from "../../components/ui/SearchInput";
+import { ProductImage } from "../../components/ui/ProductImage";
 import type { CategoryId, Product } from "../../types/product.types";
 
 const LOW_STOCK_THRESHOLD = 5;
@@ -132,10 +133,11 @@ export const AdminProductsPage = () => {
                 <tr key={product.id} className="border-t border-gris-claro">
                   <td className="py-3">
                     <div className="flex items-center gap-3">
-                      <img
-                        src={product.imageUrl}
+                      <ProductImage
+                        imageUrl={product.imageUrl}
+                        categoryId={product.categoryId}
                         alt={product.name}
-                        className="w-12 h-12 rounded-card object-cover bg-card-surface shrink-0"
+                        className="w-12 h-12 rounded-card shrink-0"
                       />
                       <span className="font-bold text-azul-noche">{product.name}</span>
                     </div>
@@ -182,10 +184,11 @@ export const AdminProductsPage = () => {
                 key={product.id}
                 className="flex items-center gap-4 p-4 rounded-card bg-white shadow-card"
               >
-                <img
-                  src={product.imageUrl}
+                <ProductImage
+                  imageUrl={product.imageUrl}
+                  categoryId={product.categoryId}
                   alt={product.name}
-                  className="w-16 h-16 rounded-card object-cover bg-card-surface shrink-0"
+                  className="w-16 h-16 rounded-card shrink-0"
                 />
 
                 <div className="flex-1 min-w-0">

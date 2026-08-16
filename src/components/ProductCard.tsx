@@ -2,6 +2,7 @@ import { Link } from "react-router-dom";
 import type { Product } from "../types/product.types";
 import { CATEGORY_INFO } from "../constants/categories";
 import { useCart } from "../hooks/useCart"; // 👈 sin esto en props, evita el prop drilling
+import { ProductImage } from "./ui/ProductImage";
 
 interface ProductCardProps {
   product: Product; // solo el dato del ítem, no funciones de cart
@@ -14,10 +15,13 @@ export const ProductCard = ({ product }: ProductCardProps) => {
   return (
     <div className="bg-white rounded-card p-3 flex flex-col gap-1.5 shadow-card">
       <Link to={`/producto/${product.id}`}>
-        <div className="w-full aspect-square rounded-input bg-card-surface overflow-hidden">
-          {product.imageUrl && (
-            <img src={product.imageUrl} alt={product.name} className="w-full h-full object-cover" />
-          )}
+        <div className="w-full aspect-square rounded-input overflow-hidden">
+          <ProductImage
+            imageUrl={product.imageUrl}
+            categoryId={product.categoryId}
+            alt={product.name}
+            className="w-full h-full"
+          />
         </div>
       </Link>
       <div className={`text-[10px] uppercase tracking-wide font-semibold ${category.textColor}`}>
