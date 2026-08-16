@@ -742,3 +742,27 @@ Armé un componente `ProductImage` que reemplaza todos los `<img>` de producto d
 Para el color y el ícono no inventé nada nuevo: ya existían por separado (`CATEGORY_INFO` tenía los colores, y `CategoryTiles` tenía un mapa de íconos por categoría escrito a mano). Junté los dos en `CATEGORY_INFO`, agregándole un campo `icon`, así quedan en un solo lugar y cualquier componente que necesite "el color o el ícono de esta categoría" tiene una sola fuente de verdad — mismo criterio de reutilización que ya habíamos aplicado en el panel de admin.
 
 Aprendizaje extra: el manejo con `onError` en el `<img>` no es solo para el caso "no hay imagen todavía" — también cubre el caso de una URL rota o que dejó de existir, sin que haya que detectarlo de antemano.
+
+
+---
+
+## Separar el hook de paginación en uno genérico y uno específico
+
+### Contexto
+
+Armé un hook `useProductsPagination` con la paginación por cursor de Firestore, pensado para el catálogo de cliente. Cuando después migramos también la tabla de productos del admin a cursor, me di cuenta de que ese hook estaba pegado a productos: llamaba directo a `listProducts`/`countProducts`, así que no serviría tal cual el día de mañana para paginar órdenes o usuarios.
+
+### Prompt
+
+> consulta antes de hacer el commit, ¿no quedaría más genérico volver a ponerle el nombre de los archivos que me dijiste que borrara, porque la paginación la podemos usar en las órdenes, en los usuarios o no?
+
+### Qué decidí
+
+Separé la lógica en dos capas en vez de una:
+
+- `useCursorPagination<T, C>`: no sabe nada de productos ni de ningún dominio en particular. Recibe una función `fetchPage` (cómo pedir una página) y `fetchCount` (cómo contar el total), y se encarga solo de la mecánica de cursores, página actual, y cuándo resetear a la página 1 cuando cambia el filtro.
+- `useProductsPagination`: una capa fina arriba, que sabe traducir `(categoryId, searchPrefix)` en llamadas a `listProducts`/`countProducts` y se las pasa al hook genérico.
+
+Con esta separación, el día que armemos paginación para órdenes o usuarios, solo hace falta escribir el equivalente de `useProductsPagination` para ese dominio (`useOrdersPagination`, etc.) — la parte difícil (cursores, reseteo de página, conteo) ya está resuelta una sola vez.
+
+Aprendizaje: separar "la mecánica genérica" de "el caso de uso específico" no siempre hay que pensarlo desde el principio — a veces se ve más claro recién cuando aparece el segundo lugar que necesita lo mismo (acá fue el admin). Ahí vale la pena parar y extraer la parte compartida, en vez de copiar y pegar la lógica de cursores de nuevo.
