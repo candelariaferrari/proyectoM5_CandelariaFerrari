@@ -1,10 +1,8 @@
-import { createContext, useEffect, useMemo, useState, useCallback } from "react";
+import { createContext, useCallback, useMemo, useState } from "react";
 import type { Product, CategoryId } from "../types/product.types";
-import {
-  getProducts,
-  getProductsByCategory,
-  getProductsByNamePrefix,
-} from "../services/products.services";
+import { useProductsPagination } from "../hooks/useProductsPagination";
+
+const PAGE_SIZE = 12;
 
 interface ProductsContextType {
   products: Product[];
@@ -13,6 +11,11 @@ interface ProductsContextType {
   setCategoryFilter: (category: CategoryId | null) => void;
   searchTerm: string;
   setSearchTerm: (term: string) => void;
+  currentPage: number;
+  totalPages: number;
+  totalCount: number;
+  goToNextPage: () => void;
+  goToPreviousPage: () => void;
 }
 
 // eslint-disable-next-line react-refresh/only-export-components
@@ -25,33 +28,35 @@ export const ProductsProvider = ({
 }: {
   children: React.ReactNode;
 }) => {
-  const [products, setProducts] = useState<Product[]>([]);
-  const [loading, setLoading] = useState(true);
   const [categoryFilter, setCategoryFilterState] = useState<CategoryId | null>(
     null,
   );
   const [searchTerm, setSearchTermState] = useState("");
+  const searchPrefix = searchTerm.toLowerCase();
 
-  // Prioridad: si hay texto de búsqueda, ese manda (ignora la categoría);
-  // si no hay búsqueda pero sí categoría, filtra por categoría; si no hay
-  // ninguna de las dos, trae todo.
-  useEffect(() => {
-    // Falso positivo conocido de esta regla (nueva en eslint-plugin-react-hooks
-    // v7) con el patrón estándar de fetch: mostrar loading mientras se pide
-    // el dato de nuevo cada vez que cambia la dependencia.
-    // https://github.com/react/react/issues/34743
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    setLoading(true);
+  // Prioridad: si hay texto de búsqueda, ese manda -- por eso acá le
+  // mandamos `categoryId: null` al hook cuando hay búsqueda activa, sin
+  // borrar `categoryFilter` en sí (así, si el usuario borra el texto,
+  // vuelve a ver su categoría sin tener que reseleccionarla).
+  const effectiveCategoryId = searchPrefix ? null : categoryFilter;
 
-    const fetchProducts = searchTerm
-      ? getProductsByNamePrefix(searchTerm)
-      : categoryFilter
-      ? getProductsByCategory(categoryFilter)
-      : getProducts();
+  const {
+    products,
+    loading,
+    currentPage,
+    totalPages,
+    totalCount,
+    goToNextPage,
+    goToPreviousPage,
+  } = useProductsPagination({
+    categoryId: effectiveCategoryId,
+    searchPrefix,
+    pageSize: PAGE_SIZE,
+  });
 
-    fetchProducts.then(setProducts).finally(() => setLoading(false));
-  }, [categoryFilter, searchTerm]);
-
+  // No hace falta resetear la página a mano acá: `useCursorPagination`
+  // ya vuelve a la página 1 solo en cuanto detecta que cambió el filtro
+  // (categoría o búsqueda).
   const setCategoryFilter = useCallback((category: CategoryId | null) => {
     setCategoryFilterState(category);
   }, []);
@@ -68,8 +73,25 @@ export const ProductsProvider = ({
       setCategoryFilter,
       searchTerm,
       setSearchTerm,
+      currentPage,
+      totalPages,
+      totalCount,
+      goToNextPage,
+      goToPreviousPage,
     }),
-    [products, loading, categoryFilter, setCategoryFilter, searchTerm, setSearchTerm],
+    [
+      products,
+      loading,
+      categoryFilter,
+      setCategoryFilter,
+      searchTerm,
+      setSearchTerm,
+      currentPage,
+      totalPages,
+      totalCount,
+      goToNextPage,
+      goToPreviousPage,
+    ],
   );
 
   return (
