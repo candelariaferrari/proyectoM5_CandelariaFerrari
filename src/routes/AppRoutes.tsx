@@ -3,6 +3,11 @@ import { HomePage } from "../pages/HomePage";
 import { ProductsPage } from "../pages/ProductsPage";
 import { ProductDetailPage } from "../pages/ProductDetailPage";
 import { CartPage } from "../pages/CartPage";
+import { AdminLayout } from "../components/admin/AdminLayout";
+import { AdminDashboardPage } from "../pages/admin/AdminDashboardPage";
+import { AdminProductsPage } from "../pages/admin/AdminProductsPage";
+import { AdminOrdersPage } from "../pages/admin/AdminOrdersPage";
+import { ProtectedRoute } from "./ProtectedRoute";
 
 export const AppRoutes = (): JSX.Element => {
   return (
@@ -11,6 +16,18 @@ export const AppRoutes = (): JSX.Element => {
       <Route path="/productos" element={<ProductsPage />} />
       <Route path="/producto/:id" element={<ProductDetailPage />} />
       <Route path="/carrito" element={<CartPage />} />
+      <Route
+        path="/admin"
+        element={
+          <ProtectedRoute adminOnly>
+            <AdminLayout />
+          </ProtectedRoute>
+        }
+      >
+        <Route index element={<AdminDashboardPage />} />
+        <Route path="productos" element={<AdminProductsPage />} />
+        <Route path="ordenes" element={<AdminOrdersPage />} />
+      </Route>
     </Routes>
   );
 };

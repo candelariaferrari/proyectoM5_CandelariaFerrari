@@ -6,6 +6,7 @@ import { useProducts } from "../../hooks/useProducts";
 import { AuthModal } from "../AuthModal";
 import { SearchInput } from "../ui/SearchInput";
 import { UserIcon, CartIcon, SearchIcon } from "../ui/icons";
+import { MundoLogo } from "../ui/MundoLogo";
 
 export const Header = () => {
   const { user, isAuthenticated, logout } = useAuth();
@@ -30,15 +31,8 @@ export const Header = () => {
       </div>
 
       <div className="flex items-center justify-between gap-4 px-6 py-4 max-w-[1280px] mx-auto border-b border-gris-claro">
-        <Link to="/" className="flex flex-col leading-none">
-          <span className="font-heading font-extrabold text-3xl md:text-4xl">
-            <span className="text-mostaza">M</span>
-            <span className="text-azul-cobalto">U</span>
-            <span className="text-rosa-coral">N</span>
-            <span className="text-azul-cobalto">D</span>
-            <span className="text-verde-menta">O</span>
-          </span>
-          <span className="text-[10px] md:text-[12px] font-bold text-azul-noche/60">Ideas para jugar.</span>
+        <Link to="/">
+          <MundoLogo />
         </Link>
 
         {/* A partir de md: todo el header completo, en una sola fila */}
@@ -52,6 +46,11 @@ export const Header = () => {
           <span className="text-md font-bold text-azul-noche/30 cursor-not-allowed" title="Próximamente">
             Mis pedidos
           </span>
+          {user?.role === "admin" && (
+            <Link to="/admin" className="text-md font-bold text-azul-cobalto">
+              Admin
+            </Link>
+          )}
         </nav>
 
         <div className="hidden md:block flex-1 min-w-[160px] max-w-xs">

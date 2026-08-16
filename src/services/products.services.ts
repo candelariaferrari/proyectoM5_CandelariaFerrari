@@ -1,4 +1,4 @@
-import { collection, getDocs, doc, getDoc, query, where, orderBy, startAt, endAt } from "firebase/firestore";
+import { collection, getDocs, doc, getDoc, query, where, orderBy, startAt, endAt, addDoc, updateDoc, deleteDoc } from "firebase/firestore";
 import { db } from "../config/firebase";
 import type { Product, CategoryId } from "../types/product.types";
 
@@ -60,4 +60,32 @@ export const getProductsByNamePrefix = async (
     id: doc.id,
     ...doc.data(),
   } as Product));
+};
+
+// Crea un producto nuevo. `nameLower` se calcula acá (no lo manda el form)
+// porque lo necesita getProductsByNamePrefix para poder buscar por prefijo.
+export const createProduct = async (
+  data: Omit<Product, "id">
+): Promise<void> => {
+  await addDoc(collection(db, "products"), {
+    ...data,
+    nameLower: data.name.toLowerCase(),
+  });
+};
+
+// Edita un producto existente. Si viene `name`, recalculamos `nameLower`
+// para que la búsqueda no quede desincronizada del nombre nuevo.
+export const updateProduct = async (
+  id: string,
+  data: Partial<Omit<Product, "id">>
+): Promise<void> => {
+  const ref = doc(db, "products", id);
+  await updateDoc(ref, {
+    ...data,
+    ...(data.name ? { nameLower: data.name.toLowerCase() } : {}),
+  });
+};
+
+export const deleteProduct = async (id: string): Promise<void> => {
+  await deleteDoc(doc(db, "products", id));
 };
