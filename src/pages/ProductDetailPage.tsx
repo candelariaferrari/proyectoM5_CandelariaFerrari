@@ -16,6 +16,11 @@ export const ProductDetailPage = (): JSX.Element => {
   useEffect(() => {
     if (!id) return;
 
+    // Falso positivo conocido de esta regla (nueva en eslint-plugin-react-hooks
+    // v7) con el patrón estándar de fetch: mostrar loading mientras se pide
+    // el dato de nuevo cada vez que cambia la dependencia.
+    // https://github.com/react/react/issues/34743
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setLoading(true);
     setQuantity(1);
     getProductsById(id).then((result) => {

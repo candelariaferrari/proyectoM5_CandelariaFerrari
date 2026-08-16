@@ -36,6 +36,11 @@ export const ProductsProvider = ({
   // si no hay búsqueda pero sí categoría, filtra por categoría; si no hay
   // ninguna de las dos, trae todo.
   useEffect(() => {
+    // Falso positivo conocido de esta regla (nueva en eslint-plugin-react-hooks
+    // v7) con el patrón estándar de fetch: mostrar loading mientras se pide
+    // el dato de nuevo cada vez que cambia la dependencia.
+    // https://github.com/react/react/issues/34743
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setLoading(true);
 
     const fetchProducts = searchTerm
