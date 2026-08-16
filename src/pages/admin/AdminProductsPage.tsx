@@ -39,9 +39,14 @@ export const AdminProductsPage = () => {
   );
   const [deletingId, setDeletingId] = useState<string | null>(null);
 
-  // A diferencia del catálogo de cliente, acá categoría y búsqueda se
-  // combinan (no se pisan entre sí) -- por eso le mandamos las dos tal
-  // cual al hook, sin la lógica de prioridad que tiene ProductsContext.
+  const searchPrefix = search.toLowerCase();
+
+  // Misma prioridad que el catálogo de cliente: si hay búsqueda, esa
+  // manda (se busca en todo el catálogo, sin importar la categoría
+  // seleccionada) -- es el comportamiento esperado en cualquier
+  // e-commerce, y mantiene un solo criterio en todo el proyecto.
+  const effectiveCategoryId = searchPrefix ? null : categoryFilter;
+
   const {
     products,
     loading,
@@ -52,8 +57,8 @@ export const AdminProductsPage = () => {
     goToPreviousPage,
     refetch,
   } = useProductsPagination({
-    categoryId: categoryFilter,
-    searchPrefix: search.toLowerCase(),
+    categoryId: effectiveCategoryId,
+    searchPrefix,
     pageSize: PAGE_SIZE,
   });
 
@@ -85,7 +90,7 @@ export const AdminProductsPage = () => {
           onClick={() => setIsCreating(true)}
           className="text-sm font-extrabold text-azul-noche bg-mostaza px-5 py-2.5 rounded-pill shadow-cta"
         >
-          + Nuevo
+          + Nuevo Producto
         </button>
       </div>
 

@@ -83,19 +83,6 @@ const buildFilterConstraints = ({
   categoryId,
   searchPrefix,
 }: Pick<ListProductsParams, "categoryId" | "searchPrefix">): QueryConstraint[] => {
-  if (searchPrefix && categoryId) {
-    // Búsqueda + categoría combinadas (las usa el admin, que a diferencia
-    // del catálogo de cliente no descarta la categoría al buscar). Pide
-    // un índice compuesto (categoryId + nameLower) -- Firestore tira el
-    // link para crearlo con un clic la primera vez que corre.
-    return [
-      where("categoryId", "==", categoryId),
-      orderBy("nameLower"),
-      startAt(searchPrefix),
-      endAt(searchPrefix + ""),
-    ];
-  }
-
   if (searchPrefix) {
     return [
       orderBy("nameLower"),
