@@ -721,3 +721,24 @@ Para que esto funcione hubo que configurar varias cosas del lado de AWS, cada un
 - Un CORS en el bucket, que es lo que le da permiso al navegador (un origen distinto a S3) para poder hacer ese `PUT` directo.
 
 También aprendí que las funciones de `/api` no las podés probar con `npm run dev` normal (eso es solo Vite, el frontend) — hace falta la CLI de Vercel (`vercel dev`) o, como terminamos haciendo, deployar directo a Vercel conectando el repo de GitHub, para probar la función real. Esto adelantó una tarea que iba a ser de las últimas del proyecto (el deploy), pero tuvo sentido hacerlo ahora para poder probar S3 de verdad.
+
+
+---
+
+## Un cuadrado de color en vez de imagen rota
+
+### Contexto
+
+Al planear el seeder de 60 productos, surgió el problema de que no iba a tener las 60 imágenes reales para subir a S3 (por ahora tengo 30). Mostrar el ícono de imagen rota que pone el navegador por default para esos 30 productos sin foto se ve descuidado, poco profesional.
+
+### Prompt
+
+> para que quede todo más armonioso y "estético", en vez de verse una imagen rota, ¿se puede generar que si el admin no sube una imagen se genere un cuadrado (donde iría la img) del color de cada categoría?
+
+### Qué decidí
+
+Armé un componente `ProductImage` que reemplaza todos los `<img>` de producto del proyecto (card del catálogo, detalle, carrito, tabla y cards del admin). Su lógica: si el producto no tiene `imageUrl`, o si la que tiene falla al cargar (link roto, todavía no la subimos), muestra un `<div>` del color de la categoría del producto con su ícono correspondiente — en vez de nada, o del ícono roto del navegador.
+
+Para el color y el ícono no inventé nada nuevo: ya existían por separado (`CATEGORY_INFO` tenía los colores, y `CategoryTiles` tenía un mapa de íconos por categoría escrito a mano). Junté los dos en `CATEGORY_INFO`, agregándole un campo `icon`, así quedan en un solo lugar y cualquier componente que necesite "el color o el ícono de esta categoría" tiene una sola fuente de verdad — mismo criterio de reutilización que ya habíamos aplicado en el panel de admin.
+
+Aprendizaje extra: el manejo con `onError` en el `<img>` no es solo para el caso "no hay imagen todavía" — también cubre el caso de una URL rota o que dejó de existir, sin que haya que detectarlo de antemano.
