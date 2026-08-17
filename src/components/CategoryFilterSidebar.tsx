@@ -21,10 +21,10 @@ export const CategoryFilterSidebar = ({
   onClearFilters,
 }: CategoryFilterSidebarProps) => {
   return (
-    <aside className="flex flex-col gap-6 md:h-fit">
+    <aside className="flex flex-col gap-6 md:h-fit min-w-0">
       <div>
         <h3 className="text-xs font-bold uppercase text-azul-noche/60 mb-2">Tipo de juego</h3>
-        <div className="flex gap-2 overflow-x-auto pb-1 md:flex-col md:gap-1.5 md:overflow-visible md:pb-0">
+        <div className="flex gap-2 overflow-x-auto overflow-y-hidden pb-1 -mx-6 px-6 md:mx-0 md:px-0 md:flex-col md:gap-1.5 md:overflow-visible">
           <button
             onClick={() => onSelectCategory(null)}
             className={`shrink-0 text-left text-sm font-bold px-4 py-2.5 rounded-pill md:rounded-input ${
