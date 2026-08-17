@@ -766,3 +766,32 @@ Separé la lógica en dos capas en vez de una:
 Con esta separación, el día que armemos paginación para órdenes o usuarios, solo hace falta escribir el equivalente de `useProductsPagination` para ese dominio (`useOrdersPagination`, etc.) — la parte difícil (cursores, reseteo de página, conteo) ya está resuelta una sola vez.
 
 Aprendizaje: separar "la mecánica genérica" de "el caso de uso específico" no siempre hay que pensarlo desde el principio — a veces se ve más claro recién cuando aparece el segundo lugar que necesita lo mismo (acá fue el admin). Ahí vale la pena parar y extraer la parte compartida, en vez de copiar y pegar la lógica de cursores de nuevo.
+
+
+---
+
+## Recargar una ruta que no sea el inicio tiraba 404 en Vercel
+
+### Contexto
+
+Investigando en vivo (con herramientas de browser automation) el bug de "buscar un producto y no poder abrir su detalle", probé entrar directo a `/productos` en el deploy de Vercel y me encontré con un 404 aparte, sin relación con ese bug. Antes de arreglarlo le pregunté a Cande qué tan grave era, y confirmó que pasaba en todas las rutas menos el inicio.
+
+### Prompt
+
+> dale sigamos con ese error, veo que sucede con todas las rutas excepto la de incio, con la de carrito también pasa , con las de admin. Lo otro si quedo todo listo
+
+### Qué aprendí
+
+Es un problema típico de las SPA (single-page apps) deployadas en Vercel. React Router maneja las rutas enteramente en el navegador, con JavaScript: cuando navegás haciendo click en un `<Link>` dentro de la app, nunca hay un pedido nuevo al servidor, así que todo funciona. Pero si recargás la página o entrás directo por la URL a `/carrito` o `/admin`, el navegador le pide *esa ruta puntual* al servidor de Vercel — y como no existe un archivo `carrito.html` ni `admin.html` (todo es un solo `index.html`), Vercel devuelve 404 antes de que React Router llegue siquiera a cargar.
+
+La solución es un archivo `vercel.json` con una regla de "rewrite": para cualquier ruta que no sea una función de `/api`, servir igual `index.html`, y dejar que React Router se encargue de mostrar la pantalla correcta una vez que el JS carga en el navegador:
+
+```json
+{
+  "rewrites": [
+    { "source": "/((?!api/).*)", "destination": "/index.html" }
+  ]
+}
+```
+
+El detalle importante es excluir `/api` explícitamente con ese lookahead negativo (`(?!api/)`) — si el rewrite fuera un catch-all de verdad (`/(.*)`), corría el riesgo de interceptar también los pedidos a `api/presign.ts` (la función serverless de S3) y devolver `index.html` en vez de ejecutar la función.
