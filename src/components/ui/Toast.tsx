@@ -1,7 +1,5 @@
 import { useToast } from "../../hooks/useToast";
 
-// Píldora oscura con puntito de color + mensaje, igual al diseño del mockup.
-// Vive una sola vez en App.tsx y muestra lo que haya en el ToastContext.
 export const Toast = () => {
   const { toast } = useToast();
 

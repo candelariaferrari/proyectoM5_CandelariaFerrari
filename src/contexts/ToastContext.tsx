@@ -1,8 +1,7 @@
 import { createContext, useCallback, useMemo, useRef, useState } from "react";
 
 // 'ok' = verde (agregar, crear, actualizar). 'danger' = rosa (eliminar) —
-// no es un error, pero es una acción destructiva, y así la distingue el
-// mockup (MUNDO Desktop Mockup.dc.html) también.
+// no es un error, pero es una acción destructiva
 export type ToastTone = "ok" | "danger";
 
 interface ToastState {
