@@ -12,15 +12,19 @@ export const AdminDashboardPage = () => {
 
   useEffect(() => {
     countProducts().then(setProductCount); // agregacion del lado del servidor: no hace falta traer los 60 productos solo para contarlos
-    getUser().then((users) => setUserCount(users.length));
-    listAllOrders().then((orders) => {
-      setOrderCount(orders.length);
-      // Una orden cancelada no es una venta real: no la contamos.
-      const sales = orders
-        .filter((order) => order.status !== "cancelled")
-        .reduce((sum, order) => sum + order.total, 0);
-      setTotalSales(sales);
-    });
+    getUser()
+      .then((users) => setUserCount(users.length))
+      .catch(() => setUserCount(null));
+    listAllOrders()
+      .then((orders) => {
+        setOrderCount(orders.length);
+        // Una orden cancelada no es una venta real: no la contamos.
+        const sales = orders
+          .filter((order) => order.status !== "cancelled")
+          .reduce((sum, order) => sum + order.total, 0);
+        setTotalSales(sales);
+      })
+      .catch(() => setOrderCount(null));
   }, []);
 
   return (

@@ -10,13 +10,15 @@ export const CustomerOrdersPage = () => {
   const { user } = useAuth();
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
-  // Detalle de cada pedido: 
+  const [loadError, setLoadError] = useState(false);
+  // Detalle de cada pedido: expandir/colapsar en la lista, sin ir a otra pantalla.
   const [expandedOrderId, setExpandedOrderId] = useState<string | null>(null);
 
   useEffect(() => {
     if (!user) return;
     listUserOrders(user.uid)
       .then(setOrders)
+      .catch(() => setLoadError(true))
       .finally(() => setLoading(false));
   }, [user]);
 
@@ -24,6 +26,14 @@ export const CustomerOrdersPage = () => {
     return (
       <section className="max-w-[1280px] mx-auto px-6 py-16 text-center">
         <p className="text-sm text-azul-noche/60">Cargando tus pedidos...</p>
+      </section>
+    );
+  }
+
+  if (loadError) {
+    return (
+      <section className="max-w-[1280px] mx-auto px-6 py-16 text-center">
+        <p className="text-sm text-azul-noche/60">No pudimos cargar tus pedidos. Probá de nuevo en un momento.</p>
       </section>
     );
   }

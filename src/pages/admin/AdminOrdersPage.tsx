@@ -57,12 +57,19 @@ export const AdminOrdersPage = () => {
   const [updatingId, setUpdatingId] = useState<string | null>(null);
 
   useEffect(() => {
-    Promise.all([listAllOrders(), getUser()])
-      .then(([allOrders, allUsers]) => {
-        setOrders(allOrders);
-        setUsersById(Object.fromEntries(allUsers.map((u) => [u.uid, u.email])));
-      })
+    // Las dos cargas van independientes: si falla el listado de usuarios
+    // (por ejemplo por permisos) no queremos que eso tire abajo también
+    // las órdenes -- en el peor caso, mostramos el uid en vez del email.
+    listAllOrders()
+      .then(setOrders)
+      .catch(() => showToast("No pudimos cargar las órdenes.", "danger"))
       .finally(() => setLoading(false));
+
+    getUser()
+      .then((allUsers) => setUsersById(Object.fromEntries(allUsers.map((u) => [u.uid, u.email]))))
+      .catch(() => {
+        /* best-effort: si falla, el email queda como uid en la tabla */
+      });
   }, []);
 
   const handleStatusChange = async (order: Order, status: OrderStatus) => {

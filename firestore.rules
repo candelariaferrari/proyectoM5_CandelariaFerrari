@@ -21,8 +21,10 @@ service cloud.firestore {
 
     //* USERS
     match /users/{userId} {
-      // Cada usuario lee solo su propio perfil
-      allow read: if isSignedIn() && request.auth.uid == userId;
+      // Cada usuario lee su propio perfil; el admin también puede leer
+      // (y listar) todos los perfiles: lo necesita el dashboard y la
+      // gestión de órdenes, para mostrar el email de cada cliente.
+      allow read: if isSignedIn() && (request.auth.uid == userId || isAdmin());
       // creamos el perfil desde el cliente al registrarse
       // (services/users.services.ts, patrón "get or create"), así que
       // necesitamos permitir crear (no editar) el propio doc.
