@@ -1,5 +1,6 @@
 import { useState, type FormEvent, type ChangeEvent } from "react";
 import { Modal } from "../ui/Modal";
+import { FormField, fieldInputClassName } from "../ui/FormField";
 import { createProduct, updateProduct } from "../../services/products.services";
 import { uploadProductImage } from "../../services/upload.services";
 import { useToast } from "../../hooks/useToast";
@@ -7,6 +8,10 @@ import { CATEGORY_INFO, CATEGORY_IDS } from "../../constants/categories";
 import type { Product, CategoryId, MinAge } from "../../types/product.types";
 
 const MIN_AGE_OPTIONS: MinAge[] = [1, 3, 6, 8, 10, 12];
+const MAX_NAME_LENGTH = 60;
+const MAX_DESCRIPTION_LENGTH = 300;
+
+type ProductFormErrors = Partial<Record<"name" | "description" | "price" | "stock", string>>;
 
 interface ProductFormProps {
   product: Product | null; // null = alta, Product = edición
@@ -29,6 +34,37 @@ export const ProductForm = ({ product, onClose, onSaved }: ProductFormProps) => 
   const [imageError, setImageError] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
+  const [fieldErrors, setFieldErrors] = useState<ProductFormErrors>({});
+
+  // Qué se puede y qué no: nombre/descripción no pueden quedar vacíos (ni
+  // ser solo espacios) ni pasarse del largo máximo; precio tiene que ser
+  // mayor a $0 (0 no es un precio válido); stock no puede ser negativo (0
+  // sí es válido, significa "sin stock", ya lo mostramos así en la UI).
+  const validate = (): ProductFormErrors => {
+    const nextErrors: ProductFormErrors = {};
+
+    if (!name.trim()) {
+      nextErrors.name = "El nombre es obligatorio.";
+    } else if (name.trim().length > MAX_NAME_LENGTH) {
+      nextErrors.name = `El nombre no puede superar los ${MAX_NAME_LENGTH} caracteres.`;
+    }
+
+    if (!description.trim()) {
+      nextErrors.description = "La descripción es obligatoria.";
+    } else if (description.trim().length > MAX_DESCRIPTION_LENGTH) {
+      nextErrors.description = `La descripción no puede superar los ${MAX_DESCRIPTION_LENGTH} caracteres.`;
+    }
+
+    if (price === "" || Number(price) <= 0) {
+      nextErrors.price = "El precio tiene que ser mayor a $0.";
+    }
+
+    if (stock === "" || Number(stock) < 0) {
+      nextErrors.stock = "El stock no puede ser negativo.";
+    }
+
+    return nextErrors;
+  };
 
   // Cuando el admin elige un archivo, lo subimos enseguida (no esperamos al
   // submit del form): pedimos la URL prefirmada a nuestra función serverless
@@ -53,14 +89,19 @@ export const ProductForm = ({ product, onClose, onSaved }: ProductFormProps) => 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     setError(null);
+
+    const validationErrors = validate();
+    setFieldErrors(validationErrors);
+    if (Object.keys(validationErrors).length > 0) return;
+
     setSubmitting(true);
 
     // Firestore no acepta `undefined` como valor de campo (tira error), así
     // que si no hay imagen, directamente no incluimos la key en vez de
     // mandarla en undefined.
     const data = {
-      name,
-      description,
+      name: name.trim(),
+      description: description.trim(),
       price: Number(price),
       stock: Number(stock),
       categoryId,
@@ -87,56 +128,50 @@ export const ProductForm = ({ product, onClose, onSaved }: ProductFormProps) => 
 
   return (
     <Modal onClose={onClose} maxWidthClassName="max-w-lg">
-      <form onSubmit={handleSubmit} className="p-6 flex flex-col gap-3">
+      <form onSubmit={handleSubmit} noValidate className="p-6 flex flex-col gap-3">
         <h2 className="font-heading font-extrabold text-xl text-azul-noche mb-1">
           {isEditing ? "Editar producto" : "Nuevo producto"}
         </h2>
 
-        <label className="text-sm font-bold text-azul-noche">
-          Nombre
+        <FormField label="Nombre" error={fieldErrors.name}>
           <input
-            required
             value={name}
+            maxLength={MAX_NAME_LENGTH}
             onChange={(e) => setName(e.target.value)}
-            className="w-full mt-1 border border-gris-claro rounded-input px-3 py-2 text-sm font-normal"
+            className={fieldInputClassName(!!fieldErrors.name)}
           />
-        </label>
+        </FormField>
 
-        <label className="text-sm font-bold text-azul-noche">
-          Descripción
+        <FormField label="Descripción" error={fieldErrors.description}>
           <textarea
-            required
             value={description}
+            maxLength={MAX_DESCRIPTION_LENGTH}
             onChange={(e) => setDescription(e.target.value)}
             rows={3}
-            className="w-full mt-1 border border-gris-claro rounded-input px-3 py-2 text-sm font-normal resize-none"
+            className={`${fieldInputClassName(!!fieldErrors.description)} resize-none`}
           />
-        </label>
+        </FormField>
 
         <div className="grid grid-cols-2 gap-3">
-          <label className="text-sm font-bold text-azul-noche">
-            Precio
+          <FormField label="Precio" error={fieldErrors.price}>
             <input
-              required
               type="number"
               min={0}
               value={price}
               onChange={(e) => setPrice(e.target.value)}
-              className="w-full mt-1 border border-gris-claro rounded-input px-3 py-2 text-sm font-normal"
+              className={fieldInputClassName(!!fieldErrors.price)}
             />
-          </label>
+          </FormField>
 
-          <label className="text-sm font-bold text-azul-noche">
-            Stock
+          <FormField label="Stock" error={fieldErrors.stock}>
             <input
-              required
               type="number"
               min={0}
               value={stock}
               onChange={(e) => setStock(e.target.value)}
-              className="w-full mt-1 border border-gris-claro rounded-input px-3 py-2 text-sm font-normal"
+              className={fieldInputClassName(!!fieldErrors.stock)}
             />
-          </label>
+          </FormField>
 
           <label className="text-sm font-bold text-azul-noche">
             Categoría

@@ -1,12 +1,21 @@
 import { useState, type FormEvent } from "react";
 import { useAuth } from "../hooks/useAuth";
 import { Modal } from "./ui/Modal";
+import { FormField, fieldInputClassName } from "./ui/FormField";
 
 type AuthTab = "login" | "signup";
 
 interface AuthModalProps {
   onClose: () => void;
 }
+
+// Mismo chequeo simple de forma de email que alcanza para este proyecto:
+// no busca cubrir el 100% del RFC, solo detectar los casos obvios de "esto
+// no es un email" (sin @, sin dominio) antes de mandarlo a Firebase.
+const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const MIN_PASSWORD_LENGTH = 6;
+
+type AuthFormErrors = Partial<Record<"email" | "password", string>>;
 
 export const AuthModal = ({ onClose }: AuthModalProps) => {
   const { login, signUp, loginWithGoogle } = useAuth();
@@ -15,10 +24,34 @@ export const AuthModal = ({ onClose }: AuthModalProps) => {
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
+  const [fieldErrors, setFieldErrors] = useState<AuthFormErrors>({});
+
+  const validate = (): AuthFormErrors => {
+    const nextErrors: AuthFormErrors = {};
+
+    if (!email.trim()) {
+      nextErrors.email = "El email es obligatorio.";
+    } else if (!EMAIL_PATTERN.test(email.trim())) {
+      nextErrors.email = "Ingresá un email válido.";
+    }
+
+    if (!password) {
+      nextErrors.password = "La contraseña es obligatoria.";
+    } else if (password.length < MIN_PASSWORD_LENGTH) {
+      nextErrors.password = `La contraseña tiene que tener al menos ${MIN_PASSWORD_LENGTH} caracteres.`;
+    }
+
+    return nextErrors;
+  };
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     setError(null);
+
+    const validationErrors = validate();
+    setFieldErrors(validationErrors);
+    if (Object.keys(validationErrors).length > 0) return;
+
     setSubmitting(true);
     try {
       if (tab === "login") {
@@ -72,24 +105,26 @@ export const AuthModal = ({ onClose }: AuthModalProps) => {
           </button>
         </div>
 
-        <form onSubmit={handleSubmit} className="flex flex-col gap-3">
-          <input
-            type="email"
-            required
-            placeholder="nombre@correo.com"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            className="border border-gris-claro rounded-input px-3 py-2 text-sm"
-          />
-          <input
-            type="password"
-            required
-            minLength={6}
-            placeholder="••••••••"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            className="border border-gris-claro rounded-input px-3 py-2 text-sm"
-          />
+        <form onSubmit={handleSubmit} noValidate className="flex flex-col gap-3">
+          <FormField label="Email" error={fieldErrors.email}>
+            <input
+              type="email"
+              placeholder="nombre@correo.com"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              className={fieldInputClassName(!!fieldErrors.email)}
+            />
+          </FormField>
+
+          <FormField label="Contraseña" error={fieldErrors.password}>
+            <input
+              type="password"
+              placeholder="••••••••"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              className={fieldInputClassName(!!fieldErrors.password)}
+            />
+          </FormField>
 
           {error && <p className="text-danger text-xs">{error}</p>}
 
