@@ -2,17 +2,25 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { countProducts } from "../../services/products.services";
 import { getUser } from "../../services/users.services";
+import { listAllOrders } from "../../services/orders.services";
 
 export const AdminDashboardPage = () => {
   const [productCount, setProductCount] = useState<number | null>(null);
   const [userCount, setUserCount] = useState<number | null>(null);
+  const [orderCount, setOrderCount] = useState<number | null>(null);
+  const [totalSales, setTotalSales] = useState<number | null>(null);
 
   useEffect(() => {
-    // Solo mostramos lo que podemos calcular de verdad. Ventas y Órdenes
-    // dependen de la colección "orders", que todavía no existe (eso es
-    // parte del checkout, L8) — no vamos a inventar esos números.
     countProducts().then(setProductCount); // agregacion del lado del servidor: no hace falta traer los 60 productos solo para contarlos
     getUser().then((users) => setUserCount(users.length));
+    listAllOrders().then((orders) => {
+      setOrderCount(orders.length);
+      // Una orden cancelada no es una venta real: no la contamos.
+      const sales = orders
+        .filter((order) => order.status !== "cancelled")
+        .reduce((sum, order) => sum + order.total, 0);
+      setTotalSales(sales);
+    });
   }, []);
 
   return (
@@ -39,13 +47,16 @@ export const AdminDashboardPage = () => {
           <p className="text-sm text-azul-noche/50">Usuarios</p>
           <p className="font-heading font-extrabold text-3xl text-azul-noche mt-1">{userCount ?? "…"}</p>
         </div>
-      </div>
-
-      <div className="p-6 rounded-card-lg bg-white border border-gris-claro text-center">
-        <p className="font-bold text-azul-noche">Todavía no hay pedidos</p>
-        <p className="text-sm text-azul-noche/50 mt-1">
-          Las ventas y las órdenes van a aparecer acá cuando armemos el checkout.
-        </p>
+        <div className="p-5 rounded-card-lg bg-white border border-gris-claro">
+          <p className="text-sm text-azul-noche/50">Órdenes</p>
+          <p className="font-heading font-extrabold text-3xl text-azul-noche mt-1">{orderCount ?? "…"}</p>
+        </div>
+        <div className="p-5 rounded-card-lg bg-white border border-gris-claro">
+          <p className="text-sm text-azul-noche/50">Ventas</p>
+          <p className="font-heading font-extrabold text-3xl text-azul-noche mt-1">
+            {totalSales === null ? "…" : `$${totalSales.toLocaleString("es-AR")}`}
+          </p>
+        </div>
       </div>
     </section>
   );
