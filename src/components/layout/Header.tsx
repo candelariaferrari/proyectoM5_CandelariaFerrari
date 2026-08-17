@@ -50,9 +50,9 @@ export const Header = () => {
           <span className="text-md font-bold text-azul-noche/30 cursor-not-allowed" title="Próximamente">
             Ofertas
           </span>
-          <span className="text-md font-bold text-azul-noche/30 cursor-not-allowed" title="Próximamente">
+          <Link to="/pedidos" className="text-md font-bold text-azul-noche">
             Mis pedidos
-          </span>
+          </Link>
           {user?.role === "admin" && (
             <Link to="/admin" className="text-md font-bold text-azul-cobalto">
               Admin

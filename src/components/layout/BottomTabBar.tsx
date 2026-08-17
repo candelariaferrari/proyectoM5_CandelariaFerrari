@@ -15,6 +15,7 @@ export const BottomTabBar = () => {
   const isHome = location.pathname === "/";
   const isProducts = location.pathname.startsWith("/productos") || location.pathname.startsWith("/producto/");
   const isCart = location.pathname === "/carrito";
+  const isOrders = location.pathname === "/pedidos";
 
   const handleProfileClick = () => {
     if (isAuthenticated) {
@@ -62,13 +63,15 @@ export const BottomTabBar = () => {
           Carrito
         </Link>
 
-        <button
-          className="flex flex-col items-center gap-0.5 py-2.5 flex-1 text-[11px] font-bold text-azul-noche/30 cursor-not-allowed"
-          title="Próximamente"
+        <Link
+          to="/pedidos"
+          className={`flex flex-col items-center gap-0.5 py-2.5 flex-1 text-[11px] font-bold ${
+            isOrders ? "text-azul-cobalto" : "text-azul-noche/50"
+          }`}
         >
           <ListIcon size={20} />
           Pedidos
-        </button>
+        </Link>
 
         <button
           onClick={handleProfileClick}
