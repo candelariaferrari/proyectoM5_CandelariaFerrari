@@ -4,7 +4,7 @@ import { getUser } from "../../services/users.services";
 import { ORDER_STATUS_INFO, ORDER_STATUS_IDS, ORDER_STATUS_TRANSITIONS } from "../../constants/orderStatus";
 import { OrderItemsSummary } from "../../components/orders/OrderItemsSummary";
 import { useToast } from "../../hooks/useToast";
-import { ListIcon } from "../../components/ui/icons";
+import { ListIcon, ChevronUpIcon } from "../../components/ui/icons";
 import type { Order, OrderStatus } from "../../types/order.types";
 
 type CustomerInfo = { email: string; displayName?: string };
@@ -44,21 +44,22 @@ const ChangeStatusButtons = ({
       {ORDER_STATUS_IDS.map((status) => {
         const isCurrent = status === order.status;
         const isValidTarget = validTargets.includes(status);
+        const info = ORDER_STATUS_INFO[status];
 
         return (
           <button
             key={status}
             disabled={isCurrent || !isValidTarget || disabled}
             onClick={() => onChange(status)}
-            className={`text-sm font-bold px-4 py-2 rounded-pill ${
+            className={`text-sm font-bold px-4 py-2 rounded-pill ${info.badgeClassName} ${
               isCurrent
-                ? "bg-azul-cobalto text-white"
+                ? "ring-2 ring-offset-1 ring-azul-cobalto"
                 : isValidTarget
-                  ? "bg-card-surface text-azul-noche"
-                  : "bg-card-surface text-azul-noche/30 cursor-not-allowed"
+                  ? "cursor-pointer"
+                  : "opacity-30 cursor-not-allowed"
             }`}
           >
-            {ORDER_STATUS_INFO[status].label}
+            {info.label}
           </button>
         );
       })}
@@ -282,7 +283,13 @@ export const AdminOrdersPage = () => {
                         <span className="text-xs text-azul-noche/50">
                           {order.createdAt.toLocaleDateString("es-AR", { day: "2-digit", month: "2-digit" })}
                         </span>
-                        <StatusBadge status={order.status} />
+                        <div className="flex items-center gap-2">
+                          <StatusBadge status={order.status} />
+                          <ChevronUpIcon
+                            size={16}
+                            className={`text-azul-noche/40 transition-transform ${isSelected ? "" : "rotate-180"}`}
+                          />
+                        </div>
                       </div>
                     </button>
 
