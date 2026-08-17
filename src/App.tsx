@@ -2,6 +2,7 @@
 import { useLocation } from "react-router-dom";
 import { Header } from "./components/layout/Header";
 import { BottomTabBar } from "./components/layout/BottomTabBar";
+import { Footer } from "./components/layout/Footer";
 import { AppRoutes } from "./routes/AppRoutes";
 
 function App(): JSX.Element {
@@ -16,6 +17,7 @@ function App(): JSX.Element {
       {!isAdminRoute && <Header />}
       <div className={isAdminRoute ? "" : "pb-16 md:pb-0"}>
         <AppRoutes />
+        {!isAdminRoute && <Footer />}
       </div>
       {!isAdminRoute && <BottomTabBar />}
     </div>

@@ -1,6 +1,7 @@
 interface MundoLogoProps {
   lettersClassName?: string; // tamaño de las letras "MUNDO"
-  taglineClassName?: string;
+  taglineClassName?: string; // tamaño del tagline
+  taglineColorClassName?: string; // color del tagline (separado del tamaño para poder usarlo sobre fondo oscuro, ej. el footer)
   showTagline?: boolean;
 }
 
@@ -10,6 +11,7 @@ interface MundoLogoProps {
 export const MundoLogo = ({
   lettersClassName = "text-3xl md:text-4xl",
   taglineClassName = "text-[10px] md:text-[12px]",
+  taglineColorClassName = "text-azul-noche/60",
   showTagline = true,
 }: MundoLogoProps) => (
   <div className="flex flex-col leading-none">
@@ -21,7 +23,7 @@ export const MundoLogo = ({
       <span className="text-verde-menta">O</span>
     </span>
     {showTagline && (
-      <span className={`font-bold text-azul-noche/60 ${taglineClassName}`}>Ideas para jugar.</span>
+      <span className={`font-bold ${taglineColorClassName} ${taglineClassName}`}>Ideas para jugar.</span>
     )}
   </div>
 );
