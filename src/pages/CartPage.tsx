@@ -3,18 +3,19 @@ import { Link } from "react-router-dom";
 import { useCart } from "../hooks/useCart";
 import { useAuth } from "../hooks/useAuth";
 import { AuthModal } from "../components/AuthModal";
-import { CloseIcon, CartIcon } from "../components/ui/icons";
+import { CloseIcon, CartIcon, ChevronUpIcon } from "../components/ui/icons";
 import { ProductImage } from "../components/ui/ProductImage";
 
-// Mismo umbral que anunciamos en el banner del header ("Envíos gratis en
-// compras mayores a $50.000"). Si mañana cambia el monto, hay que tocarlo
-// en los dos lugares.
+// banner del header ("Envíos gratis en
+// compras mayores a $50.000").
 const FREE_SHIPPING_THRESHOLD = 50000;
 
 export const CartPage = () => {
   const { items, updateQuantity, removeFromCart, clearCart } = useCart();
   const { isAuthenticated } = useAuth();
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
+  // Panel de compra en mobile: collapsable
+  const [isSummaryExpanded, setIsSummaryExpanded] = useState(true);
 
   const total = items.reduce((sum, item) => sum + item.product.price * item.quantity, 0);
   const hasFreeShipping = total >= FREE_SHIPPING_THRESHOLD;
@@ -48,9 +49,8 @@ export const CartPage = () => {
   // Contenido del resumen: se muestra dos veces (fijo abajo en mobile,
   // dentro de la grilla en desktop) para poder posicionarlo distinto en
   // cada breakpoint sin pelear con position: fixed vs static.
-  const summary = (
+  const summaryBody = (
     <>
-      <h2 className="font-heading font-extrabold text-lg text-azul-noche">Resumen del pedido</h2>
       <div className="flex items-center justify-between text-sm text-azul-noche/70">
         <span>Subtotal</span>
         <span>${total.toLocaleString("es-AR")}</span>
@@ -109,11 +109,19 @@ export const CartPage = () => {
     </>
   );
 
+  const summary = (
+    <>
+      <h2 className="font-heading font-extrabold text-lg text-azul-noche">Resumen del pedido</h2>
+      {summaryBody}
+    </>
+  );
+
   return (
-    <section className="max-w-[1280px] mx-auto px-6 py-8 grid gap-8 md:grid-cols-[1fr_320px] pb-72 md:pb-8">
-      {/* min-w-0: sin esto, en mobile (grid de 1 sola columna implícita) la
-          columna crece para no cortar el nombre más largo de un producto, y
-          empuja toda la página más ancha que la pantalla. */}
+    <section
+      className={`max-w-[1280px] mx-auto px-6 py-8 grid gap-8 md:grid-cols-[1fr_320px] md:pb-8 ${
+        isSummaryExpanded ? "pb-72" : "pb-24"
+      }`}
+    >
       <div className="min-w-0">
         <div className="flex items-center justify-between mb-4">
           <h1 className="font-heading font-extrabold text-2xl text-azul-noche">Tu carrito ({items.length})</h1>
@@ -183,9 +191,23 @@ export const CartPage = () => {
       {/* Desktop: dentro de la grilla, al lado de la lista */}
       <div className="hidden md:flex h-fit p-5 rounded-card-lg bg-crema flex-col gap-4">{summary}</div>
 
-      {/* Mobile: panel fijo arriba del BottomTabBar */}
-      <div className="md:hidden fixed bottom-16 inset-x-0 z-30 bg-crema rounded-t-card-lg shadow-card px-5 py-4 flex flex-col gap-3">
-        {summary}
+      {/* Mobile */}
+      <div className="md:hidden fixed bottom-16 inset-x-0 z-30 bg-crema rounded-t-card-lg shadow-card">
+        <button
+          onClick={() => setIsSummaryExpanded((expanded) => !expanded)}
+          className="w-full flex items-center justify-between px-5 py-3.5"
+          aria-expanded={isSummaryExpanded}
+          aria-label={isSummaryExpanded ? "Ocultar resumen del pedido" : "Mostrar resumen del pedido"}
+        >
+          <span className="font-heading font-extrabold text-lg text-azul-noche">
+            {isSummaryExpanded ? "Resumen del pedido" : `Total: $${total.toLocaleString("es-AR")}`}
+          </span>
+          <ChevronUpIcon
+            size={18}
+            className={`text-azul-noche/60 shrink-0 transition-transform ${isSummaryExpanded ? "" : "rotate-180"}`}
+          />
+        </button>
+        {isSummaryExpanded && <div className="px-5 pb-4 flex flex-col gap-3">{summaryBody}</div>}
       </div>
 
       {isAuthModalOpen && <AuthModal onClose={() => setIsAuthModalOpen(false)} />}
