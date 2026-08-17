@@ -3,6 +3,7 @@ import { useLocation } from "react-router-dom";
 import { Header } from "./components/layout/Header";
 import { BottomTabBar } from "./components/layout/BottomTabBar";
 import { Footer } from "./components/layout/Footer";
+import { Toast } from "./components/ui/Toast";
 import { AppRoutes } from "./routes/AppRoutes";
 
 function App(): JSX.Element {
@@ -20,6 +21,7 @@ function App(): JSX.Element {
         {!isAdminRoute && <Footer />}
       </div>
       {!isAdminRoute && <BottomTabBar />}
+      <Toast />
     </div>
   );
 }

@@ -7,6 +7,7 @@ import { PencilIcon, TrashIcon } from "../../components/ui/icons";
 import { SearchInput } from "../../components/ui/SearchInput";
 import { ProductImage } from "../../components/ui/ProductImage";
 import { useProductsPagination } from "../../hooks/useProductsPagination";
+import { useToast } from "../../hooks/useToast";
 import { Pagination } from "../../components/ui/Pagination";
 import type { CategoryId, Product } from "../../types/product.types";
 
@@ -29,6 +30,7 @@ const StockBadge = ({ stock }: { stock: number }) => {
 
 export const AdminProductsPage = () => {
   const location = useLocation();
+  const { showToast } = useToast();
   const [search, setSearch] = useState("");
   const [categoryFilter, setCategoryFilterState] = useState<CategoryId | null>(null);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
@@ -80,6 +82,7 @@ export const AdminProductsPage = () => {
     await deleteProduct(product.id);
     refetch();
     setDeletingId(null);
+    showToast(`"${product.name}" eliminado`, "danger");
   };
 
   return (

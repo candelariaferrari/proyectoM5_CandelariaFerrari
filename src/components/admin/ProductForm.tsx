@@ -2,6 +2,7 @@ import { useState, type FormEvent, type ChangeEvent } from "react";
 import { Modal } from "../ui/Modal";
 import { createProduct, updateProduct } from "../../services/products.services";
 import { uploadProductImage } from "../../services/upload.services";
+import { useToast } from "../../hooks/useToast";
 import { CATEGORY_INFO, CATEGORY_IDS } from "../../constants/categories";
 import type { Product, CategoryId, MinAge } from "../../types/product.types";
 
@@ -15,6 +16,7 @@ interface ProductFormProps {
 
 export const ProductForm = ({ product, onClose, onSaved }: ProductFormProps) => {
   const isEditing = product !== null;
+  const { showToast } = useToast();
 
   const [name, setName] = useState(product?.name ?? "");
   const [description, setDescription] = useState(product?.description ?? "");
@@ -73,6 +75,7 @@ export const ProductForm = ({ product, onClose, onSaved }: ProductFormProps) => 
       } else {
         await createProduct(data);
       }
+      showToast(isEditing ? `"${name}" actualizado` : `"${name}" creado`);
       onSaved();
       onClose();
     } catch {
