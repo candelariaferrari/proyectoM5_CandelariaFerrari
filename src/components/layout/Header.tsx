@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useCallback, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../../hooks/useAuth";
 import { useCart } from "../../hooks/useCart";
@@ -19,10 +19,17 @@ export const Header = () => {
 
   // Buscar desde cualquier página te lleva al catálogo, que es el único
   // lugar que renderiza los resultados.
-  const handleSearch = (term: string) => {
-    setSearchTerm(term);
-    if (term) navigate("/productos");
-  };
+  // useCallback con referencia estable: si no, SearchInput recibe una
+  // función nueva en cada render y su debounce se reinicia solo, lo que
+  // termina disparando este navigate de nuevo más tarde (por ej. pisando
+  // la navegación al detalle de un producto justo después de clickearlo).
+  const handleSearch = useCallback(
+    (term: string) => {
+      setSearchTerm(term);
+      if (term) navigate("/productos");
+    },
+    [setSearchTerm, navigate],
+  );
 
   return (
     <header>
