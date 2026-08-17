@@ -18,11 +18,6 @@ export const HomePage = () => {
 
   return (
     <div className="pb-10">
-      {/* La crema es solo del hero (como en el mockup); el resto del body queda blanco.
-          En mobile es una tarjeta con margen y bordes redondeados en las 4 puntas
-          (no ocupa todo el ancho); desde md vuelve a ser la franja completa de
-          siempre. Los círculos decorativos van sueltos acá (no dentro del bloque
-          de la foto) porque en mobile se ven igual aunque la foto esté oculta. */}
       <div className="relative overflow-hidden bg-crema mx-4 mt-4 rounded-card-lg md:mx-0 md:mt-0 md:rounded-none">
         <div className="md:hidden absolute -right-8 top-6 w-40 h-40 rounded-full bg-mostaza opacity-60" />
         <div className="md:hidden absolute -right-6 -bottom-10 w-32 h-32 rounded-full bg-azul-cobalto opacity-20" />
