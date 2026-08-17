@@ -1,6 +1,7 @@
-import { useState, type FormEvent, type ChangeEvent } from "react";
+import { useRef, useState, type ChangeEvent, type DragEvent, type FormEvent } from "react";
 import { Modal } from "../ui/Modal";
 import { FormField, fieldInputClassName } from "../ui/FormField";
+import { UploadIcon } from "../ui/icons";
 import { createProduct, updateProduct } from "../../services/products.services";
 import { uploadProductImage } from "../../services/upload.services";
 import { useToast } from "../../hooks/useToast";
@@ -31,7 +32,10 @@ export const ProductForm = ({ product, onClose, onSaved }: ProductFormProps) => 
   const [minAge, setMinAge] = useState<MinAge>(product?.minAge ?? 1);
   const [imageUrl, setImageUrl] = useState(product?.imageUrl ?? "");
   const [isUploadingImage, setIsUploadingImage] = useState(false);
+  const [imageUploaded, setImageUploaded] = useState(false);
+  const [isDragOver, setIsDragOver] = useState(false);
   const [imageError, setImageError] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [fieldErrors, setFieldErrors] = useState<ProductFormErrors>({});
@@ -66,24 +70,38 @@ export const ProductForm = ({ product, onClose, onSaved }: ProductFormProps) => 
     return nextErrors;
   };
 
-  // Cuando el admin elige un archivo, lo subimos enseguida (no esperamos al
-  // submit del form): pedimos la URL prefirmada a nuestra función serverless
-  // y subimos la imagen directo a S3. Al terminar, guardamos la URL pública
-  // resultante en `imageUrl`, que es lo que después viaja a Firestore.
-  const handleImageChange = async (e: ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
+  // Cuando el admin elige un archivo (por click o arrastrando), lo subimos
+  // enseguida (no esperamos al submit del form): pedimos la URL prefirmada
+  // a nuestra función serverless (fetch, igual que en clase) y subimos la
+  // imagen directo a S3. Mientras sube solo mostramos "Subiendo...", y al
+  // terminar un tilde de éxito o el mensaje de error — sin barra de
+  // progreso real (fetch no la expone, y para esto alcanza).
+  const handleFile = async (file: File) => {
     setImageError(null);
+    setImageUploaded(false);
     setIsUploadingImage(true);
     try {
       const publicUrl = await uploadProductImage(file);
       setImageUrl(publicUrl);
+      setImageUploaded(true);
     } catch (err) {
       setImageError(err instanceof Error ? err.message : "No pudimos subir la imagen");
     } finally {
       setIsUploadingImage(false);
     }
+  };
+
+  const handleImageChange = (e: ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) handleFile(file);
+    e.target.value = ""; // permite volver a elegir el mismo archivo más adelante
+  };
+
+  const handleDrop = (e: DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    setIsDragOver(false);
+    const file = e.dataTransfer.files?.[0];
+    if (file) handleFile(file);
   };
 
   const handleSubmit = async (e: FormEvent) => {
@@ -204,21 +222,47 @@ export const ProductForm = ({ product, onClose, onSaved }: ProductFormProps) => 
           </label>
         </div>
 
-        <label className="text-sm font-bold text-azul-noche">
+        <div className="text-sm font-bold text-azul-noche">
           Imagen
-          <input
-            type="file"
-            accept="image/jpeg,image/png,image/webp"
-            onChange={handleImageChange}
-            className="w-full mt-1 border border-gris-claro rounded-input px-3 py-2 text-sm font-normal"
-          />
-        </label>
+          <div
+            onClick={() => fileInputRef.current?.click()}
+            onDragOver={(e) => {
+              e.preventDefault();
+              setIsDragOver(true);
+            }}
+            onDragLeave={() => setIsDragOver(false)}
+            onDrop={handleDrop}
+            className={`mt-1 border-2 border-dashed rounded-input px-4 py-6 flex flex-col items-center justify-center gap-1 text-center cursor-pointer transition-colors ${
+              isDragOver ? "border-mostaza bg-mostaza/10" : "border-gris-claro bg-crema"
+            }`}
+          >
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/jpeg,image/png,image/webp"
+              onChange={handleImageChange}
+              className="hidden"
+            />
 
-        {isUploadingImage && <p className="text-xs text-azul-noche/60">Subiendo imagen...</p>}
+            {isUploadingImage ? (
+              <span className="text-sm font-bold text-azul-noche">Subiendo imagen...</span>
+            ) : imageUrl ? (
+              <>
+                <img src={imageUrl} alt="Vista previa" className="w-16 h-16 object-cover rounded-input" />
+                {imageUploaded && <span className="text-xs font-bold text-verde-texto">✓ Imagen cargada</span>}
+                <span className="text-xs font-bold text-azul-cobalto">Cambiar imagen</span>
+              </>
+            ) : (
+              <>
+                <UploadIcon size={22} className="text-rosa-coral" />
+                <span className="text-sm font-bold text-azul-noche">Arrastrá una imagen o hacé click</span>
+                <span className="text-[11px] font-semibold text-azul-noche/40">AWS S3 · URL prefirmada</span>
+              </>
+            )}
+          </div>
+        </div>
+
         {imageError && <p className="text-danger text-xs">{imageError}</p>}
-        {imageUrl && !isUploadingImage && (
-          <img src={imageUrl} alt="Vista previa" className="w-20 h-20 object-cover rounded-input border border-gris-claro" />
-        )}
 
         {error && <p className="text-danger text-xs">{error}</p>}
 

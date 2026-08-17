@@ -2,6 +2,8 @@ import { useState, type FormEvent } from "react";
 import { useAuth } from "../hooks/useAuth";
 import { Modal } from "./ui/Modal";
 import { FormField, fieldInputClassName } from "./ui/FormField";
+import { GoogleIcon } from "./ui/icons";
+import { MundoLogo } from "./ui/MundoLogo";
 
 type AuthTab = "login" | "signup";
 
@@ -25,6 +27,16 @@ export const AuthModal = ({ onClose }: AuthModalProps) => {
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [fieldErrors, setFieldErrors] = useState<AuthFormErrors>({});
+  const isLogin = tab === "login";
+
+  // Cambiar de modo es "empezar de nuevo": limpiamos errores viejos, que ya
+  // no tienen sentido (ej. "contraseña muy corta" no aplica hasta que
+  // vuelva a intentar enviar el form en el modo nuevo).
+  const switchTab = () => {
+    setTab(isLogin ? "signup" : "login");
+    setError(null);
+    setFieldErrors({});
+  };
 
   const validate = (): AuthFormErrors => {
     const nextErrors: AuthFormErrors = {};
@@ -54,7 +66,7 @@ export const AuthModal = ({ onClose }: AuthModalProps) => {
 
     setSubmitting(true);
     try {
-      if (tab === "login") {
+      if (isLogin) {
         await login(email, password);
       } else {
         await signUp(email, password);
@@ -62,7 +74,7 @@ export const AuthModal = ({ onClose }: AuthModalProps) => {
       onClose();
     } catch {
       setError(
-        tab === "login"
+        isLogin
           ? "No pudimos iniciar sesión. Revisá tu email y contraseña."
           : "No pudimos crear la cuenta. Probá con otro email."
       );
@@ -83,26 +95,30 @@ export const AuthModal = ({ onClose }: AuthModalProps) => {
 
   return (
     <Modal onClose={onClose}>
-      <div className="p-6">
-        <div className="font-heading font-extrabold text-2xl mb-4 text-azul-noche">
-          MUNDO
+      <div className="p-6 flex flex-col gap-5">
+        <div>
+          <MundoLogo lettersClassName="text-xl" showTagline={false} />
+          <h2 className="font-heading font-extrabold text-2xl text-azul-noche mt-3">
+            {isLogin ? "¡Hola de nuevo!" : "Creá tu cuenta"}
+          </h2>
+          <p className="text-sm text-azul-noche/60 mt-1">
+            {isLogin ? "Iniciá sesión para seguir comprando." : "Registrate para empezar a comprar en MUNDO."}
+          </p>
         </div>
 
-        <div className="flex gap-4 mb-4 text-sm font-bold">
-          <button
-            type="button"
-            onClick={() => setTab("login")}
-            className={tab === "login" ? "text-azul-noche" : "text-azul-noche/40"}
-          >
-            Iniciar sesión
-          </button>
-          <button
-            type="button"
-            onClick={() => setTab("signup")}
-            className={tab === "signup" ? "text-azul-noche" : "text-azul-noche/40"}
-          >
-            Crear cuenta
-          </button>
+        <button
+          type="button"
+          onClick={handleGoogle}
+          className="flex items-center justify-center gap-2.5 border border-gris-claro rounded-pill py-3 text-sm font-bold text-azul-noche hover:bg-card-surface"
+        >
+          <GoogleIcon size={18} />
+          Continuar con Google
+        </button>
+
+        <div className="flex items-center gap-3 text-xs font-semibold text-azul-noche/40">
+          <span className="flex-1 h-px bg-gris-claro" />
+          o {isLogin ? "iniciá sesión" : "creá tu cuenta"} con tu email
+          <span className="flex-1 h-px bg-gris-claro" />
         </div>
 
         <form onSubmit={handleSubmit} noValidate className="flex flex-col gap-3">
@@ -131,19 +147,18 @@ export const AuthModal = ({ onClose }: AuthModalProps) => {
           <button
             type="submit"
             disabled={submitting}
-            className="bg-mostaza text-white font-bold rounded-pill py-2 mt-1 disabled:opacity-50"
+            className="text-sm font-extrabold text-azul-noche bg-mostaza rounded-pill py-3 mt-1 shadow-cta disabled:opacity-50"
           >
-            {submitting ? "Un momento..." : "Ingresar"}
+            {submitting ? "Un momento..." : isLogin ? "Iniciar sesión" : "Crear cuenta"}
           </button>
         </form>
 
-        <button
-          type="button"
-          onClick={handleGoogle}
-          className="w-full text-center text-sm text-azul-cobalto font-bold mt-3"
-        >
-          Continuar con Google
-        </button>
+        <p className="text-center text-sm text-azul-noche/60">
+          {isLogin ? "¿No tenés cuenta? " : "¿Ya tenés cuenta? "}
+          <button type="button" onClick={switchTab} className="font-bold text-azul-cobalto">
+            {isLogin ? "Registrate" : "Iniciá sesión"}
+          </button>
+        </p>
       </div>
     </Modal>
   );

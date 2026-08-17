@@ -185,6 +185,49 @@ export const ChevronUpIcon = ({ className, size = 18 }: IconProps) => (
   </svg>
 );
 
+export const UploadIcon = ({ className, size = 22 }: IconProps) => (
+  <svg
+    width={size}
+    height={size}
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth={2.2}
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    className={className}
+  >
+    <path d="M12 15V4" />
+    <path d="M7 8.5 12 4l5 4.5" />
+    <path d="M4 16v2.5A1.5 1.5 0 0 0 5.5 20h13a1.5 1.5 0 0 0 1.5-1.5V16" />
+  </svg>
+);
+
+// El logo de Google (a diferencia del resto de los íconos, que son propios
+// y monocromáticos): Google pide usar su logo tal cual, a 4 colores, en
+// cualquier botón de "Continuar con Google" — por eso este es el único
+// ícono a color de todo el set.
+export const GoogleIcon = ({ className, size = 18 }: IconProps) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" className={className}>
+    <path
+      fill="#4285F4"
+      d="M23.52 12.27c0-.85-.08-1.67-.22-2.46H12v4.66h6.47a5.53 5.53 0 0 1-2.4 3.63v3h3.88c2.27-2.09 3.57-5.17 3.57-8.83Z"
+    />
+    <path
+      fill="#34A853"
+      d="M12 24c3.24 0 5.96-1.07 7.95-2.9l-3.88-3c-1.08.72-2.45 1.15-4.07 1.15-3.13 0-5.78-2.11-6.73-4.95H1.26v3.11A12 12 0 0 0 12 24Z"
+    />
+    <path
+      fill="#FBBC05"
+      d="M5.27 14.3a7.2 7.2 0 0 1 0-4.6V6.59H1.26a12 12 0 0 0 0 10.82l4.01-3.11Z"
+    />
+    <path
+      fill="#EA4335"
+      d="M12 4.75c1.76 0 3.34.6 4.58 1.79l3.44-3.44C17.95 1.19 15.24 0 12 0A12 12 0 0 0 1.26 6.59l4.01 3.11C6.22 6.86 8.87 4.75 12 4.75Z"
+    />
+  </svg>
+);
+
 export const PencilIcon = ({ className, size = 18 }: IconProps) => (
   <svg
     width={size}

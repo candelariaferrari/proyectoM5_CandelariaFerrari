@@ -1,4 +1,5 @@
 import { type ReactNode } from "react";
+import { CloseIcon } from "./icons";
 
 interface ModalProps {
   onClose: () => void;
@@ -7,7 +8,9 @@ interface ModalProps {
 }
 
 // Modal genérico:
-// solo resuelve el overlay, centrado y el cierre al hacer click afuera.
+// resuelve el overlay, centrado, el cierre al hacer click afuera y la cruz
+// de cerrar (arriba a la derecha) — un solo lugar para los dos modals que
+// existen (AuthModal y ProductForm).
 export const Modal = ({ onClose, children, maxWidthClassName = "max-w-sm" }: ModalProps) => {
   return (
     <div
@@ -15,9 +18,17 @@ export const Modal = ({ onClose, children, maxWidthClassName = "max-w-sm" }: Mod
       onClick={onClose}
     >
       <div
-        className={`bg-white rounded-card-lg shadow-card w-full ${maxWidthClassName} max-h-[90vh] overflow-y-auto`}
+        className={`relative bg-white rounded-card-lg shadow-card w-full ${maxWidthClassName} max-h-[90vh] overflow-y-auto`}
         onClick={(e) => e.stopPropagation()}
       >
+        <button
+          type="button"
+          onClick={onClose}
+          aria-label="Cerrar"
+          className="absolute top-4 right-4 w-8 h-8 rounded-full bg-card-surface flex items-center justify-center text-azul-noche/60 hover:text-azul-noche z-10"
+        >
+          <CloseIcon size={14} />
+        </button>
         {children}
       </div>
     </div>
