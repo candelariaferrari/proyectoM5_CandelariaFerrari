@@ -843,3 +843,28 @@ Un detalle aparte que también corregí: tenía el fetch de órdenes y el de usu
 ### Qué decidí
 
 También agregamos la pantalla de confirmación que pide la consigna después de comprar: antes solo se mostraba un toast y redirigía directo a "Mis pedidos", pero la consigna pide un flujo de checkout que se pueda "revisar y confirmar". Ahora, al terminar la compra, se ve una pantalla con el detalle de lo comprado y el número de pedido, con botones para ir a "Mis pedidos" o seguir comprando. El toast de "¡Compra realizada con éxito!" se mantiene, pero ahora acompaña a esa pantalla en vez de reemplazarla.
+
+
+---
+
+## Al confirmar la compra, el toast decía "éxito" pero la pantalla mostraba el carrito vacío
+
+### Contexto
+
+Al armar el paso de "Confirmar compra", el botón crea la orden, vacía el carrito y navega a la pantalla de "¡Compra realizada!". Funcionaba en la mayoría de las pruebas, pero a veces terminaba mostrando "Tu carrito está vacío" en vez de la confirmación, aunque el toast de éxito sí había aparecido.
+
+### Prompt
+
+> el flujo esta fallando al ultimo , porque me aparece el toas de compra realizada con exito pero en la pantalla se ve el "tu carrito esta vacio" y se deberia ver algo como "compra realizada" ver mis pedidos eso se puede ?
+
+### Qué aprendí
+
+La pantalla de "Confirmar compra" tenía una guarda `if (carrito vacío) → redirigir a /carrito`, pensada para cuando alguien entra directo a esa URL sin nada en el carrito. El problema es que, al confirmar, `clearCart()` también vacía el carrito — así que esa misma guarda se disparaba justo después de comprar, y competía con el `navigate()` a la pantalla de éxito.
+
+Mi primer intento de arreglo fue agregar una condición extra: no redirigir si `isSubmitting` seguía en `true`. Probé eso y seguía fallando. Ahí entendí el motivo real: dentro del `try/catch/finally`, el `finally` que pone `isSubmitting` de nuevo en `false` corre en el mismo tick, antes de que React vuelva a renderizar — React agrupa (batchea) todas esas actualizaciones de estado (`navigate`, `clearCart`, `setIsSubmitting`) y las aplica juntas en un solo render. Para ese momento, `isSubmitting` ya había vuelto a `false`, así que mi condición nunca alcanzaba a bloquear nada: llegaba tarde.
+
+La solución fue usar un `useRef` en vez de un `useState` para esa bandera puntual. Un ref no dispara re-render y, más importante, su valor está disponible inmediatamente en cuanto se lo asigna (`orderPlacedRef.current = true`), sin pasar por el ciclo de batching de React. Así, para cuando el componente vuelve a evaluar la guarda del carrito vacío, el ref ya refleja que la compra se confirmó, y no compite con la navegación a la pantalla de éxito.
+
+### Qué decidí
+
+Como regla general para el resto del proyecto: cuando una condición necesita frenar algo que puede pasar en el mismo instante en que se actualiza el propio estado que la dispara (una carrera contra el propio `setState`), un `state` común no alcanza — hace falta un `ref`, que se lee "en el momento" y no espera el siguiente render.
