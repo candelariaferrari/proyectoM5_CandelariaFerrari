@@ -795,3 +795,26 @@ La solución es un archivo `vercel.json` con una regla de "rewrite": para cualqu
 ```
 
 El detalle importante es excluir `/api` explícitamente con ese lookahead negativo (`(?!api/)`) — si el rewrite fuera un catch-all de verdad (`/(.*)`), corría el riesgo de interceptar también los pedidos a `api/presign.ts` (la función serverless de S3) y devolver `index.html` en vez de ejecutar la función.
+
+
+---
+
+## Validaciones de formularios con línea roja, en vez del cartelito nativo del navegador
+
+### Contexto
+
+Los dos formularios del proyecto (crear/editar producto en el admin, y login/registro) solo confiaban en la validación nativa del HTML (`required`, `minLength`, `type="email"`), que muestra el cartelito por default del navegador — no tiene el estilo del resto de la app, y no permite reglas de negocio propias como "el precio no puede ser $0".
+
+### Prompt
+
+> validaciones en los formularios, lineas en rojo si un campo obligatorio no se completo. que se puede y que no se puede (ej: un producto no puede tener el price en 0) no se que otra deberíamos tener en cuenta en ese sentido. Consulta el input no se puede hacer como un layout o ui ya que se utiliza en varios lugares?
+
+### Qué decidí
+
+El mismo patrón (label + input con borde gris) estaba repetido suelto en el form de productos del admin y en el modal de login/registro, así que armé `FormField`: un componente que envuelve label + campo + mensaje de error, reutilizado en los dos lugares. El input en sí (texto, número, contraseña, textarea) lo sigue armando cada formulario, porque varían demasiado como para forzarlos a uno solo — `FormField` solo estandariza cómo se ve el label y el error.
+
+Las reglas que terminamos definiendo entre las dos: nombre y descripción del producto son obligatorios (no pueden ser solo espacios en blanco), con un largo máximo (60 y 300 caracteres respectivamente, con margen sobre los productos más largos que ya tiene el seeder); el precio tiene que ser mayor a $0 (0 no es un precio válido); el stock no puede ser negativo (0 sí, significa "sin stock", ya se muestra así en la UI). Para el login: email con formato válido, contraseña de al menos 6 caracteres.
+
+Toda la validación corre al tocar "Guardar"/"Ingresar" (no mientras se escribe), y le agregué `noValidate` al `<form>` para apagar el validado nativo del navegador — si no, el cartelito feo del navegador aparece primero y nunca se llega a ver el estilo propio.
+
+Aprendizaje: cuando el mismo pedazo de UI aparece en dos lugares con roles distintos (un form de 6 campos vs. un modal de 2), no hace falta forzarlos a compartir el input completo — alcanza con compartir la parte que sí es idéntica en los dos (el wrapper de label + error) y dejar que cada uno arme su propio campo adentro.
