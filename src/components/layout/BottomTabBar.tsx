@@ -3,7 +3,7 @@ import { Link, useLocation } from "react-router-dom";
 import { useAuth } from "../../hooks/useAuth";
 import { useCart } from "../../hooks/useCart";
 import { AuthModal } from "../AuthModal";
-import { HomeIcon, CartIcon, ListIcon, UserIcon } from "../ui/icons";
+import { HomeIcon, GridIcon, CartIcon, ListIcon, UserIcon } from "../ui/icons";
 
 export const BottomTabBar = () => {
   const location = useLocation();
@@ -13,6 +13,7 @@ export const BottomTabBar = () => {
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const cartCount = items.reduce((total, item) => total + item.quantity, 0);
   const isHome = location.pathname === "/";
+  const isProducts = location.pathname.startsWith("/productos") || location.pathname.startsWith("/producto/");
   const isCart = location.pathname === "/carrito";
 
   const handleProfileClick = () => {
@@ -34,6 +35,16 @@ export const BottomTabBar = () => {
         >
           <HomeIcon size={20} />
           Inicio
+        </Link>
+
+        <Link
+          to="/productos"
+          className={`flex flex-col items-center gap-0.5 py-2.5 flex-1 text-[11px] font-bold ${
+            isProducts ? "text-azul-cobalto" : "text-azul-noche/50"
+          }`}
+        >
+          <GridIcon size={20} />
+          Juguetes
         </Link>
 
         <Link
