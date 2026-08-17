@@ -72,7 +72,7 @@ export const CartPage = () => {
         </p>
         <div className="h-1.5 rounded-pill bg-white/60 overflow-hidden">
           <div
-            className="h-full rounded-pill bg-rosa-coral transition-[width]"
+            className={`h-full rounded-pill transition-[width] ${hasFreeShipping ? "bg-verde-menta" : "bg-rosa-coral"}`}
             style={{ width: `${progressPercent}%` }}
           />
         </div>
