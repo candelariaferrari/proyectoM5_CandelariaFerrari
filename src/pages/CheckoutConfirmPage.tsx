@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { Navigate, useNavigate } from "react-router-dom";
 import { useCart } from "../hooks/useCart";
 import { useAuth } from "../hooks/useAuth";
@@ -19,10 +19,19 @@ export const CheckoutConfirmPage = () => {
   const navigate = useNavigate();
   // Doble-submit: mientras se crea la orden, el botón queda deshabilitado.
   const [isSubmitting, setIsSubmitting] = useState(false);
+  // Un ref (no un state) porque necesitamos que el valor esté disponible
+  // YA en el próximo render, sin esperar el ciclo de React: en el mismo
+  // "tick" en que confirmamos, navigate() + clearCart() + setIsSubmitting()
+  // se ejecutan todos seguidos y React los procesa juntos en un solo
+  // render -- para ese momento, `isSubmitting` ya volvió a false (por el
+  // finally) y el carrito ya está vacío, así que un chequeo basado en
+  // state no llega a tiempo para evitar el redirect. El ref sí, porque se
+  // lee tal cual está en cuanto se lo asigna, sin pasar por ese batching.
+  const orderPlacedRef = useRef(false);
 
   const total = items.reduce((sum, item) => sum + item.product.price * item.quantity, 0);
 
-  if (items.length === 0) {
+  if (items.length === 0 && !orderPlacedRef.current) {
     return <Navigate to="/carrito" replace />;
   }
 
@@ -42,9 +51,10 @@ export const CheckoutConfirmPage = () => {
       // precio "congelados" al momento de la compra) y recién si eso se
       // confirma vaciamos el carrito.
       const orderId = await createOrder(user.uid, orderItems, total);
+      orderPlacedRef.current = true;
+      navigate("/pedido-confirmado", { state: { orderId, items: orderItems, total } });
       clearCart();
       showToast("¡Compra realizada con éxito!");
-      navigate("/pedido-confirmado", { state: { orderId, items: orderItems, total } });
     } catch {
       showToast("No pudimos procesar tu compra. Probá de nuevo.", "danger");
     } finally {
