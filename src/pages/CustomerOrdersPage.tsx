@@ -4,6 +4,7 @@ import { useAuth } from "../hooks/useAuth";
 import { listUserOrders } from "../services/orders.services";
 import { ORDER_STATUS_INFO } from "../constants/orderStatus";
 import { ListIcon, ChevronUpIcon } from "../components/ui/icons";
+import { OrderItemsSummary } from "../components/orders/OrderItemsSummary";
 import type { Order } from "../types/order.types";
 
 export const CustomerOrdersPage = () => {
@@ -92,17 +93,8 @@ export const CustomerOrdersPage = () => {
               </button>
 
               {isExpanded && (
-                <div className="px-4 pb-4 flex flex-col gap-2 border-t border-gris-claro pt-3">
-                  {order.items.map((item) => (
-                    <div key={item.productId} className="flex items-center justify-between text-sm">
-                      <span className="text-azul-noche/80">
-                        {item.quantity}x {item.name}
-                      </span>
-                      <span className="font-bold text-azul-noche">
-                        ${(item.priceAtPurchase * item.quantity).toLocaleString("es-AR")}
-                      </span>
-                    </div>
-                  ))}
+                <div className="px-4 pb-4 border-t border-gris-claro pt-3">
+                  <OrderItemsSummary items={order.items} total={order.total} />
                 </div>
               )}
             </div>

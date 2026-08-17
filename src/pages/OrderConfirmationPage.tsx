@@ -1,5 +1,6 @@
 import { Link, Navigate, useLocation } from "react-router-dom";
 import { CheckIcon } from "../components/ui/icons";
+import { OrderItemsSummary } from "../components/orders/OrderItemsSummary";
 import type { OrderItemSnapshot } from "../types/order.types";
 
 // Se llega acá solo navegando desde el checkout (CartPage pasa la orden
@@ -33,24 +34,8 @@ export const OrderConfirmationPage = () => {
         Pedido #{orderId.slice(0, 8)} confirmado. Vas a poder seguir su estado en "Mis pedidos".
       </p>
 
-      <div className="w-full flex flex-col gap-2 p-5 rounded-card-lg bg-crema text-left mt-2">
-        {items.map((item) => (
-          <div key={item.productId} className="flex items-center justify-between text-sm">
-            <span className="text-azul-noche/80">
-              {item.quantity}x {item.name}
-            </span>
-            <span className="font-bold text-azul-noche">
-              ${(item.priceAtPurchase * item.quantity).toLocaleString("es-AR")}
-            </span>
-          </div>
-        ))}
-
-        <div className="h-px bg-azul-noche/10 my-1" />
-
-        <div className="flex items-center justify-between font-extrabold text-azul-noche">
-          <span>Total</span>
-          <span>${total.toLocaleString("es-AR")}</span>
-        </div>
+      <div className="w-full p-5 rounded-card-lg bg-crema text-left mt-2">
+        <OrderItemsSummary items={items} total={total} />
       </div>
 
       <div className="flex flex-col sm:flex-row gap-3 w-full mt-2">

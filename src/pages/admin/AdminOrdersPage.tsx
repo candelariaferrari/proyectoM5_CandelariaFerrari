@@ -2,9 +2,12 @@ import { useEffect, useState } from "react";
 import { listAllOrders, updateOrderStatus } from "../../services/orders.services";
 import { getUser } from "../../services/users.services";
 import { ORDER_STATUS_INFO, ORDER_STATUS_IDS, ORDER_STATUS_TRANSITIONS } from "../../constants/orderStatus";
+import { OrderItemsSummary } from "../../components/orders/OrderItemsSummary";
 import { useToast } from "../../hooks/useToast";
 import { ListIcon } from "../../components/ui/icons";
 import type { Order, OrderStatus } from "../../types/order.types";
+
+type CustomerInfo = { email: string; displayName?: string };
 
 const StatusBadge = ({ status }: { status: OrderStatus }) => {
   const info = ORDER_STATUS_INFO[status];
@@ -15,8 +18,17 @@ const StatusBadge = ({ status }: { status: OrderStatus }) => {
   );
 };
 
-// Selector de estado: solo ofrece las transiciones válidas (ver ORDER_STATUS_TRANSITIONS) además del estado actual mismo.
-const StatusSelect = ({
+const formatOrderDate = (date: Date) =>
+  date.toLocaleDateString("es-AR", { day: "2-digit", month: "2-digit", year: "numeric" }) +
+  " " +
+  date.toLocaleTimeString("es-AR", { hour: "2-digit", minute: "2-digit" });
+
+// Botonera "Cambiar estado": el estado actual queda resaltado (no se puede
+// re-clickear), las transiciones válidas desde ahí quedan clickeables, y el
+// resto queda deshabilitado -- misma máquina de estados que ya usábamos en
+// el <select> anterior (ver ORDER_STATUS_TRANSITIONS), solo que ahora como
+// botones para calcar el mockup.
+const ChangeStatusButtons = ({
   order,
   disabled,
   onChange,
@@ -25,50 +37,103 @@ const StatusSelect = ({
   disabled: boolean;
   onChange: (status: OrderStatus) => void;
 }) => {
-  const nextOptions = ORDER_STATUS_TRANSITIONS[order.status];
-
-  if (nextOptions.length === 0) {
-    return <StatusBadge status={order.status} />;
-  }
+  const validTargets = ORDER_STATUS_TRANSITIONS[order.status];
 
   return (
-    <select
-      value={order.status}
-      disabled={disabled}
-      onChange={(e) => onChange(e.target.value as OrderStatus)}
-      className="text-xs font-bold px-3 py-1.5 rounded-pill bg-card-surface text-azul-noche disabled:opacity-40"
-    >
-      <option value={order.status}>{ORDER_STATUS_INFO[order.status].label}</option>
-      {nextOptions.map((status) => (
-        <option key={status} value={status}>
-          {ORDER_STATUS_INFO[status].label}
-        </option>
-      ))}
-    </select>
+    <div className="flex flex-wrap gap-2">
+      {ORDER_STATUS_IDS.map((status) => {
+        const isCurrent = status === order.status;
+        const isValidTarget = validTargets.includes(status);
+
+        return (
+          <button
+            key={status}
+            disabled={isCurrent || !isValidTarget || disabled}
+            onClick={() => onChange(status)}
+            className={`text-sm font-bold px-4 py-2 rounded-pill ${
+              isCurrent
+                ? "bg-azul-cobalto text-white"
+                : isValidTarget
+                  ? "bg-card-surface text-azul-noche"
+                  : "bg-card-surface text-azul-noche/30 cursor-not-allowed"
+            }`}
+          >
+            {ORDER_STATUS_INFO[status].label}
+          </button>
+        );
+      })}
+    </div>
   );
 };
+
+const OrderDetailPanel = ({
+  order,
+  customer,
+  updatingId,
+  onStatusChange,
+}: {
+  order: Order;
+  customer: CustomerInfo | undefined;
+  updatingId: string | null;
+  onStatusChange: (order: Order, status: OrderStatus) => void;
+}) => (
+  <div className="flex flex-col gap-5 p-5 rounded-card-lg bg-white border border-gris-claro">
+    <div>
+      <p className="text-xs font-bold text-azul-noche/40 uppercase">Orden #{order.id.slice(0, 8)}</p>
+      <p className="font-heading font-extrabold text-lg text-azul-noche mt-1">
+        {customer?.displayName ?? customer?.email ?? order.userId}
+      </p>
+      {customer?.displayName && <p className="text-sm text-azul-noche/60">{customer.email}</p>}
+      <p className="text-sm text-azul-noche/50">{formatOrderDate(order.createdAt)}</p>
+    </div>
+
+    <div>
+      <h3 className="font-heading font-extrabold text-sm text-azul-noche mb-2">Cambiar estado</h3>
+      <ChangeStatusButtons
+        order={order}
+        disabled={updatingId === order.id}
+        onChange={(status) => onStatusChange(order, status)}
+      />
+    </div>
+
+    <div className="h-px bg-azul-noche/10" />
+
+    <div>
+      <h3 className="font-heading font-extrabold text-sm text-azul-noche mb-2">Productos</h3>
+      <OrderItemsSummary items={order.items} total={order.total} />
+    </div>
+  </div>
+);
 
 export const AdminOrdersPage = () => {
   const { showToast } = useToast();
   const [orders, setOrders] = useState<Order[]>([]);
-  const [usersById, setUsersById] = useState<Record<string, string>>({});
+  const [customersById, setCustomersById] = useState<Record<string, CustomerInfo>>({});
   const [loading, setLoading] = useState(true);
   const [statusFilter, setStatusFilter] = useState<OrderStatus | null>(null);
   const [updatingId, setUpdatingId] = useState<string | null>(null);
+  const [selectedOrderId, setSelectedOrderId] = useState<string | null>(null);
 
   useEffect(() => {
     // Las dos cargas van independientes: si falla el listado de usuarios
     // (por ejemplo por permisos) no queremos que eso tire abajo también
     // las órdenes -- en el peor caso, mostramos el uid en vez del email.
     listAllOrders()
-      .then(setOrders)
+      .then((allOrders) => {
+        setOrders(allOrders);
+        setSelectedOrderId((current) => current ?? allOrders[0]?.id ?? null);
+      })
       .catch(() => showToast("No pudimos cargar las órdenes.", "danger"))
       .finally(() => setLoading(false));
 
     getUser()
-      .then((allUsers) => setUsersById(Object.fromEntries(allUsers.map((u) => [u.uid, u.email]))))
+      .then((allUsers) => {
+        setCustomersById(
+          Object.fromEntries(allUsers.map((u) => [u.uid, { email: u.email, displayName: u.displayName }]))
+        );
+      })
       .catch(() => {
-        /* best-effort: si falla, el email queda como uid en la tabla */
+        /* best-effort: si falla, mostramos el uid en vez del email/nombre */
       });
   }, []);
 
@@ -85,7 +150,14 @@ export const AdminOrdersPage = () => {
     }
   };
 
+  const handleFilterChange = (status: OrderStatus | null) => {
+    setStatusFilter(status);
+    const nextOrders = status ? orders.filter((o) => o.status === status) : orders;
+    setSelectedOrderId(nextOrders[0]?.id ?? null);
+  };
+
   const filteredOrders = statusFilter ? orders.filter((o) => o.status === statusFilter) : orders;
+  const selectedOrder = filteredOrders.find((o) => o.id === selectedOrderId) ?? null;
 
   if (loading) {
     return (
@@ -116,7 +188,7 @@ export const AdminOrdersPage = () => {
 
       <div className="flex gap-2 overflow-x-auto mb-5">
         <button
-          onClick={() => setStatusFilter(null)}
+          onClick={() => handleFilterChange(null)}
           className={`text-sm font-bold px-4 py-2 rounded-pill shrink-0 ${
             statusFilter === null ? "bg-azul-cobalto text-white" : "bg-card-surface text-azul-noche/70"
           }`}
@@ -126,7 +198,7 @@ export const AdminOrdersPage = () => {
         {ORDER_STATUS_IDS.map((status) => (
           <button
             key={status}
-            onClick={() => setStatusFilter(status)}
+            onClick={() => handleFilterChange(status)}
             className={`text-sm font-bold px-4 py-2 rounded-pill shrink-0 ${
               statusFilter === status ? "bg-azul-cobalto text-white" : "bg-card-surface text-azul-noche/70"
             }`}
@@ -136,67 +208,114 @@ export const AdminOrdersPage = () => {
         ))}
       </div>
 
-      {/* Desktop: tabla real, como en Productos */}
-      <table className="hidden md:table w-full">
-        <thead>
-          <tr className="text-left text-xs font-bold text-azul-noche/40 uppercase">
-            <th className="pb-3 font-bold">Pedido</th>
-            <th className="pb-3 font-bold">Cliente</th>
-            <th className="pb-3 font-bold">Fecha</th>
-            <th className="pb-3 font-bold">Total</th>
-            <th className="pb-3 font-bold text-right">Estado</th>
-          </tr>
-        </thead>
-        <tbody>
-          {filteredOrders.map((order) => (
-            <tr key={order.id} className="border-t border-gris-claro">
-              <td className="py-3 font-bold text-azul-noche">#{order.id.slice(0, 8)}</td>
-              <td className="py-3 text-sm text-azul-noche/70">{usersById[order.userId] ?? order.userId}</td>
-              <td className="py-3 text-sm text-azul-noche/70">
-                {order.createdAt.toLocaleDateString("es-AR", { day: "2-digit", month: "2-digit", year: "numeric" })}
-              </td>
-              <td className="py-3 text-sm font-bold text-azul-noche">${order.total.toLocaleString("es-AR")}</td>
-              <td className="py-3">
-                <div className="flex justify-end">
-                  <StatusSelect
-                    order={order}
-                    disabled={updatingId === order.id}
-                    onChange={(status) => handleStatusChange(order, status)}
-                  />
-                </div>
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
+      {filteredOrders.length === 0 ? (
+        <p className="text-sm text-azul-noche/50 text-center py-8">No hay órdenes con este estado.</p>
+      ) : (
+        <div className="grid gap-6 lg:grid-cols-[1fr_380px] items-start">
+          {/* Lista: tabla en desktop, tarjetas en mobile */}
+          <div>
+            <table className="hidden lg:table w-full">
+              <thead>
+                <tr className="text-left text-xs font-bold text-azul-noche/40 uppercase">
+                  <th className="pb-3 font-bold">ID</th>
+                  <th className="pb-3 font-bold">Cliente</th>
+                  <th className="pb-3 font-bold">Fecha</th>
+                  <th className="pb-3 font-bold">Total</th>
+                  <th className="pb-3 font-bold text-right">Estado</th>
+                </tr>
+              </thead>
+              <tbody>
+                {filteredOrders.map((order) => {
+                  const customer = customersById[order.userId];
+                  const isSelected = order.id === selectedOrderId;
+                  return (
+                    <tr
+                      key={order.id}
+                      onClick={() => setSelectedOrderId(order.id)}
+                      className={`border-t border-gris-claro cursor-pointer ${isSelected ? "bg-crema" : ""}`}
+                    >
+                      <td className="py-3 font-bold text-azul-noche">#{order.id.slice(0, 8)}</td>
+                      <td className="py-3 text-sm text-azul-noche/70">
+                        {customer?.displayName ?? customer?.email ?? order.userId}
+                      </td>
+                      <td className="py-3 text-sm text-azul-noche/70">
+                        {order.createdAt.toLocaleDateString("es-AR", { day: "2-digit", month: "2-digit" })}{" "}
+                        {order.createdAt.toLocaleTimeString("es-AR", { hour: "2-digit", minute: "2-digit" })}
+                      </td>
+                      <td className="py-3 text-sm font-bold text-azul-noche">
+                        ${order.total.toLocaleString("es-AR")}
+                      </td>
+                      <td className="py-3">
+                        <div className="flex justify-end">
+                          <StatusBadge status={order.status} />
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
 
-      {/* Mobile */}
-      <div className="md:hidden flex flex-col gap-3">
-        {filteredOrders.map((order) => (
-          <div key={order.id} className="flex flex-col gap-2 p-4 rounded-card bg-white shadow-card">
-            <div className="flex items-start justify-between gap-3">
-              <div>
-                <p className="font-bold text-azul-noche">#{order.id.slice(0, 8)}</p>
-                <p className="text-xs text-azul-noche/50">{usersById[order.userId] ?? order.userId}</p>
-              </div>
-              <p className="font-extrabold text-azul-noche shrink-0">${order.total.toLocaleString("es-AR")}</p>
-            </div>
-            <div className="flex items-center justify-between">
-              <span className="text-xs text-azul-noche/50">
-                {order.createdAt.toLocaleDateString("es-AR", { day: "2-digit", month: "2-digit", year: "numeric" })}
-              </span>
-              <StatusSelect
-                order={order}
-                disabled={updatingId === order.id}
-                onChange={(status) => handleStatusChange(order, status)}
-              />
+            {/* Mobile: cada tarjeta se puede tocar para ver el detalle debajo (mismo patrón que "Mis pedidos") */}
+            <div className="lg:hidden flex flex-col gap-3">
+              {filteredOrders.map((order) => {
+                const customer = customersById[order.userId];
+                const isSelected = order.id === selectedOrderId;
+                return (
+                  <div key={order.id}>
+                    <button
+                      onClick={() => setSelectedOrderId(isSelected ? null : order.id)}
+                      className="w-full flex flex-col gap-2 p-4 rounded-card bg-white shadow-card text-left"
+                    >
+                      <div className="flex items-start justify-between gap-3">
+                        <div>
+                          <p className="font-bold text-azul-noche">#{order.id.slice(0, 8)}</p>
+                          <p className="text-xs text-azul-noche/50">
+                            {customer?.displayName ?? customer?.email ?? order.userId}
+                          </p>
+                        </div>
+                        <p className="font-extrabold text-azul-noche shrink-0">
+                          ${order.total.toLocaleString("es-AR")}
+                        </p>
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs text-azul-noche/50">
+                          {order.createdAt.toLocaleDateString("es-AR", { day: "2-digit", month: "2-digit" })}
+                        </span>
+                        <StatusBadge status={order.status} />
+                      </div>
+                    </button>
+
+                    {isSelected && (
+                      <div className="mt-2">
+                        <OrderDetailPanel
+                          order={order}
+                          customer={customer}
+                          updatingId={updatingId}
+                          onStatusChange={handleStatusChange}
+                        />
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
             </div>
           </div>
-        ))}
-      </div>
 
-      {filteredOrders.length === 0 && (
-        <p className="text-sm text-azul-noche/50 text-center py-8">No hay órdenes con este estado.</p>
+          {/* Desktop: panel de detalle fijo al costado */}
+          <div className="hidden lg:block sticky top-6">
+            {selectedOrder ? (
+              <OrderDetailPanel
+                order={selectedOrder}
+                customer={customersById[selectedOrder.userId]}
+                updatingId={updatingId}
+                onStatusChange={handleStatusChange}
+              />
+            ) : (
+              <p className="text-sm text-azul-noche/50 text-center py-8">Seleccioná una orden para ver el detalle.</p>
+            )}
+          </div>
+        </div>
       )}
     </section>
   );
