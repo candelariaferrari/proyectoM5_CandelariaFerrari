@@ -1,15 +1,12 @@
 import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { useCart } from "../hooks/useCart";
 import { useAuth } from "../hooks/useAuth";
-import { useToast } from "../hooks/useToast";
 import { AuthModal } from "../components/AuthModal";
 import { CloseIcon, CartIcon, ChevronUpIcon } from "../components/ui/icons";
 import { ProductImage } from "../components/ui/ProductImage";
 import { ConfirmDialog } from "../components/ui/ConfirmDialog";
-import { createOrder } from "../services/orders.services";
 import type { Product } from "../types/product.types";
-import type { OrderItemSnapshot } from "../types/order.types";
 
 // banner del header ("Envíos gratis en
 // compras mayores a $50.000").
@@ -17,15 +14,11 @@ const FREE_SHIPPING_THRESHOLD = 50000;
 
 export const CartPage = () => {
   const { items, updateQuantity, removeFromCart, clearCart } = useCart();
-  const { user, isAuthenticated } = useAuth();
-  const { showToast } = useToast();
-  const navigate = useNavigate();
+  const { isAuthenticated } = useAuth();
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   // Panel de compra en mobile: collapsable
   const [isSummaryExpanded, setIsSummaryExpanded] = useState(true);
   const [itemPendingRemoval, setItemPendingRemoval] = useState<Product | null>(null);
-  // Doble-submit: mientras se crea la orden, el botón queda deshabilitado.
-  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const total = items.reduce((sum, item) => sum + item.product.price * item.quantity, 0);
   const hasFreeShipping = total >= FREE_SHIPPING_THRESHOLD;
@@ -36,34 +29,6 @@ export const CartPage = () => {
     // clamp: nunca menos de 1 ni más del stock disponible
     const clamped = Math.min(Math.max(quantity, 1), stock);
     updateQuantity(id, clamped);
-  };
-
-  // Checkout simulado
-  // creamos la orden en Firestore con un snapshot de los items (nombre y
-  // precio "congelados" al momento de la compra, no una referencia al
-  // producto) y recién si eso se confirma vaciamos el carrito. `isSubmitting`
-  // evita que un doble click cree dos órdenes.
-  const handleCheckout = async () => {
-    if (!user || isSubmitting) return;
-
-    setIsSubmitting(true);
-    try {
-      const orderItems: OrderItemSnapshot[] = items.map(({ product, quantity }) => ({
-        productId: product.id,
-        name: product.name,
-        priceAtPurchase: product.price,
-        quantity,
-      }));
-
-      const orderId = await createOrder(user.uid, orderItems, total);
-      clearCart();
-      showToast("¡Compra realizada con éxito!");
-      navigate("/pedido-confirmado", { state: { orderId, items: orderItems, total } });
-    } catch {
-      showToast("No pudimos procesar tu compra. Probá de nuevo.", "danger");
-    } finally {
-      setIsSubmitting(false);
-    }
   };
 
   if (items.length === 0) {
@@ -122,13 +87,12 @@ export const CartPage = () => {
       </div>
 
       {isAuthenticated ? (
-        <button
-          onClick={handleCheckout}
-          disabled={isSubmitting}
-          className="text-sm font-extrabold text-azul-noche bg-mostaza px-7 py-3.5 rounded-pill shadow-cta disabled:opacity-60"
+        <Link
+          to="/confirmar-compra"
+          className="text-sm font-extrabold text-azul-noche bg-mostaza px-7 py-3.5 rounded-pill shadow-cta text-center"
         >
-          {isSubmitting ? "Procesando..." : "Continuar compra"}
-        </button>
+          Continuar compra
+        </Link>
       ) : (
         <div className="flex flex-col gap-2">
           <button
