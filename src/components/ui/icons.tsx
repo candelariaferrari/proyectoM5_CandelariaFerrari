@@ -169,6 +169,22 @@ export const CloseIcon = ({ className, size = 22 }: IconProps) => (
   </svg>
 );
 
+export const CheckIcon = ({ className, size = 22 }: IconProps) => (
+  <svg
+    width={size}
+    height={size}
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth={2.4}
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    className={className}
+  >
+    <polyline points="20 6 9 17 4 12" />
+  </svg>
+);
+
 export const ChevronUpIcon = ({ className, size = 18 }: IconProps) => (
   <svg
     width={size}

@@ -55,10 +55,10 @@ export const CartPage = () => {
         quantity,
       }));
 
-      await createOrder(user.uid, orderItems, total);
+      const orderId = await createOrder(user.uid, orderItems, total);
       clearCart();
       showToast("¡Compra realizada con éxito!");
-      navigate("/pedidos");
+      navigate("/pedido-confirmado", { state: { orderId, items: orderItems, total } });
     } catch {
       showToast("No pudimos procesar tu compra. Probá de nuevo.", "danger");
     } finally {

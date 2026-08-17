@@ -4,6 +4,7 @@ import { ProductsPage } from "../pages/ProductsPage";
 import { ProductDetailPage } from "../pages/ProductDetailPage";
 import { CartPage } from "../pages/CartPage";
 import { CustomerOrdersPage } from "../pages/CustomerOrdersPage";
+import { OrderConfirmationPage } from "../pages/OrderConfirmationPage";
 import { AdminLayout } from "../components/admin/AdminLayout";
 import { AdminDashboardPage } from "../pages/admin/AdminDashboardPage";
 import { AdminProductsPage } from "../pages/admin/AdminProductsPage";
@@ -22,6 +23,14 @@ export const AppRoutes = (): JSX.Element => {
         element={
           <ProtectedRoute>
             <CustomerOrdersPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/pedido-confirmado"
+        element={
+          <ProtectedRoute>
+            <OrderConfirmationPage />
           </ProtectedRoute>
         }
       />

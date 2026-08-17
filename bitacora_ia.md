@@ -818,3 +818,28 @@ Las reglas que terminamos definiendo entre las dos: nombre y descripción del pr
 Toda la validación corre al tocar "Guardar"/"Ingresar" (no mientras se escribe), y le agregué `noValidate` al `<form>` para apagar el validado nativo del navegador — si no, el cartelito feo del navegador aparece primero y nunca se llega a ver el estilo propio.
 
 Aprendizaje: cuando el mismo pedazo de UI aparece en dos lugares con roles distintos (un form de 6 campos vs. un modal de 2), no hace falta forzarlos a compartir el input completo — alcanza con compartir la parte que sí es idéntica en los dos (el wrapper de label + error) y dejar que cada uno arme su propio campo adentro.
+
+
+---
+
+## Firestore te deja leer tu propio documento, pero no listar toda la colección: el bug de "el admin no ve las órdenes"
+
+### Contexto
+
+Con el checkout y el panel de órdenes ya armados, probamos el flujo completo en el deploy real de Vercel: comprar como cliente y después revisar en `/admin/ordenes`. La consola tiraba varios `Missing or insufficient permissions`, el admin no veía ninguna orden, y al comprar no aparecía ninguna pantalla de confirmación.
+
+### Prompt
+
+> se hizo el deploy en vercel pero no me funciono, cuando continue compra no me aparecio la vista de confirmar comprar , y en admin no me figura ninguna compra
+
+### Qué aprendí
+
+La regla de `firestore.rules` para `/users` decía `allow read: if request.auth.uid == userId` — pensada para que cada usuario lea su propio perfil. Pero el dashboard y la página de órdenes del admin necesitan traer TODOS los usuarios (para mostrar el email de cada cliente), y ahí apareció una diferencia que no tenía tan clara: en Firestore, un "get" (un documento puntual, por su id) y un "list" (una query sobre toda la colección) se evalúan distinto. La regla `request.auth.uid == userId` funciona perfecto para un `get` (se compara contra el id de ese documento puntual), pero para un `list` sin filtro Firestore necesita poder garantizar que la regla se cumple para *todos* los documentos que la query podría devolver — y como esa condición solo es cierta para un documento (el propio), Firestore rechaza la consulta completa, no solo los documentos ajenos.
+
+La solución fue agregar `|| isAdmin()` a esa regla: como `isAdmin()` no depende de `resource.data` (usa `get()` sobre el documento del usuario logueado), Firestore sí puede garantizar que se cumple para toda la colección cuando quien pregunta es admin.
+
+Un detalle aparte que también corregí: tenía el fetch de órdenes y el de usuarios juntos en un mismo `Promise.all`, así que cuando uno de los dos fallaba por permisos, el error tumbaba a los dos — por eso "no aparecía ninguna orden" en el admin, aunque sí se habían creado bien.
+
+### Qué decidí
+
+También agregamos la pantalla de confirmación que pide la consigna después de comprar: antes solo se mostraba un toast y redirigía directo a "Mis pedidos", pero la consigna pide un flujo de checkout que se pueda "revisar y confirmar". Ahora, al terminar la compra, se ve una pantalla con el detalle de lo comprado y el número de pedido, con botones para ir a "Mis pedidos" o seguir comprando. El toast de "¡Compra realizada con éxito!" se mantiene, pero ahora acompaña a esa pantalla en vez de reemplazarla.
