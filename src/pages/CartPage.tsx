@@ -5,6 +5,8 @@ import { useAuth } from "../hooks/useAuth";
 import { AuthModal } from "../components/AuthModal";
 import { CloseIcon, CartIcon, ChevronUpIcon } from "../components/ui/icons";
 import { ProductImage } from "../components/ui/ProductImage";
+import { ConfirmDialog } from "../components/ui/ConfirmDialog";
+import type { Product } from "../types/product.types";
 
 // banner del header ("Envíos gratis en
 // compras mayores a $50.000").
@@ -16,6 +18,7 @@ export const CartPage = () => {
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   // Panel de compra en mobile: collapsable
   const [isSummaryExpanded, setIsSummaryExpanded] = useState(true);
+  const [itemPendingRemoval, setItemPendingRemoval] = useState<Product | null>(null);
 
   const total = items.reduce((sum, item) => sum + item.product.price * item.quantity, 0);
   const hasFreeShipping = total >= FREE_SHIPPING_THRESHOLD;
@@ -171,7 +174,7 @@ export const CartPage = () => {
                   </div>
 
                   <button
-                    onClick={() => removeFromCart(product.id)}
+                    onClick={() => setItemPendingRemoval(product)}
                     className="w-7 h-7 rounded-full bg-rosa-coral text-white flex items-center justify-center"
                     aria-label="Quitar del carrito"
                   >
@@ -211,6 +214,19 @@ export const CartPage = () => {
       </div>
 
       {isAuthModalOpen && <AuthModal onClose={() => setIsAuthModalOpen(false)} />}
+
+      {itemPendingRemoval && (
+        <ConfirmDialog
+          title="¿Quitar del carrito?"
+          message={`"${itemPendingRemoval.name}" se eliminará de tu carrito.`}
+          confirmLabel="Quitar"
+          onCancel={() => setItemPendingRemoval(null)}
+          onConfirm={() => {
+            removeFromCart(itemPendingRemoval.id);
+            setItemPendingRemoval(null);
+          }}
+        />
+      )}
     </section>
   );
 };

@@ -145,126 +145,136 @@ export const ProductForm = ({ product, onClose, onSaved }: ProductFormProps) => 
   };
 
   return (
-    <Modal onClose={onClose} maxWidthClassName="max-w-lg">
-      <form onSubmit={handleSubmit} noValidate className="p-6 flex flex-col gap-3">
-        <h2 className="font-heading font-extrabold text-xl text-azul-noche mb-1">
+    <Modal onClose={onClose} maxWidthClassName="max-w-3xl">
+      <form onSubmit={handleSubmit} noValidate className="p-6">
+        <h2 className="font-heading font-extrabold text-xl text-azul-noche mb-4">
           {isEditing ? "Editar producto" : "Nuevo producto"}
         </h2>
 
-        <FormField label="Nombre" error={fieldErrors.name}>
-          <input
-            value={name}
-            maxLength={MAX_NAME_LENGTH}
-            onChange={(e) => setName(e.target.value)}
-            className={fieldInputClassName(!!fieldErrors.name)}
-          />
-        </FormField>
-
-        <FormField label="Descripción" error={fieldErrors.description}>
-          <textarea
-            value={description}
-            maxLength={MAX_DESCRIPTION_LENGTH}
-            onChange={(e) => setDescription(e.target.value)}
-            rows={3}
-            className={`${fieldInputClassName(!!fieldErrors.description)} resize-none`}
-          />
-        </FormField>
-
-        <div className="grid grid-cols-2 gap-3">
-          <FormField label="Precio" error={fieldErrors.price}>
-            <input
-              type="number"
-              min={0}
-              value={price}
-              onChange={(e) => setPrice(e.target.value)}
-              className={fieldInputClassName(!!fieldErrors.price)}
-            />
-          </FormField>
-
-          <FormField label="Stock" error={fieldErrors.stock}>
-            <input
-              type="number"
-              min={0}
-              value={stock}
-              onChange={(e) => setStock(e.target.value)}
-              className={fieldInputClassName(!!fieldErrors.stock)}
-            />
-          </FormField>
-
-          <label className="text-sm font-bold text-azul-noche">
-            Categoría
-            <select
-              value={categoryId}
-              onChange={(e) => setCategoryId(e.target.value as CategoryId)}
-              className="w-full mt-1 border border-gris-claro rounded-input px-3 py-2 text-sm font-normal"
+        {/* Imagen a la izquierda, campos a la derecha — mismo orden que el
+            detalle de producto (ProductDetailPage), para que se vea "igual"
+            mientras se está armando. En mobile se apila (imagen arriba). */}
+        <div className="grid gap-6 md:grid-cols-2">
+          <div className="text-sm font-bold text-azul-noche">
+            Imagen
+            <div
+              onClick={() => fileInputRef.current?.click()}
+              onDragOver={(e) => {
+                e.preventDefault();
+                setIsDragOver(true);
+              }}
+              onDragLeave={() => setIsDragOver(false)}
+              onDrop={handleDrop}
+              className={`mt-1 w-full aspect-square border-2 border-dashed rounded-card flex flex-col items-center justify-center gap-1.5 text-center cursor-pointer transition-colors overflow-hidden ${
+                isDragOver ? "border-mostaza bg-mostaza/10" : "border-gris-claro bg-crema"
+              }`}
             >
-              {CATEGORY_IDS.map((id) => (
-                <option key={id} value={id}>
-                  {CATEGORY_INFO[id].label}
-                </option>
-              ))}
-            </select>
-          </label>
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/jpeg,image/png,image/webp"
+                onChange={handleImageChange}
+                className="hidden"
+              />
 
-          <label className="text-sm font-bold text-azul-noche">
-            Edad mínima
-            <select
-              value={minAge}
-              onChange={(e) => setMinAge(Number(e.target.value) as MinAge)}
-              className="w-full mt-1 border border-gris-claro rounded-input px-3 py-2 text-sm font-normal"
-            >
-              {MIN_AGE_OPTIONS.map((age) => (
-                <option key={age} value={age}>
-                  {age}+
-                </option>
-              ))}
-            </select>
-          </label>
-        </div>
-
-        <div className="text-sm font-bold text-azul-noche">
-          Imagen
-          <div
-            onClick={() => fileInputRef.current?.click()}
-            onDragOver={(e) => {
-              e.preventDefault();
-              setIsDragOver(true);
-            }}
-            onDragLeave={() => setIsDragOver(false)}
-            onDrop={handleDrop}
-            className={`mt-1 border-2 border-dashed rounded-input px-4 py-6 flex flex-col items-center justify-center gap-1 text-center cursor-pointer transition-colors ${
-              isDragOver ? "border-mostaza bg-mostaza/10" : "border-gris-claro bg-crema"
-            }`}
-          >
-            <input
-              ref={fileInputRef}
-              type="file"
-              accept="image/jpeg,image/png,image/webp"
-              onChange={handleImageChange}
-              className="hidden"
-            />
-
-            {isUploadingImage ? (
-              <span className="text-sm font-bold text-azul-noche">Subiendo imagen...</span>
-            ) : imageUrl ? (
-              <>
-                <img src={imageUrl} alt="Vista previa" className="w-16 h-16 object-cover rounded-input" />
+              {isUploadingImage ? (
+                <span className="text-sm font-bold text-azul-noche">Subiendo imagen...</span>
+              ) : imageUrl ? (
+                <>
+                  <img src={imageUrl} alt="Vista previa" className="w-full h-full object-cover" />
+                </>
+              ) : (
+                <>
+                  <UploadIcon size={28} className="text-rosa-coral" />
+                  <span className="text-sm font-bold text-azul-noche">Arrastrá una imagen o hacé click</span>
+                  <span className="text-[11px] font-semibold text-azul-noche/40">AWS S3 · URL prefirmada</span>
+                </>
+              )}
+            </div>
+            {imageUrl && !isUploadingImage && (
+              <div className="flex items-center justify-between mt-1.5">
                 {imageUploaded && <span className="text-xs font-bold text-verde-texto">✓ Imagen cargada</span>}
-                <span className="text-xs font-bold text-azul-cobalto">Cambiar imagen</span>
-              </>
-            ) : (
-              <>
-                <UploadIcon size={22} className="text-rosa-coral" />
-                <span className="text-sm font-bold text-azul-noche">Arrastrá una imagen o hacé click</span>
-                <span className="text-[11px] font-semibold text-azul-noche/40">AWS S3 · URL prefirmada</span>
-              </>
+                <span className="text-xs font-bold text-azul-cobalto ml-auto">Cambiar imagen</span>
+              </div>
             )}
+            {imageError && <p className="text-danger text-xs font-normal mt-1">{imageError}</p>}
+          </div>
+
+          <div className="flex flex-col gap-3">
+            <FormField label="Nombre" error={fieldErrors.name}>
+              <input
+                value={name}
+                maxLength={MAX_NAME_LENGTH}
+                onChange={(e) => setName(e.target.value)}
+                className={fieldInputClassName(!!fieldErrors.name)}
+              />
+            </FormField>
+
+            <FormField label="Descripción" error={fieldErrors.description}>
+              <textarea
+                value={description}
+                maxLength={MAX_DESCRIPTION_LENGTH}
+                onChange={(e) => setDescription(e.target.value)}
+                rows={3}
+                className={`${fieldInputClassName(!!fieldErrors.description)} resize-none`}
+              />
+            </FormField>
+
+            <div className="grid grid-cols-2 gap-3">
+              <FormField label="Precio" error={fieldErrors.price}>
+                <input
+                  type="number"
+                  min={0}
+                  value={price}
+                  onChange={(e) => setPrice(e.target.value)}
+                  className={fieldInputClassName(!!fieldErrors.price)}
+                />
+              </FormField>
+
+              <FormField label="Stock" error={fieldErrors.stock}>
+                <input
+                  type="number"
+                  min={0}
+                  value={stock}
+                  onChange={(e) => setStock(e.target.value)}
+                  className={fieldInputClassName(!!fieldErrors.stock)}
+                />
+              </FormField>
+
+              <label className="text-sm font-bold text-azul-noche">
+                Categoría
+                <select
+                  value={categoryId}
+                  onChange={(e) => setCategoryId(e.target.value as CategoryId)}
+                  className="w-full mt-1 border border-gris-claro rounded-input px-3 py-2 text-sm font-normal"
+                >
+                  {CATEGORY_IDS.map((id) => (
+                    <option key={id} value={id}>
+                      {CATEGORY_INFO[id].label}
+                    </option>
+                  ))}
+                </select>
+              </label>
+
+              <label className="text-sm font-bold text-azul-noche">
+                Edad mínima
+                <select
+                  value={minAge}
+                  onChange={(e) => setMinAge(Number(e.target.value) as MinAge)}
+                  className="w-full mt-1 border border-gris-claro rounded-input px-3 py-2 text-sm font-normal"
+                >
+                  {MIN_AGE_OPTIONS.map((age) => (
+                    <option key={age} value={age}>
+                      {age}+
+                    </option>
+                  ))}
+                </select>
+              </label>
+            </div>
           </div>
         </div>
 
-        {imageError && <p className="text-danger text-xs">{imageError}</p>}
-
-        {error && <p className="text-danger text-xs">{error}</p>}
+        {error && <p className="text-danger text-xs mt-3">{error}</p>}
 
         <div className="flex gap-3 mt-2">
           <button

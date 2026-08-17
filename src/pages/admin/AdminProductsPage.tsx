@@ -9,6 +9,7 @@ import { ProductImage } from "../../components/ui/ProductImage";
 import { useProductsPagination } from "../../hooks/useProductsPagination";
 import { useToast } from "../../hooks/useToast";
 import { Pagination } from "../../components/ui/Pagination";
+import { ConfirmDialog } from "../../components/ui/ConfirmDialog";
 import type { CategoryId, Product } from "../../types/product.types";
 
 const PAGE_SIZE = 10;
@@ -40,6 +41,7 @@ export const AdminProductsPage = () => {
     (location.state as { openCreate?: boolean } | null)?.openCreate ?? false
   );
   const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [productPendingDelete, setProductPendingDelete] = useState<Product | null>(null);
 
   const searchPrefix = search.toLowerCase();
 
@@ -74,10 +76,13 @@ export const AdminProductsPage = () => {
     setSearch(term);
   };
 
-  const handleDelete = async (product: Product) => {
-    const confirmed = window.confirm(`¿Borrar "${product.name}"? No se puede deshacer.`);
-    if (!confirmed) return;
+  // El trash icon solo pide confirmación (abre el modal); el borrado real
+  // pasa acá, disparado desde el botón "Eliminar" del ConfirmDialog.
+  const confirmDelete = async () => {
+    const product = productPendingDelete;
+    if (!product) return;
 
+    setProductPendingDelete(null);
     setDeletingId(product.id);
     await deleteProduct(product.id);
     refetch();
@@ -177,7 +182,7 @@ export const AdminProductsPage = () => {
                         <PencilIcon size={14} />
                       </button>
                       <button
-                        onClick={() => handleDelete(product)}
+                        onClick={() => setProductPendingDelete(product)}
                         disabled={deletingId === product.id}
                         className="w-8 h-8 rounded-full bg-stock-low flex items-center justify-center text-danger disabled:opacity-40"
                         aria-label="Borrar producto"
@@ -227,7 +232,7 @@ export const AdminProductsPage = () => {
                     <PencilIcon size={15} />
                   </button>
                   <button
-                    onClick={() => handleDelete(product)}
+                    onClick={() => setProductPendingDelete(product)}
                     disabled={deletingId === product.id}
                     className="w-9 h-9 rounded-full bg-stock-low flex items-center justify-center text-danger disabled:opacity-40"
                     aria-label="Borrar producto"
@@ -259,6 +264,16 @@ export const AdminProductsPage = () => {
             setEditingProduct(null);
           }}
           onSaved={refetch}
+        />
+      )}
+
+      {productPendingDelete && (
+        <ConfirmDialog
+          title="¿Borrar producto?"
+          message={`"${productPendingDelete.name}" se va a eliminar. No se puede deshacer.`}
+          confirmLabel="Eliminar"
+          onCancel={() => setProductPendingDelete(null)}
+          onConfirm={confirmDelete}
         />
       )}
     </section>
