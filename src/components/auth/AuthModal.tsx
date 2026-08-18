@@ -109,12 +109,15 @@ export const AuthModal = ({ onClose }: AuthModalProps) => {
     <Modal onClose={onClose}>
       <div className="p-6 flex flex-col gap-5">
         <div>
-          <MundoLogo lettersClassName="text-xl" showTagline={false} />
-          <h2 className="font-heading font-extrabold text-2xl text-azul-noche mt-3">
-            {isLogin ? "¡Hola de nuevo!" : "Creá tu cuenta"}
-          </h2>
+          <div className="flex items-center gap-1.5 flex-wrap">
+            <h2 className="font-heading font-extrabold text-2xl text-azul-noche">
+              {isLogin ? "Bienvenido a" : "Creá tu cuenta en"}
+            </h2>
+            <MundoLogo lettersClassName="text-2xl" showTagline={false} />
+          </div>
+
           <p className="text-sm text-azul-noche/60 mt-1">
-            {isLogin ? "Iniciá sesión para seguir comprando." : "Registrate para empezar a comprar en MUNDO."}
+            {isLogin ? "Iniciá sesión para descubrir un mundo de juegos!" : "Registrate para descubrir un mundo de juegos."}
           </p>
         </div>
 
