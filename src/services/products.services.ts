@@ -20,6 +20,7 @@ import {
 } from "firebase/firestore";
 import { db } from "../config/firebase";
 import type { Product, CategoryId } from "../types/product.types";
+import { LOW_STOCK_THRESHOLD } from "../constants/stock";
 
 const DEFAULT_PAGE_SIZE = 12;
 
@@ -137,6 +138,26 @@ export const countProducts = async (
   const q = query(collection(db, "products"), ...constraints);
   const snapshot = await getCountFromServer(q);
   return snapshot.data().count;
+};
+
+// Productos con poco stock, para la sección "Stock a revisar" del
+// dashboard de admin: filtro y orden (ascendente, el más urgente primero)
+// del lado del servidor, en vez de traer todo el catálogo y filtrar en el
+// cliente -- mismo criterio que countProducts/listProducts. `where` y
+// `orderBy` sobre el mismo campo (`stock`) no piden índice compuesto, así
+// que esta consulta no debería necesitar crear nada nuevo en Firestore.
+export const listLowStockProducts = async (
+  maxResults = 5,
+  threshold: number = LOW_STOCK_THRESHOLD
+): Promise<Product[]> => {
+  const q = query(
+    collection(db, "products"),
+    where("stock", "<", threshold),
+    orderBy("stock", "asc"),
+    limit(maxResults)
+  );
+  const snapshot = await getDocs(q);
+  return snapshot.docs.map(docToProduct);
 };
 
 // Crea un producto nuevo. `nameLower` se calcula acá (no lo manda el form)

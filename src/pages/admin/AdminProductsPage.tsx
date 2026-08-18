@@ -12,11 +12,10 @@ import { Pagination } from "../../components/ui/Pagination";
 import { ConfirmDialog } from "../../components/ui/ConfirmDialog";
 import { Button } from "../../components/ui/Button";
 import { formatCurrency } from "../../utils/format";
+import { LOW_STOCK_THRESHOLD } from "../../constants/stock";
 import type { CategoryId, Product } from "../../types/product.types";
 
 const PAGE_SIZE = 10;
-
-const LOW_STOCK_THRESHOLD = 5;
 
 const StockBadge = ({ stock }: { stock: number }) => {
   const isLowStock = stock <= LOW_STOCK_THRESHOLD;
@@ -36,7 +35,13 @@ export const AdminProductsPage = () => {
   const { showToast } = useToast();
   const [search, setSearch] = useState("");
   const [categoryFilter, setCategoryFilterState] = useState<CategoryId | null>(null);
-  const [editingProduct, setEditingProduct] = useState<Product | null>(null);
+  // Si llegamos acá desde "Stock a revisar" en el Dashboard, el form de
+  // edición de ESE producto se abre directo (ver Link con state más abajo
+  // en AdminDashboardPage) -- se pasa el producto completo por location.state
+  // para no tener que pedirlo de nuevo a Firestore acá.
+  const [editingProduct, setEditingProduct] = useState<Product | null>(
+    (location.state as { editProduct?: Product } | null)?.editProduct ?? null
+  );
   // Si llegamos acá desde el botón "+ Nuevo producto" del Dashboard, el
   // form de alta se abre directo (ver Link con state en AdminDashboardPage).
   const [isCreating, setIsCreating] = useState(
