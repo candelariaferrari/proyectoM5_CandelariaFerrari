@@ -58,7 +58,7 @@ export const SearchInput = ({
         value={input}
         onChange={(e) => setInput(e.target.value)}
         placeholder={placeholder}
-        className="w-full border border-gris-claro rounded-pill pl-4 pr-10 py-2 text-sm"
+        className="w-full border border-gris-borde rounded-pill pl-4 pr-10 py-2 text-sm"
       />
       {input ? (
         <button

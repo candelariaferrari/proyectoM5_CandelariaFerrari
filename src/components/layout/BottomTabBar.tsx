@@ -27,7 +27,7 @@ export const BottomTabBar = () => {
 
   return (
     <>
-      <nav className="md:hidden fixed bottom-0 inset-x-0 bg-white border-t border-gris-claro flex items-stretch justify-around z-40">
+      <nav className="md:hidden fixed bottom-0 inset-x-0 bg-white border-t border-gris-borde flex items-stretch justify-around z-40">
         <Link
           to="/"
           className={`flex flex-col items-center gap-0.5 py-2.5 flex-1 text-[11px] font-bold ${
@@ -83,7 +83,7 @@ export const BottomTabBar = () => {
       </nav>
 
       {isProfileOpen && (
-        <div className="md:hidden fixed bottom-[52px] inset-x-0 bg-white border-t border-gris-claro px-6 py-4 flex items-center justify-between z-40">
+        <div className="md:hidden fixed bottom-[52px] inset-x-0 bg-white border-t border-gris-borde px-6 py-4 flex items-center justify-between z-40">
           <span className="text-sm text-azul-noche/70">
             Hola{user?.displayName ? `, ${user.displayName}` : ""}
           </span>

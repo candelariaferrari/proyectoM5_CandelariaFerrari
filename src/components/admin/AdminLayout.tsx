@@ -23,7 +23,7 @@ export const AdminLayout = () => {
       {/* Desktop: mismos márgenes que el Header de cliente (max-w-1280 + px-6),
           para que el contenido quede alineado igual en las dos secciones. */}
       <header className="hidden md:block bg-white">
-        <div className="flex items-center justify-between gap-4 px-6 py-4 max-w-[1280px] mx-auto border-b border-gris-claro">
+        <div className="flex items-center justify-between gap-4 px-6 py-4 max-w-[1280px] mx-auto border-b border-gris-borde">
           <div className="flex items-end gap-2">
             <MundoLogo lettersClassName="text-3xl" taglineClassName="text-[10px]" />
             <span className="text-xs font-extrabold tracking-widest text-azul-noche/40 mb-1">ADMIN</span>
@@ -44,23 +44,22 @@ export const AdminLayout = () => {
                 {item.label}
               </NavLink>
             ))}
-             {/* Salida a propósito del panel de admin, para ver la tienda
-                como la ve un customer -- no es parte de ADMIN_NAV_ITEMS
-                porque no es una página del panel, es salir de él. */}
-            <NavLink to="/" className="text-sm font-bold text-azul-noche/60 px-4 py-2 rounded-pill hover:bg-card-surface">
-              Ver tienda
-            </NavLink>
           </nav>
 
           <div className="flex items-center gap-3">
-           
-          {/*   <div className="w-9 h-9 rounded-full bg-mostaza text-white font-extrabold text-sm flex items-center justify-center">
-              {initials} 
+            {/* Salida a propósito del panel de admin, para ver la tienda
+                como la ve un customer -- no es parte de ADMIN_NAV_ITEMS
+                porque no es una página del panel, es salir de él. */}
+            <Link to="/" className="text-sm font-bold text-azul-noche/60 px-4 py-2 rounded-pill hover:bg-card-surface">
+              Ver tienda
+            </Link>
+            <div className="w-9 h-9 rounded-full bg-mostaza text-white font-extrabold text-sm flex items-center justify-center">
+              {initials}
             </div>
             <div className="leading-tight">
               <p className="text-sm font-bold text-azul-noche">{user?.displayName ?? "Admin"}</p>
               <p className="text-xs text-azul-noche/50">Rol: {user?.role}</p>
-            </div> */}
+            </div>
             <button onClick={logout} className="text-sm font-bold text-danger bg-stock-low px-4 py-2 rounded-pill">
               Cerrar sesión
             </button>
@@ -70,7 +69,7 @@ export const AdminLayout = () => {
 
       {/* Mobile: mismos márgenes que el Header de cliente (px-6), wordmark
           completo con tagline igual que del lado cliente. */}
-      <header className="md:hidden bg-white border-b border-gris-claro">
+      <header className="md:hidden bg-white border-b border-gris-borde">
         <div className="flex items-end justify-between gap-2 px-6 py-3">
           <div className="flex items-end gap-2">
             <MundoLogo lettersClassName="text-xl" taglineClassName="text-[9px]" showTagline />
@@ -91,7 +90,7 @@ export const AdminLayout = () => {
         <Outlet />
       </main>
 
-      <nav className="md:hidden fixed bottom-0 inset-x-0 bg-white border-t border-gris-claro flex items-stretch justify-around z-40">
+      <nav className="md:hidden fixed bottom-0 inset-x-0 bg-white border-t border-gris-borde flex items-stretch justify-around z-40">
         {ADMIN_NAV_ITEMS.map((item) => {
           const Icon = item.icon;
           return (

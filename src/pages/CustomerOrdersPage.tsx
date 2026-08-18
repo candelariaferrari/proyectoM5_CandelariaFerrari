@@ -31,7 +31,7 @@ export const CustomerOrdersPage = () => {
         <Skeleton className="h-8 w-40 mb-6" />
         <div className="flex flex-col gap-4">
           {Array.from({ length: 3 }).map((_, index) => (
-            <div key={index} className="flex items-center justify-between gap-4 p-4 rounded-card bg-white border border-gris-claro">
+            <div key={index} className="flex items-center justify-between gap-4 p-4 rounded-card bg-white border border-gris-borde">
               <div className="flex flex-col gap-2">
                 <Skeleton className="h-4 w-32" />
                 <Skeleton className="h-3 w-24" />
@@ -78,7 +78,7 @@ export const CustomerOrdersPage = () => {
           const statusInfo = ORDER_STATUS_INFO[order.status];
 
           return (
-            <div key={order.id} className="rounded-card bg-white border border-gris-claro overflow-hidden">
+            <div key={order.id} className="rounded-card bg-white border border-gris-borde overflow-hidden">
               <button
                 onClick={() => setExpandedOrderId(isExpanded ? null : order.id)}
                 className="w-full flex items-center justify-between gap-4 p-4"
@@ -104,7 +104,7 @@ export const CustomerOrdersPage = () => {
               </button>
 
               {isExpanded && (
-                <div className="px-4 pb-4 border-t border-gris-claro pt-3">
+                <div className="px-4 pb-4 border-t border-gris-borde pt-3">
                   <OrderItemsSummary items={order.items} total={order.total} />
                 </div>
               )}

@@ -72,7 +72,7 @@ export const CheckoutConfirmPage = () => {
     <section className="max-w-[560px] mx-auto px-6 py-16">
       <h1 className="font-heading font-extrabold text-2xl text-azul-noche mb-6">Confirmar compra</h1>
 
-      <div className="p-5 rounded-card-lg bg-white border border-gris-claro">
+      <div className="p-5 rounded-card-lg bg-white border border-gris-borde">
         <h2 className="font-heading font-extrabold text-sm text-azul-noche mb-3">Tus productos</h2>
         <OrderItemsSummary items={items.map(({ product, quantity }) => ({
           productId: product.id,

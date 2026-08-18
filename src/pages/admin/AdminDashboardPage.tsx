@@ -83,21 +83,21 @@ export const AdminDashboardPage = () => {
       </div>
 
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-        <div className="p-5 rounded-card-lg bg-white border border-gris-claro">
+        <div className="p-5 rounded-card-lg bg-white border border-gris-borde">
           <p className="text-sm text-azul-noche/50">Productos</p>
           <p className="font-heading font-extrabold text-3xl text-azul-noche mt-1">
             {productCount ?? "…"}
           </p>
         </div>
-        <div className="p-5 rounded-card-lg bg-white border border-gris-claro">
+        <div className="p-5 rounded-card-lg bg-white border border-gris-borde">
           <p className="text-sm text-azul-noche/50">Usuarios</p>
           <p className="font-heading font-extrabold text-3xl text-azul-noche mt-1">{userCount ?? "…"}</p>
         </div>
-        <div className="p-5 rounded-card-lg bg-white border border-gris-claro">
+        <div className="p-5 rounded-card-lg bg-white border border-gris-borde">
           <p className="text-sm text-azul-noche/50">Órdenes</p>
           <p className="font-heading font-extrabold text-3xl text-azul-noche mt-1">{orderCount ?? "…"}</p>
         </div>
-        <div className="p-5 rounded-card-lg bg-white border border-gris-claro">
+        <div className="p-5 rounded-card-lg bg-white border border-gris-borde">
           <p className="text-sm text-azul-noche/50">Ventas</p>
           <p className="font-heading font-extrabold text-3xl text-azul-noche mt-1">
             {totalSales === null ? "…" : formatCurrency(totalSales)}
@@ -106,7 +106,7 @@ export const AdminDashboardPage = () => {
       </div>
 
       <div className="grid gap-6 lg:grid-cols-[1fr_360px] items-start">
-        <div className="p-5 rounded-card-lg bg-white border border-gris-claro">
+        <div className="p-5 rounded-card-lg bg-white border border-gris-borde">
           <div className="flex items-center justify-between mb-4">
             <h2 className="font-heading font-extrabold text-lg text-azul-noche">Órdenes recientes</h2>
             <Link to="/admin/ordenes" className="text-sm font-bold text-azul-cobalto shrink-0">
@@ -133,7 +133,7 @@ export const AdminDashboardPage = () => {
                   {recentOrders.map((order) => {
                     const customer = customersById[order.userId];
                     return (
-                      <tr key={order.id} className="border-t border-gris-claro">
+                      <tr key={order.id} className="border-t border-gris-borde">
                         <td className="py-3 font-bold text-azul-noche">#{order.id.slice(0, 8)}</td>
                         <td className="py-3 text-sm text-azul-noche/70">
                           {customer?.displayName ?? customer?.email ?? order.userId}
@@ -156,7 +156,7 @@ export const AdminDashboardPage = () => {
                 {recentOrders.map((order) => {
                   const customer = customersById[order.userId];
                   return (
-                    <div key={order.id} className="flex items-center justify-between gap-3 py-2 border-t border-gris-claro first:border-t-0">
+                    <div key={order.id} className="flex items-center justify-between gap-3 py-2 border-t border-gris-borde first:border-t-0">
                       <div>
                         <p className="text-sm font-bold text-azul-noche">#{order.id.slice(0, 8)}</p>
                         <p className="text-xs text-azul-noche/50">
@@ -175,7 +175,7 @@ export const AdminDashboardPage = () => {
           )}
         </div>
 
-        <div className="p-5 rounded-card-lg bg-white border border-gris-claro">
+        <div className="p-5 rounded-card-lg bg-white border border-gris-borde">
           <h2 className="font-heading font-extrabold text-lg text-azul-noche mb-4">Stock a revisar</h2>
 
           {lowStockProducts.length === 0 ? (

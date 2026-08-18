@@ -124,7 +124,7 @@ export const CartPage = () => {
         {/* Única parte que scrollea en desktop: la lista de productos. */}
         <div className="flex flex-col gap-4 md:flex-1 md:overflow-y-auto md:min-h-0 md:pr-1">
           {items.map(({ product, quantity }) => (
-            <div key={product.id} className="flex gap-4 p-4 rounded-card bg-white border border-gris-claro">
+            <div key={product.id} className="flex gap-4 p-4 rounded-card bg-white border border-gris-borde">
               <ProductImage
                 imageUrl={product.imageUrl}
                 categoryId={product.categoryId}

@@ -167,7 +167,7 @@ export const ProductForm = ({ product, onClose, onSaved }: ProductFormProps) => 
               onDragLeave={() => setIsDragOver(false)}
               onDrop={handleDrop}
               className={`mt-1 w-full aspect-square border-2 border-dashed rounded-card flex flex-col items-center justify-center gap-1.5 text-center cursor-pointer transition-colors overflow-hidden ${
-                isDragOver ? "border-mostaza bg-mostaza/10" : "border-gris-claro bg-crema"
+                isDragOver ? "border-mostaza bg-mostaza/10" : "border-gris-borde bg-crema"
               }`}
             >
               <input
@@ -247,7 +247,7 @@ export const ProductForm = ({ product, onClose, onSaved }: ProductFormProps) => 
                 <select
                   value={categoryId}
                   onChange={(e) => setCategoryId(e.target.value as CategoryId)}
-                  className="w-full mt-1 border border-gris-claro rounded-input px-3 py-2 text-sm font-normal"
+                  className="w-full mt-1 border border-gris-borde rounded-input px-3 py-2 text-sm font-normal"
                 >
                   {CATEGORY_IDS.map((id) => (
                     <option key={id} value={id}>
@@ -262,7 +262,7 @@ export const ProductForm = ({ product, onClose, onSaved }: ProductFormProps) => 
                 <select
                   value={minAge}
                   onChange={(e) => setMinAge(Number(e.target.value) as MinAge)}
-                  className="w-full mt-1 border border-gris-claro rounded-input px-3 py-2 text-sm font-normal"
+                  className="w-full mt-1 border border-gris-borde rounded-input px-3 py-2 text-sm font-normal"
                 >
                   {MIN_AGE_OPTIONS.map((age) => (
                     <option key={age} value={age}>
@@ -281,7 +281,7 @@ export const ProductForm = ({ product, onClose, onSaved }: ProductFormProps) => 
           <button
             type="button"
             onClick={onClose}
-            className="flex-1 text-sm font-bold text-azul-noche border border-gris-claro rounded-pill py-2"
+            className="flex-1 text-sm font-bold text-azul-noche border border-gris-borde rounded-pill py-2"
           >
             Cancelar
           </button>

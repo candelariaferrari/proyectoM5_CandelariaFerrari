@@ -24,5 +24,5 @@ export const FormField = ({ label, error, children }: FormFieldProps) => (
 // input necesita saber su propio estado de error para pintarse de rojo.
 export const fieldInputClassName = (hasError?: boolean) =>
   `w-full mt-1 border rounded-input px-3 py-2 text-sm font-normal ${
-    hasError ? "border-danger" : "border-gris-claro"
+    hasError ? "border-danger" : "border-gris-borde"
   }`;

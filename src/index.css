@@ -18,6 +18,7 @@
   --color-verde-menta: #3f9c74; /* Extra: éxito / estados positivos */
   --color-crema: #fff9ef; /* Neutral: fondo base */
   --color-gris-claro: #f2f2f0; /* Neutral: superficies, inputs, chips */
+  --color-gris-borde: #d7d3c8; /* Neutral: bordes -- más oscuro que gris-claro a propósito, para que se distingan sobre blanco/crema */
   --color-azul-noche: #17233c; /* Neutral: texto principal */
 
   /* Derivados */

@@ -80,7 +80,7 @@ const OrderDetailPanel = ({
   updatingId: string | null;
   onStatusChange: (order: Order, status: OrderStatus) => void;
 }) => (
-  <div className="flex flex-col gap-5 p-5 rounded-card-lg bg-white border border-gris-claro">
+  <div className="flex flex-col gap-5 p-5 rounded-card-lg bg-white border border-gris-borde">
     <div>
       <p className="text-xs font-bold text-azul-noche/40 uppercase">Orden #{order.id.slice(0, 8)}</p>
       <p className="font-heading font-extrabold text-lg text-azul-noche mt-1">
@@ -181,7 +181,7 @@ export const AdminOrdersPage = () => {
               </div>
             ))}
           </div>
-          <div className="hidden lg:flex flex-col gap-4 p-5 rounded-card-lg bg-white border border-gris-claro">
+          <div className="hidden lg:flex flex-col gap-4 p-5 rounded-card-lg bg-white border border-gris-borde">
             <Skeleton className="h-5 w-28" />
             <Skeleton className="h-9 w-full rounded-pill" />
             <Skeleton className="h-24 w-full" />
@@ -256,7 +256,7 @@ export const AdminOrdersPage = () => {
                     <tr
                       key={order.id}
                       onClick={() => setSelectedOrderId(order.id)}
-                      className={`border-t border-gris-claro cursor-pointer ${isSelected ? "bg-crema" : ""}`}
+                      className={`border-t border-gris-borde cursor-pointer ${isSelected ? "bg-crema" : ""}`}
                     >
                       <td className="py-3 font-bold text-azul-noche">#{order.id.slice(0, 8)}</td>
                       <td className="py-3 text-sm text-azul-noche/70">

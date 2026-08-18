@@ -142,7 +142,7 @@ export const AdminProductsPage = () => {
           {/* Desktop */}
           <div className="hidden md:flex flex-col gap-3">
             {Array.from({ length: 6 }).map((_, index) => (
-              <div key={index} className="flex items-center gap-4 py-3 border-t border-gris-claro first:border-t-0">
+              <div key={index} className="flex items-center gap-4 py-3 border-t border-gris-borde first:border-t-0">
                 <Skeleton className="w-12 h-12 rounded-card shrink-0" />
                 <Skeleton className="h-4 flex-1 max-w-48" />
                 <Skeleton className="h-4 w-20" />
@@ -180,7 +180,7 @@ export const AdminProductsPage = () => {
             </thead>
             <tbody>
               {products.map((product) => (
-                <tr key={product.id} className="border-t border-gris-claro">
+                <tr key={product.id} className="border-t border-gris-borde">
                   <td className="py-3">
                     <div className="flex items-center gap-3">
                       <ProductImage

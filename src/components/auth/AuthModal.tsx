@@ -109,22 +109,19 @@ export const AuthModal = ({ onClose }: AuthModalProps) => {
     <Modal onClose={onClose}>
       <div className="p-6 flex flex-col gap-5">
         <div>
-          <div className="flex items-center gap-1.5 flex-wrap">
-            <h2 className="font-heading font-extrabold text-2xl text-azul-noche">
-              {isLogin ? "Bienvenido a" : "Creá tu cuenta en"}
-            </h2>
-            <MundoLogo lettersClassName="text-2xl" showTagline={false} />
-          </div>
-
+          <MundoLogo lettersClassName="text-xl" showTagline={false} />
+          <h2 className="font-heading font-extrabold text-2xl text-azul-noche mt-3">
+            {isLogin ? "¡Hola de nuevo!" : "Creá tu cuenta"}
+          </h2>
           <p className="text-sm text-azul-noche/60 mt-1">
-            {isLogin ? "Iniciá sesión para descubrir un mundo de juegos!" : "Registrate para descubrir un mundo de juegos."}
+            {isLogin ? "Iniciá sesión para seguir comprando." : "Registrate para empezar a comprar en MUNDO."}
           </p>
         </div>
 
         <button
           type="button"
           onClick={handleGoogle}
-          className="flex items-center justify-center gap-2.5 border border-gris-claro rounded-pill py-3 text-sm font-bold text-azul-noche hover:bg-card-surface"
+          className="flex items-center justify-center gap-2.5 border border-gris-borde rounded-pill py-3 text-sm font-bold text-azul-noche hover:bg-card-surface"
         >
           <GoogleIcon size={18} />
           Continuar con Google

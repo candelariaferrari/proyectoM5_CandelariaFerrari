@@ -58,7 +58,7 @@ export const CategoryFilterSidebar = ({
             value={priceMin}
             onChange={(e) => onPriceMinChange(e.target.value)}
             placeholder="$0"
-            className="w-full border border-gris-claro rounded-input px-3 py-2 text-sm"
+            className="w-full border border-gris-borde rounded-input px-3 py-2 text-sm"
           />
           <input
             type="number"
@@ -66,7 +66,7 @@ export const CategoryFilterSidebar = ({
             value={priceMax}
             onChange={(e) => onPriceMaxChange(e.target.value)}
             placeholder="$50.000"
-            className="w-full border border-gris-claro rounded-input px-3 py-2 text-sm"
+            className="w-full border border-gris-borde rounded-input px-3 py-2 text-sm"
           />
         </div>
       </div>
