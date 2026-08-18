@@ -24,6 +24,16 @@ export const SearchInput = ({
   // que el usuario tipeó, y no se reinicia si quien usa este componente nos
   // pasa una función nueva en cada render.
   const onSearchRef = useRef(onSearch);
+  // Este ref nunca se LEE durante el render (solo se escribe acá; se lee
+  // recién dentro del setTimeout del efecto de abajo), así que no hay
+  // riesgo de que el render dependa de un valor mutable -- es justamente
+  // el patrón "ref con el valor más reciente" que React recomienda para
+  // no reiniciar un efecto cuando cambia una función. La regla
+  // react-hooks/refs (nueva en eslint-plugin-react-hooks v7 / React
+  // Compiler) todavía no distingue "escribir" de "leer durante el
+  // render" y marca cualquier escritura a .current como error.
+  // https://github.com/facebook/react/issues/34954
+  // eslint-disable-next-line react-hooks/refs
   onSearchRef.current = onSearch;
 
   useEffect(() => {

@@ -48,9 +48,15 @@ export function useCursorPagination<T, C>({
   // refs para poder leer siempre la versión más actualizada dentro del
   // efecto sin declararlas como dependencia -- si no, el efecto correría
   // en cada render, sin importar si algo relevante cambió de verdad.
+  // Mismo patrón "ref con el valor más reciente" que en SearchInput: se
+  // escribe durante el render pero solo se lee dentro del efecto, nunca
+  // durante el render, así que no afecta la pureza del render aunque la
+  // regla react-hooks/refs (nueva, ver SearchInput.tsx) no lo distinga.
   const fetchPageRef = useRef(fetchPage);
+  // eslint-disable-next-line react-hooks/refs
   fetchPageRef.current = fetchPage;
   const fetchCountRef = useRef(fetchCount);
+  // eslint-disable-next-line react-hooks/refs
   fetchCountRef.current = fetchCount;
 
   // Si cambió el filtro, los cursores guardados son de otra consulta:
@@ -60,6 +66,13 @@ export function useCursorPagination<T, C>({
   // anterior guardado en un ref, y si cambió, actualizamos el estado ya
   // mismo. Evita una vuelta extra pidiendo la página vieja con un cursor
   // que ya no corresponde a la consulta nueva.
+  // Esta comparación lee y escribe un ref durante el render a propósito:
+  // es la versión con ref (en vez de state) del patrón "ajustar estado
+  // mientras se renderiza" que documenta React para resetear estado
+  // cuando cambia una prop/valor (https://react.dev/learn/you-might-not-need-an-effect#adjusting-some-state-when-a-prop-changes).
+  // Se usa ref y no state para lastFilterKey/cursors porque no necesitan
+  // disparar un re-render por sí mismos -- ya lo dispara setCurrentPage.
+  /* eslint-disable react-hooks/refs -- lectura/escritura de ref durante el render, patrón intencional (ver comentario arriba) */
   if (lastFilterKeyRef.current !== filterKey) {
     lastFilterKeyRef.current = filterKey;
     cursorsRef.current = [];
@@ -67,6 +80,7 @@ export function useCursorPagination<T, C>({
       setCurrentPage(1);
     }
   }
+  /* eslint-enable react-hooks/refs */
 
   useEffect(() => {
     // Falso positivo conocido de esta regla (nueva en eslint-plugin-react-hooks

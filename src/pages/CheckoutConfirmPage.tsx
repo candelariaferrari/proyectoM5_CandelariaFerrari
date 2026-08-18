@@ -32,6 +32,11 @@ export const CheckoutConfirmPage = () => {
 
   const total = items.reduce((sum, item) => sum + item.product.price * item.quantity, 0);
 
+  // Lectura de ref durante el render, a propósito: es la razón de ser de
+  // orderPlacedRef (ver comentario más arriba) -- necesitamos el valor
+  // sincrónico, sin esperar un re-render, para no redirigir por error
+  // justo después de confirmar la compra y vaciar el carrito.
+  // eslint-disable-next-line react-hooks/refs -- lectura de ref durante el render, patrón intencional (ver comentario de orderPlacedRef)
   if (items.length === 0 && !orderPlacedRef.current) {
     return <Navigate to="/carrito" replace />;
   }
