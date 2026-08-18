@@ -5,6 +5,7 @@ import { getProductsById } from "../services/products.services";
 import { useCart } from "../hooks/useCart";
 import { CATEGORY_INFO } from "../constants/categories";
 import { ProductImage } from "../components/ui/ProductImage";
+import { Skeleton } from "../components/ui/Skeleton";
 import { formatCurrency } from "../utils/format";
 import { Button } from "../components/ui/Button";
 
@@ -33,7 +34,23 @@ export const ProductDetailPage = (): JSX.Element => {
   }, [id]);
 
   if (loading) {
-    return <p className="p-6 text-center text-azul-noche">Cargando producto...</p>;
+    return (
+      <div className="max-w-[1280px] mx-auto px-6 py-8">
+        <Skeleton className="h-3 w-48 mb-5" />
+        <div className="grid gap-10 md:grid-cols-2">
+          <Skeleton className="w-full aspect-square rounded-card" />
+          <div className="flex flex-col gap-3">
+            <Skeleton className="h-6 w-24 rounded-pill" />
+            <Skeleton className="h-8 w-3/4 mt-2" />
+            <Skeleton className="h-9 w-32 mt-1" />
+            <Skeleton className="h-4 w-full mt-3" />
+            <Skeleton className="h-4 w-5/6" />
+            <Skeleton className="h-4 w-2/3" />
+            <Skeleton className="h-12 w-full rounded-pill mt-4" />
+          </div>
+        </div>
+      </div>
+    );
   }
 
   if (!product) {

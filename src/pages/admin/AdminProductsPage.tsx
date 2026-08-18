@@ -12,6 +12,7 @@ import { Pagination } from "../../components/ui/Pagination";
 import { ConfirmDialog } from "../../components/ui/ConfirmDialog";
 import { Button } from "../../components/ui/Button";
 import { formatCurrency } from "../../utils/format";
+import { Skeleton } from "../../components/ui/Skeleton";
 import { LOW_STOCK_THRESHOLD } from "../../constants/stock";
 import type { CategoryId, Product } from "../../types/product.types";
 
@@ -137,7 +138,33 @@ export const AdminProductsPage = () => {
       </div>
 
       {loading ? (
-        <p className="text-sm text-azul-noche/60">Cargando productos...</p>
+        <>
+          {/* Desktop */}
+          <div className="hidden md:flex flex-col gap-3">
+            {Array.from({ length: 6 }).map((_, index) => (
+              <div key={index} className="flex items-center gap-4 py-3 border-t border-gris-claro first:border-t-0">
+                <Skeleton className="w-12 h-12 rounded-card shrink-0" />
+                <Skeleton className="h-4 flex-1 max-w-48" />
+                <Skeleton className="h-4 w-20" />
+                <Skeleton className="h-4 w-16" />
+                <Skeleton className="h-6 w-24 rounded-pill" />
+              </div>
+            ))}
+          </div>
+          {/* Mobile */}
+          <div className="md:hidden flex flex-col gap-3">
+            {Array.from({ length: 4 }).map((_, index) => (
+              <div key={index} className="flex items-center gap-4 p-4 rounded-card bg-white shadow-card">
+                <Skeleton className="w-16 h-16 rounded-card shrink-0" />
+                <div className="flex-1 flex flex-col gap-2">
+                  <Skeleton className="h-4 w-3/4" />
+                  <Skeleton className="h-3 w-1/2" />
+                  <Skeleton className="h-5 w-20 rounded-pill" />
+                </div>
+              </div>
+            ))}
+          </div>
+        </>
       ) : (
         <>
           {/* Desktop: tabla real, como en el mockup */}

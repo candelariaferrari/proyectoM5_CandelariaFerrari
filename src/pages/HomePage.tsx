@@ -1,6 +1,7 @@
 import { Link } from "react-router-dom";
 import { CategoryTiles } from "../components/products/CategoryTiles";
 import { ProductCard } from "../components/products/ProductCard";
+import { ProductCardSkeleton } from "../components/products/ProductCardSkeleton";
 import { useProducts } from "../hooks/useProducts";
 import { Button } from "../components/ui/Button";
 import nenaHero from "../assets/nena-mundo-blanco.jpg";
@@ -71,7 +72,11 @@ export const HomePage = () => {
             </Link>
           </div>
           {loading ? (
-            <p className="text-sm text-azul-noche/60">Cargando productos...</p>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+              {Array.from({ length: FEATURED_COUNT }).map((_, index) => (
+                <ProductCardSkeleton key={index} />
+              ))}
+            </div>
           ) : (
             <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
               {featured.map((product) => (

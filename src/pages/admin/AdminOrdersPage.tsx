@@ -6,6 +6,7 @@ import { OrderItemsSummary } from "../../components/orders/OrderItemsSummary";
 import { formatCurrency } from "../../utils/format";
 import { useToast } from "../../hooks/useToast";
 import { ListIcon, ChevronUpIcon } from "../../components/ui/icons";
+import { Skeleton } from "../../components/ui/Skeleton";
 import type { Order, OrderStatus } from "../../types/order.types";
 
 type CustomerInfo = { email: string; displayName?: string };
@@ -163,8 +164,29 @@ export const AdminOrdersPage = () => {
 
   if (loading) {
     return (
-      <section className="max-w-[1280px] mx-auto px-6 py-16 text-center">
-        <p className="text-sm text-azul-noche/60">Cargando órdenes...</p>
+      <section className="max-w-[1280px] mx-auto px-6 py-8">
+        <div className="flex items-center justify-between mb-6">
+          <Skeleton className="h-8 w-32" />
+          <Skeleton className="h-4 w-20" />
+        </div>
+        <div className="grid gap-6 lg:grid-cols-[1fr_380px] items-start">
+          <div className="flex flex-col gap-3">
+            {Array.from({ length: 5 }).map((_, index) => (
+              <div key={index} className="flex items-center justify-between gap-4 p-4 rounded-card bg-white shadow-card">
+                <div className="flex flex-col gap-2">
+                  <Skeleton className="h-4 w-24" />
+                  <Skeleton className="h-3 w-32" />
+                </div>
+                <Skeleton className="h-6 w-20 rounded-pill" />
+              </div>
+            ))}
+          </div>
+          <div className="hidden lg:flex flex-col gap-4 p-5 rounded-card-lg bg-white border border-gris-claro">
+            <Skeleton className="h-5 w-28" />
+            <Skeleton className="h-9 w-full rounded-pill" />
+            <Skeleton className="h-24 w-full" />
+          </div>
+        </div>
       </section>
     );
   }

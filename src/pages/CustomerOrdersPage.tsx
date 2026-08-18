@@ -5,6 +5,7 @@ import { ORDER_STATUS_INFO } from "../constants/orderStatus";
 import { ListIcon, ChevronUpIcon } from "../components/ui/icons";
 import { OrderItemsSummary } from "../components/orders/OrderItemsSummary";
 import { Button } from "../components/ui/Button";
+import { Skeleton } from "../components/ui/Skeleton";
 import { formatCurrency } from "../utils/format";
 import type { Order } from "../types/order.types";
 
@@ -26,8 +27,22 @@ export const CustomerOrdersPage = () => {
 
   if (loading) {
     return (
-      <section className="max-w-[1280px] mx-auto px-6 py-16 text-center">
-        <p className="text-sm text-azul-noche/60">Cargando tus pedidos...</p>
+      <section className="max-w-[1280px] mx-auto px-6 py-8">
+        <Skeleton className="h-8 w-40 mb-6" />
+        <div className="flex flex-col gap-4">
+          {Array.from({ length: 3 }).map((_, index) => (
+            <div key={index} className="flex items-center justify-between gap-4 p-4 rounded-card bg-white border border-gris-claro">
+              <div className="flex flex-col gap-2">
+                <Skeleton className="h-4 w-32" />
+                <Skeleton className="h-3 w-24" />
+              </div>
+              <div className="flex items-center gap-3 shrink-0">
+                <Skeleton className="h-6 w-20 rounded-pill" />
+                <Skeleton className="h-4 w-16" />
+              </div>
+            </div>
+          ))}
+        </div>
       </section>
     );
   }
