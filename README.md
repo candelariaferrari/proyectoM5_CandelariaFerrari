@@ -2,7 +2,7 @@
 
 Proyecto Integrador del Módulo 5 (Especialización Frontend, Henry): un e-commerce completo con dos experiencias diferenciadas — la de quien compra y la de quien administra el catálogo y las órdenes — construido con **React + TypeScript**, **Firebase** (Auth + Firestore), **AWS S3** para imágenes de producto y deploy en **Vercel**.
 
-> 🔗 **Producción:** `[completar con la URL de Vercel]`
+> 🔗 **Producción:** `[https://proyecto-m5-candelaria-ferrari.vercel.app/]`
 > 📁 **Repo:** https://github.com/candelariaferrari/proyectoM5_CandelariaFerrari
 
 ## Contexto del proyecto
