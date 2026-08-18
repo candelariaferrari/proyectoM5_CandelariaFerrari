@@ -1,6 +1,7 @@
 import {
  collection,
   getDocs,
+  getCountFromServer,
   doc,
   getDoc,
   setDoc,
@@ -23,6 +24,15 @@ export const getUser = async (): Promise<User[]> => {
         ...doc.data(),
       } as User)
   );
+};
+
+// Cuenta cuántos usuarios hay, sin traer los documentos (agregación del
+// lado del servidor) -- mismo criterio que `countProducts` en
+// products.services.ts, en vez de traer todos los docs de `users` solo
+// para contar cuántos son.
+export const countUsers = async (): Promise<number> => {
+  const snapshot = await getCountFromServer(collection(db, "users"));
+  return snapshot.data().count;
 };
 
 // Obtener un user por ID

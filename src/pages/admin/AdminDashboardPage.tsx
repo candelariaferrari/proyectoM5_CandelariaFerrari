@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { countProducts } from "../../services/products.services";
-import { getUser } from "../../services/users.services";
+import { countUsers } from "../../services/users.services";
 import { listAllOrders } from "../../services/orders.services";
 import { Button } from "../../components/ui/Button";
 import { formatCurrency } from "../../utils/format";
@@ -13,8 +13,8 @@ export const AdminDashboardPage = () => {
 
   useEffect(() => {
     countProducts().then(setProductCount); // agregacion del lado del servidor: no hace falta traer los 60 productos solo para contarlos
-    getUser()
-      .then((users) => setUserCount(users.length))
+    countUsers()
+      .then(setUserCount)
       .catch(() => setUserCount(null));
     listAllOrders()
       .then((orders) => {
