@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { useAuth } from "../../hooks/useAuth";
 import { useCart } from "../../hooks/useCart";
-import { AuthModal } from "../AuthModal";
+import { AuthModal } from "../auth/AuthModal";
 import { HomeIcon, GridIcon, CartIcon, ListIcon, UserIcon } from "../ui/icons";
 
 export const BottomTabBar = () => {

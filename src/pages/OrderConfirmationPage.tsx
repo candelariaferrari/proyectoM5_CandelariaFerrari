@@ -1,5 +1,6 @@
 import { Link, Navigate, useLocation } from "react-router-dom";
 import { CheckIcon } from "../components/ui/icons";
+import { Button } from "../components/ui/Button";
 import { OrderItemsSummary } from "../components/orders/OrderItemsSummary";
 import type { OrderItemSnapshot } from "../types/order.types";
 
@@ -39,12 +40,9 @@ export const OrderConfirmationPage = () => {
       </div>
 
       <div className="flex flex-col sm:flex-row gap-3 w-full mt-2">
-        <Link
-          to="/pedidos"
-          className="flex-1 text-sm font-extrabold text-azul-noche bg-mostaza px-7 py-3.5 rounded-pill shadow-cta"
-        >
+        <Button variant="link" to="/pedidos" className="flex-1">
           Ver mis pedidos
-        </Link>
+        </Button>
         <Link
           to="/productos"
           className="flex-1 text-sm font-bold text-azul-cobalto px-7 py-3.5 rounded-pill bg-card-surface"

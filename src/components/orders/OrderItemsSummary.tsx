@@ -1,3 +1,4 @@
+import { formatCurrency } from "../../utils/format";
 import type { OrderItemSnapshot } from "../../types/order.types";
 
 // Lista de items + total de una orden: se repite igual en "Mis pedidos"
@@ -16,7 +17,7 @@ export const OrderItemsSummary = ({ items, total }: OrderItemsSummaryProps) => (
           {item.quantity}x {item.name}
         </span>
         <span className="font-bold text-azul-noche">
-          ${(item.priceAtPurchase * item.quantity).toLocaleString("es-AR")}
+          {formatCurrency(item.priceAtPurchase * item.quantity)}
         </span>
       </div>
     ))}
@@ -25,7 +26,7 @@ export const OrderItemsSummary = ({ items, total }: OrderItemsSummaryProps) => (
 
     <div className="flex items-center justify-between font-extrabold text-azul-noche">
       <span>Total</span>
-      <span>${total.toLocaleString("es-AR")}</span>
+      <span>{formatCurrency(total)}</span>
     </div>
   </div>
 );

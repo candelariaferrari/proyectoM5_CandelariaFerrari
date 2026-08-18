@@ -10,6 +10,8 @@ import { useProductsPagination } from "../../hooks/useProductsPagination";
 import { useToast } from "../../hooks/useToast";
 import { Pagination } from "../../components/ui/Pagination";
 import { ConfirmDialog } from "../../components/ui/ConfirmDialog";
+import { Button } from "../../components/ui/Button";
+import { formatCurrency } from "../../utils/format";
 import type { CategoryId, Product } from "../../types/product.types";
 
 const PAGE_SIZE = 10;
@@ -94,12 +96,7 @@ export const AdminProductsPage = () => {
     <section className="max-w-[1280px] mx-auto px-6 py-8">
       <div className="flex items-center justify-between mb-6">
         <h1 className="font-heading font-extrabold text-2xl text-azul-noche">Productos</h1>
-        <button
-          onClick={() => setIsCreating(true)}
-          className="text-sm font-extrabold text-azul-noche bg-mostaza px-5 py-2.5 rounded-pill shadow-cta"
-        >
-          + Nuevo Producto
-        </button>
+        <Button onClick={() => setIsCreating(true)} size="sm">+ Nuevo Producto</Button>
       </div>
 
       <div className="flex flex-wrap items-center gap-3 mb-5">
@@ -167,7 +164,7 @@ export const AdminProductsPage = () => {
                     {CATEGORY_INFO[product.categoryId].label}
                   </td>
                   <td className="py-3 text-sm font-bold text-azul-noche">
-                    ${product.price.toLocaleString("es-AR")}
+                    {formatCurrency(product.price)}
                   </td>
                   <td className="py-3">
                     <StockBadge stock={product.stock} />
@@ -216,7 +213,7 @@ export const AdminProductsPage = () => {
                     <span className={CATEGORY_INFO[product.categoryId].textColor}>
                       {CATEGORY_INFO[product.categoryId].label}
                     </span>
-                    <span className="text-azul-noche/50"> · ${product.price.toLocaleString("es-AR")}</span>
+                    <span className="text-azul-noche/50"> · {formatCurrency(product.price)}</span>
                   </p>
                   <div className="mt-1.5">
                     <StockBadge stock={product.stock} />

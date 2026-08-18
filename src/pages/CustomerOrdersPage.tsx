@@ -1,10 +1,11 @@
 import { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
 import { useAuth } from "../hooks/useAuth";
 import { listUserOrders } from "../services/orders.services";
 import { ORDER_STATUS_INFO } from "../constants/orderStatus";
 import { ListIcon, ChevronUpIcon } from "../components/ui/icons";
 import { OrderItemsSummary } from "../components/orders/OrderItemsSummary";
+import { Button } from "../components/ui/Button";
+import { formatCurrency } from "../utils/format";
 import type { Order } from "../types/order.types";
 
 export const CustomerOrdersPage = () => {
@@ -47,12 +48,7 @@ export const CustomerOrdersPage = () => {
         </div>
         <h1 className="font-heading font-extrabold text-2xl text-azul-noche">Todavía no hiciste ningún pedido</h1>
         <p className="text-sm text-azul-noche/60">Cuando compres algo, lo vas a ver acá.</p>
-        <Link
-          to="/productos"
-          className="text-sm font-extrabold text-azul-noche bg-mostaza px-7 py-3.5 rounded-pill shadow-cta"
-        >
-          Ver productos
-        </Link>
+        <Button variant="link" to="/productos">Ver productos</Button>
       </section>
     );
   }
@@ -84,7 +80,7 @@ export const CustomerOrdersPage = () => {
                   <span className={`text-xs font-bold px-3 py-1 rounded-pill whitespace-nowrap ${statusInfo.badgeClassName}`}>
                     {statusInfo.label}
                   </span>
-                  <span className="font-extrabold text-azul-noche">${order.total.toLocaleString("es-AR")}</span>
+                  <span className="font-extrabold text-azul-noche">{formatCurrency(order.total)}</span>
                   <ChevronUpIcon
                     size={16}
                     className={`text-azul-noche/40 transition-transform ${isExpanded ? "" : "rotate-180"}`}

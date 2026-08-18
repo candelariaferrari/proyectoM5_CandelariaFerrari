@@ -1,7 +1,8 @@
 import { Link } from "react-router-dom";
-import { CategoryTiles } from "../components/CategoryTiles";
-import { ProductCard } from "../components/ProductCard";
+import { CategoryTiles } from "../components/products/CategoryTiles";
+import { ProductCard } from "../components/products/ProductCard";
 import { useProducts } from "../hooks/useProducts";
+import { Button } from "../components/ui/Button";
 import nenaHero from "../assets/nena-mundo-blanco.jpg";
 
 const FEATURED_COUNT = 4;
@@ -34,12 +35,9 @@ export const HomePage = () => {
             <p className="text-base font-semibold text-azul-noche/70 max-w-sm">
               Juguetes que despiertan la imaginación y acompañan cada etapa de su desarrollo.
             </p>
-            <Link
-              to="/productos"
-              className="self-start text-sm font-extrabold text-azul-noche bg-mostaza px-7 py-3.5 rounded-pill shadow-cta"
-            >
+            <Button variant="link" to="/productos" className="self-start">
               Explorar colección →
-            </Link>
+            </Button>
             <div className="hidden md:flex gap-7 mt-3 flex-wrap">
               {PERKS.map((perk) => (
                 <div key={perk.title} className="flex flex-col gap-0.5 max-w-[130px]">

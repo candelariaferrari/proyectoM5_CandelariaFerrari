@@ -1,5 +1,5 @@
-import type { Product } from "../types/product.types";
-import { useProducts } from "../hooks/useProducts";
+import type { Product } from "../../types/product.types";
+import { useProducts } from "../../hooks/useProducts";
 import { ProductCard } from "./ProductCard";
 
 interface ProductGridProps {

@@ -3,6 +3,7 @@ import { listAllOrders, updateOrderStatus } from "../../services/orders.services
 import { getUser } from "../../services/users.services";
 import { ORDER_STATUS_INFO, ORDER_STATUS_IDS, ORDER_STATUS_TRANSITIONS } from "../../constants/orderStatus";
 import { OrderItemsSummary } from "../../components/orders/OrderItemsSummary";
+import { formatCurrency } from "../../utils/format";
 import { useToast } from "../../hooks/useToast";
 import { ListIcon, ChevronUpIcon } from "../../components/ui/icons";
 import type { Order, OrderStatus } from "../../types/order.types";
@@ -244,7 +245,7 @@ export const AdminOrdersPage = () => {
                         {order.createdAt.toLocaleTimeString("es-AR", { hour: "2-digit", minute: "2-digit" })}
                       </td>
                       <td className="py-3 text-sm font-bold text-azul-noche">
-                        ${order.total.toLocaleString("es-AR")}
+                        {formatCurrency(order.total)}
                       </td>
                       <td className="py-3">
                         <div className="flex justify-end">
@@ -276,7 +277,7 @@ export const AdminOrdersPage = () => {
                           </p>
                         </div>
                         <p className="font-extrabold text-azul-noche shrink-0">
-                          ${order.total.toLocaleString("es-AR")}
+                          {formatCurrency(order.total)}
                         </p>
                       </div>
                       <div className="flex items-center justify-between">

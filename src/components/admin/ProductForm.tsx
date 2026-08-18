@@ -2,6 +2,7 @@ import { useRef, useState, type ChangeEvent, type DragEvent, type FormEvent } fr
 import { Modal } from "../ui/Modal";
 import { FormField, fieldInputClassName } from "../ui/FormField";
 import { UploadIcon } from "../ui/icons";
+import { Button } from "../ui/Button";
 import { createProduct, updateProduct } from "../../services/products.services";
 import { uploadProductImage } from "../../services/upload.services";
 import { useToast } from "../../hooks/useToast";
@@ -284,13 +285,9 @@ export const ProductForm = ({ product, onClose, onSaved }: ProductFormProps) => 
           >
             Cancelar
           </button>
-          <button
-            type="submit"
-            disabled={submitting || isUploadingImage}
-            className="flex-1 bg-mostaza text-azul-noche font-extrabold rounded-pill py-2 disabled:opacity-50"
-          >
+          <Button type="submit" disabled={submitting || isUploadingImage} size="form" className="flex-1">
             {submitting ? "Guardando..." : "Guardar"}
-          </button>
+          </Button>
         </div>
       </form>
     </Modal>

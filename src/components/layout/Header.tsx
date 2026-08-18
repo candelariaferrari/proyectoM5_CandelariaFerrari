@@ -3,7 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../../hooks/useAuth";
 import { useCart } from "../../hooks/useCart";
 import { useProducts } from "../../hooks/useProducts";
-import { AuthModal } from "../AuthModal";
+import { AuthModal } from "../auth/AuthModal";
 import { SearchInput } from "../ui/SearchInput";
 import { UserIcon, CartIcon, SearchIcon } from "../ui/icons";
 import { MundoLogo } from "../ui/MundoLogo";

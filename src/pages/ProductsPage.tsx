@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useSearchParams } from "react-router-dom";
-import { ProductGrid } from "../components/ProductGrid";
-import { CategoryFilterSidebar } from "../components/CategoryFilterSidebar";
+import { ProductGrid } from "../components/products/ProductGrid";
+import { CategoryFilterSidebar } from "../components/products/CategoryFilterSidebar";
 import { useProducts } from "../hooks/useProducts";
 import type { CategoryId } from "../types/product.types";
 import { CATEGORY_IDS } from "../constants/categories";

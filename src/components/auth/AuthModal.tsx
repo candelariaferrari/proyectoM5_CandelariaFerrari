@@ -1,9 +1,10 @@
 import { useState, type FormEvent } from "react";
-import { useAuth } from "../hooks/useAuth";
-import { Modal } from "./ui/Modal";
-import { FormField, fieldInputClassName } from "./ui/FormField";
-import { GoogleIcon } from "./ui/icons";
-import { MundoLogo } from "./ui/MundoLogo";
+import { useAuth } from "../../hooks/useAuth";
+import { Modal } from "../ui/Modal";
+import { FormField, fieldInputClassName } from "../ui/FormField";
+import { GoogleIcon } from "../ui/icons";
+import { MundoLogo } from "../ui/MundoLogo";
+import { Button } from "../ui/Button";
 
 type AuthTab = "login" | "signup";
 
@@ -144,13 +145,9 @@ export const AuthModal = ({ onClose }: AuthModalProps) => {
 
           {error && <p className="text-danger text-xs">{error}</p>}
 
-          <button
-            type="submit"
-            disabled={submitting}
-            className="text-sm font-extrabold text-azul-noche bg-mostaza rounded-pill py-3 mt-1 shadow-cta disabled:opacity-50"
-          >
+          <Button type="submit" disabled={submitting} size="form" className="mt-1">
             {submitting ? "Un momento..." : isLogin ? "Iniciar sesión" : "Crear cuenta"}
-          </button>
+          </Button>
         </form>
 
         <p className="text-center text-sm text-azul-noche/60">

@@ -2,10 +2,12 @@ import { useState } from "react";
 import { Link } from "react-router-dom";
 import { useCart } from "../hooks/useCart";
 import { useAuth } from "../hooks/useAuth";
-import { AuthModal } from "../components/AuthModal";
+import { AuthModal } from "../components/auth/AuthModal";
 import { CloseIcon, CartIcon, ChevronUpIcon } from "../components/ui/icons";
 import { ProductImage } from "../components/ui/ProductImage";
 import { ConfirmDialog } from "../components/ui/ConfirmDialog";
+import { Button } from "../components/ui/Button";
+import { formatCurrency } from "../utils/format";
 import type { Product } from "../types/product.types";
 
 // banner del header ("Envíos gratis en
@@ -39,12 +41,7 @@ export const CartPage = () => {
         </div>
         <h1 className="font-heading font-extrabold text-2xl text-azul-noche">Tu carrito está vacío</h1>
         <p className="text-sm text-azul-noche/60">Todavía no agregaste ningún juguete.</p>
-        <Link
-          to="/productos"
-          className="text-sm font-extrabold text-azul-noche bg-mostaza px-7 py-3.5 rounded-pill shadow-cta"
-        >
-          Ver productos
-        </Link>
+        <Button variant="link" to="/productos">Ver productos</Button>
       </section>
     );
   }
@@ -54,7 +51,7 @@ export const CartPage = () => {
     <>
       <div className="flex items-center justify-between text-sm text-azul-noche/70">
         <span>Subtotal</span>
-        <span>${total.toLocaleString("es-AR")}</span>
+        <span>{formatCurrency(total)}</span>
       </div>
       <div className="flex items-center justify-between text-sm">
         <span className="text-azul-noche/70">Envío</span>
@@ -69,7 +66,7 @@ export const CartPage = () => {
         <p className="text-xs font-bold text-azul-noche/70">
           {hasFreeShipping
             ? "¡Tenés envío gratis!"
-            : `Te faltan $${missing.toLocaleString("es-AR")} para el envío gratis`}
+            : `Te faltan ${formatCurrency(missing)} para el envío gratis`}
         </p>
         <div className="h-1.5 rounded-pill bg-white/60 overflow-hidden">
           <div
@@ -83,24 +80,16 @@ export const CartPage = () => {
 
       <div className="flex items-center justify-between font-extrabold text-azul-noche">
         <span>Total</span>
-        <span>${total.toLocaleString("es-AR")}</span>
+        <span>{formatCurrency(total)}</span>
       </div>
 
       {isAuthenticated ? (
-        <Link
-          to="/confirmar-compra"
-          className="text-sm font-extrabold text-azul-noche bg-mostaza px-7 py-3.5 rounded-pill shadow-cta text-center"
-        >
+        <Button variant="link" to="/confirmar-compra" className="text-center">
           Continuar compra
-        </Link>
+        </Button>
       ) : (
         <div className="flex flex-col gap-2">
-          <button
-            onClick={() => setIsAuthModalOpen(true)}
-            className="text-sm font-extrabold text-azul-noche bg-mostaza px-7 py-3.5 rounded-pill shadow-cta"
-          >
-            Continuar compra
-          </button>
+          <Button onClick={() => setIsAuthModalOpen(true)}>Continuar compra</Button>
           <p className="text-xs text-azul-noche/50 text-center">
             Necesitás iniciar sesión para continuar con la compra.
           </p>
@@ -144,10 +133,10 @@ export const CartPage = () => {
                 <div className="flex items-start justify-between gap-3">
                   <div className="min-w-0">
                     <p className="font-bold text-azul-noche truncate">{product.name}</p>
-                    <p className="text-sm text-azul-noche/60">${product.price.toLocaleString("es-AR")} c/u</p>
+                    <p className="text-sm text-azul-noche/60">{formatCurrency(product.price)} c/u</p>
                   </div>
                   <p className="font-extrabold text-azul-noche shrink-0">
-                    ${(product.price * quantity).toLocaleString("es-AR")}
+                    {formatCurrency(product.price * quantity)}
                   </p>
                 </div>
 
@@ -200,7 +189,7 @@ export const CartPage = () => {
           aria-label={isSummaryExpanded ? "Ocultar resumen del pedido" : "Mostrar resumen del pedido"}
         >
           <span className="font-heading font-extrabold text-lg text-azul-noche">
-            {isSummaryExpanded ? "Resumen del pedido" : `Total: $${total.toLocaleString("es-AR")}`}
+            {isSummaryExpanded ? "Resumen del pedido" : `Total: ${formatCurrency(total)}`}
           </span>
           <ChevronUpIcon
             size={18}

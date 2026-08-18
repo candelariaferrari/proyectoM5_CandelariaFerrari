@@ -1,5 +1,5 @@
-import type { CategoryId } from "../types/product.types";
-import { CATEGORY_INFO, CATEGORY_IDS } from "../constants/categories";
+import type { CategoryId } from "../../types/product.types";
+import { CATEGORY_INFO, CATEGORY_IDS } from "../../constants/categories";
 
 interface CategoryFilterSidebarProps {
   categoryFilter: CategoryId | null;

@@ -5,6 +5,7 @@ import { useAuth } from "../hooks/useAuth";
 import { useToast } from "../hooks/useToast";
 import { createOrder } from "../services/orders.services";
 import { OrderItemsSummary } from "../components/orders/OrderItemsSummary";
+import { Button } from "../components/ui/Button";
 import type { OrderItemSnapshot } from "../types/order.types";
 
 // Paso intermedio del checkout: "revisar el carrito, confirmar, crear la
@@ -76,13 +77,9 @@ export const CheckoutConfirmPage = () => {
         }))} total={total} />
       </div>
 
-      <button
-        onClick={handleConfirm}
-        disabled={isSubmitting}
-        className="w-full mt-6 text-sm font-extrabold text-azul-noche bg-mostaza px-7 py-3.5 rounded-pill shadow-cta disabled:opacity-60"
-      >
+      <Button onClick={handleConfirm} disabled={isSubmitting} className="w-full mt-6">
         {isSubmitting ? "Procesando..." : "Confirmar compra"}
-      </button>
+      </Button>
       <p className="text-xs text-azul-noche/50 text-center mt-3">
         Es una compra simulada: no se procesa ningún pago real.
       </p>

@@ -5,6 +5,8 @@ import { getProductsById } from "../services/products.services";
 import { useCart } from "../hooks/useCart";
 import { CATEGORY_INFO } from "../constants/categories";
 import { ProductImage } from "../components/ui/ProductImage";
+import { formatCurrency } from "../utils/format";
+import { Button } from "../components/ui/Button";
 
 export const ProductDetailPage = (): JSX.Element => {
   const { id } = useParams<{ id: string }>();
@@ -101,7 +103,7 @@ export const ProductDetailPage = (): JSX.Element => {
           </div>
 
           <p className="text-3xl font-heading font-extrabold text-rosa-coral">
-            ${product.price.toLocaleString("es-AR")}
+            {formatCurrency(product.price)}
           </p>
 
           <p className="text-sm text-azul-noche/80 leading-relaxed">{product.description}</p>
@@ -128,13 +130,9 @@ export const ProductDetailPage = (): JSX.Element => {
               </button>
             </div>
 
-            <button
-              onClick={() => addToCart(product, quantity)}
-              disabled={!inStock}
-              className="flex-1 text-sm font-bold text-azul-noche bg-mostaza rounded-pill py-3 disabled:opacity-40"
-            >
-              Agregar al carrito · ${(product.price * quantity).toLocaleString("es-AR")}
-            </button>
+            <Button onClick={() => addToCart(product, quantity)} disabled={!inStock} size="form" className="flex-1">
+              Agregar al carrito · {formatCurrency(product.price * quantity)}
+            </Button>
           </div>
         </div>
       </div>
