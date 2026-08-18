@@ -42,8 +42,12 @@ const SIZE_CLASSNAME: Record<ButtonSize, string> = {
 
 export const Button = (props: ButtonProps) => {
   const size = props.size ?? "md";
+  // hover:bg-mostaza-texto: mismo criterio que "Agregar al carrito" en
+  // ProductCard -- la versión oscura de mostaza (pensada para texto, pero
+  // funciona igual de bien como hover de fondo) en vez de un mostaza más
+  // claro, que sobre fondo blanco casi no se nota el cambio.
   const baseClassName =
-    `text-sm font-extrabold text-azul-noche bg-mostaza rounded-pill shadow-cta ${SIZE_CLASSNAME[size]} ${props.className ?? ""}`.trim();
+    `text-sm font-extrabold text-azul-noche bg-mostaza rounded-pill shadow-cta transition-colors hover:bg-mostaza-texto ${SIZE_CLASSNAME[size]} ${props.className ?? ""}`.trim();
 
   // narrowing por variant,
   if (props.variant === "link") {
