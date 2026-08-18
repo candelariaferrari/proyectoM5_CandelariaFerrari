@@ -1,15 +1,16 @@
 import { useCallback, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, NavLink, useNavigate } from "react-router-dom";
 import { useAuth } from "../../hooks/useAuth";
 import { useCart } from "../../hooks/useCart";
 import { useProducts } from "../../hooks/useProducts";
 import { AuthModal } from "../auth/AuthModal";
 import { SearchInput } from "../ui/SearchInput";
-import { UserIcon, CartIcon, SearchIcon, LogoutIcon } from "../ui/icons";
+import { UserIcon, CartIcon, SearchIcon } from "../ui/icons";
+import { LogoutButton } from "../ui/LogoutButton";
 import { MundoLogo } from "../ui/MundoLogo";
 
 export const Header = () => {
-  const { user, isAuthenticated, logout } = useAuth();
+  const { user, isAuthenticated } = useAuth();
   const { items } = useCart();
   const { setSearchTerm } = useProducts();
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
@@ -44,19 +45,29 @@ export const Header = () => {
 
         {/* A partir de md: todo el header completo, en una sola fila */}
         <nav className="hidden md:flex items-center gap-5">
-          <Link to="/productos" className="text-md font-bold text-azul-noche">
+          <NavLink to="/productos"  className={({ isActive }) =>
+                  `text-sm font-bold px-4 py-2 rounded-pill hover:bg-card-surface ${
+                    isActive ? "bg-azul-cobalto/10 text-azul-cobalto" : "text-azul-noche/60"
+                  }`
+                }>
             Juguetes
-          </Link>
-          <span className="text-md font-bold text-azul-noche/30 cursor-not-allowed" title="Próximamente">
-            Ofertas
-          </span>
-          <Link to="/pedidos" className="text-md font-bold text-azul-noche">
+          </NavLink>
+
+          <NavLink to="/pedidos"  className={({ isActive }) =>
+                  `text-sm font-bold px-4 py-2 rounded-pill hover:bg-card-surface ${
+                    isActive ? "bg-azul-cobalto/10 text-azul-cobalto" : "text-azul-noche/60"
+                  }`
+                }>
             Mis pedidos
-          </Link>
+          </NavLink>
           {user?.role === "admin" && (
-            <Link to="/admin" className="text-md font-bold text-azul-cobalto">
+            <NavLink to="/admin"  className={({ isActive }) =>
+                  `text-sm font-bold px-4 py-2 rounded-pill hover:bg-card-surface ${
+                    isActive ? "bg-azul-cobalto/10 text-azul-cobalto" : "text-azul-noche/60"
+                  }`
+                }>
               Admin
-            </Link>
+            </NavLink>
           )}
         </nav>
 
@@ -68,16 +79,9 @@ export const Header = () => {
           {isAuthenticated ? (
             // Mismo lugar y forma que el ícono de "iniciar sesión" de abajo,
             // pero ya logueado: un solo ícono de logout en vez de "Hola" +
-            // "Cerrar sesión" aparte. El nombre (si hay) queda en el
-            // aria-label/title, no ocupa lugar en la barra.
-            <button
-              onClick={logout}
-              className="hidden md:flex w-9 h-9 rounded-full bg-card-surface items-center justify-center text-azul-noche hover:bg-stock-low hover:text-danger transition-colors"
-              aria-label={`Cerrar sesión${user?.displayName ? ` (${user.displayName})` : ""}`}
-              title={`Cerrar sesión${user?.displayName ? ` (${user.displayName})` : ""}`}
-            >
-              <LogoutIcon />
-            </button>
+            // "Cerrar sesión" aparte. Componente compartido con AdminLayout --
+            // un solo lugar define el ícono de logout para toda la app.
+            <LogoutButton className="hidden md:flex" />
           ) : (
             <button
               onClick={() => setIsAuthModalOpen(true)}

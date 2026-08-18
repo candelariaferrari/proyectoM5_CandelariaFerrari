@@ -1,6 +1,7 @@
 import { Link, NavLink, Outlet } from "react-router-dom";
 import { useAuth } from "../../hooks/useAuth";
-import { HomeIcon, ListIcon, LogoutIcon, type IconComponent } from "../ui/icons";
+import { HomeIcon, ListIcon, type IconComponent } from "../ui/icons";
+import { LogoutButton } from "../ui/LogoutButton";
 import { MundoLogo } from "../ui/MundoLogo";
 
 // Layout propio del panel de admin: nav distinto al del sitio de cliente
@@ -15,13 +16,11 @@ const ADMIN_NAV_ITEMS: { to: string; label: string; icon: IconComponent; end: bo
 ];
 
 export const AdminLayout = () => {
-  const { user, logout } = useAuth();
+  const { user } = useAuth();
   const initials = (user?.displayName ?? user?.email ?? "AD").slice(0, 2).toUpperCase();
 
   return (
     <div className="min-h-screen bg-white pb-16 md:pb-0">
-      {/* Desktop: mismos márgenes que el Header de cliente (max-w-1280 + px-6),
-          para que el contenido quede alineado igual en las dos secciones. */}
       <header className="hidden md:block bg-white">
         <div className="flex items-center justify-between gap-4 px-6 py-4 max-w-[1280px] mx-auto border-b border-gris-borde">
           <div className="flex items-end gap-2">
@@ -36,7 +35,7 @@ export const AdminLayout = () => {
                 to={item.to}
                 end={item.end}
                 className={({ isActive }) =>
-                  `text-sm font-bold px-4 py-2 rounded-pill ${
+                  `text-sm font-bold px-4 py-2 rounded-pill hover:bg-card-surface ${
                     isActive ? "bg-azul-cobalto/10 text-azul-cobalto" : "text-azul-noche/60"
                   }`
                 }
@@ -44,15 +43,15 @@ export const AdminLayout = () => {
                 {item.label}
               </NavLink>
             ))}
-          </nav>
-
-          <div className="flex items-center gap-3">
             {/* Salida a propósito del panel de admin, para ver la tienda
                 como la ve un customer -- no es parte de ADMIN_NAV_ITEMS
                 porque no es una página del panel, es salir de él. */}
-            <Link to="/" className="text-sm font-bold text-azul-noche/60 px-4 py-2 rounded-pill hover:bg-card-surface">
+            <NavLink to="/" className="text-sm font-bold text-azul-noche/60 px-4 py-2 rounded-pill hover:bg-card-surface">
               Ver tienda
-            </Link>
+            </NavLink>
+          </nav>
+
+          <div className="flex items-center gap-3">
             <div className="w-9 h-9 rounded-full bg-mostaza text-white font-extrabold text-sm flex items-center justify-center">
               {initials}
             </div>
@@ -60,17 +59,11 @@ export const AdminLayout = () => {
               <p className="text-sm font-bold text-azul-noche">{user?.displayName ?? "Admin"}</p>
               <p className="text-xs text-azul-noche/50">Rol: {user?.role}</p>
             </div>
-            {/* Mismo criterio que el Header de cliente: un solo ícono de
-                logout (neutro, se pone "danger" recién al hover) en vez de
-                un botón de texto siempre en rojo. */}
-            <button
-              onClick={logout}
-              className="w-9 h-9 rounded-full bg-card-surface flex items-center justify-center text-azul-noche hover:bg-stock-low hover:text-danger transition-colors"
-              aria-label="Cerrar sesión"
-              title="Cerrar sesión"
-            >
-              <LogoutIcon />
-            </button>
+            {/* Mismo componente que el Header de cliente: un solo lugar
+                define el ícono de logout (neutro, se pone "danger" recién
+                al hover) en vez de un botón de texto siempre en rojo.
+                showName={false} porque el nombre ya se muestra al lado. */}
+            <LogoutButton showName={false} />
           </div>
         </div>
       </header>
@@ -87,14 +80,7 @@ export const AdminLayout = () => {
             <Link to="/" className="text-xs font-bold text-azul-noche/60">
               Ver tienda
             </Link>
-            <button
-              onClick={logout}
-              className="w-7 h-7 rounded-full bg-card-surface flex items-center justify-center text-azul-noche"
-              aria-label="Salir"
-              title="Salir"
-            >
-              <LogoutIcon size={14} />
-            </button>
+            <LogoutButton size="sm" label="Salir" showName={false} />
           </div>
         </div>
       </header>
