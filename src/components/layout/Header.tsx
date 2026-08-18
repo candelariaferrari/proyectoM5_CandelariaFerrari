@@ -1,11 +1,11 @@
 import { useCallback, useState } from "react";
-import { Link, NavLink, useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../../hooks/useAuth";
 import { useCart } from "../../hooks/useCart";
 import { useProducts } from "../../hooks/useProducts";
 import { AuthModal } from "../auth/AuthModal";
 import { SearchInput } from "../ui/SearchInput";
-import { UserIcon, CartIcon, SearchIcon } from "../ui/icons";
+import { UserIcon, CartIcon, SearchIcon, LogoutIcon } from "../ui/icons";
 import { MundoLogo } from "../ui/MundoLogo";
 
 export const Header = () => {
@@ -37,36 +37,26 @@ export const Header = () => {
         Envíos gratis en compras mayores a $50.000
       </div>
 
-      <div className="flex items-center justify-between gap-4 px-6 py-4 max-w-[1280px] mx-auto border-b border-gris-claro">
+      <div className="flex items-center justify-between gap-4 px-6 py-4 max-w-[1280px] mx-auto border-b border-gris-borde">
         <Link to="/">
           <MundoLogo />
         </Link>
 
         {/* A partir de md: todo el header completo, en una sola fila */}
         <nav className="hidden md:flex items-center gap-5">
-          <NavLink to="/productos"  className={({ isActive }) =>
-                  `text-sm font-bold px-4 py-2 rounded-pill ${
-                    isActive ? "bg-azul-cobalto/10 text-azul-cobalto" : "text-azul-noche/60"
-                  }`
-                }>
+          <Link to="/productos" className="text-md font-bold text-azul-noche">
             Juguetes
-          </NavLink>
-    
-          <NavLink to="/pedidos"  className={({ isActive }) =>
-                  `text-sm font-bold px-4 py-2 rounded-pill ${
-                    isActive ? "bg-azul-cobalto/10 text-azul-cobalto" : "text-azul-noche/60"
-                  }`
-                }>
+          </Link>
+          <span className="text-md font-bold text-azul-noche/30 cursor-not-allowed" title="Próximamente">
+            Ofertas
+          </span>
+          <Link to="/pedidos" className="text-md font-bold text-azul-noche">
             Mis pedidos
-          </NavLink>
+          </Link>
           {user?.role === "admin" && (
-            <NavLink to="/admin" className={({ isActive }) =>
-                  `text-sm font-bold px-4 py-2 rounded-pill ${
-                    isActive ? "bg-azul-cobalto/10 text-azul-cobalto" : "text-azul-noche/60"
-                  }`
-                }>
-              Dashboard
-            </NavLink>
+            <Link to="/admin" className="text-md font-bold text-azul-cobalto">
+              Admin
+            </Link>
           )}
         </nav>
 
@@ -76,14 +66,18 @@ export const Header = () => {
 
         <div className="flex items-center gap-4">
           {isAuthenticated ? (
-            <div className="hidden md:flex items-center gap-3">
-              <span className="text-sm text-azul-noche/70">
-                Hola{user?.displayName ? `, ${user.displayName}` : ""}
-              </span>
-              <button onClick={logout} className="text-sm font-bold text-danger px-3 py-2 rounded-pill">
-                Cerrar sesión
-              </button>
-            </div>
+            // Mismo lugar y forma que el ícono de "iniciar sesión" de abajo,
+            // pero ya logueado: un solo ícono de logout en vez de "Hola" +
+            // "Cerrar sesión" aparte. El nombre (si hay) queda en el
+            // aria-label/title, no ocupa lugar en la barra.
+            <button
+              onClick={logout}
+              className="hidden md:flex w-9 h-9 rounded-full bg-card-surface items-center justify-center text-azul-noche hover:bg-stock-low hover:text-danger transition-colors"
+              aria-label={`Cerrar sesión${user?.displayName ? ` (${user.displayName})` : ""}`}
+              title={`Cerrar sesión${user?.displayName ? ` (${user.displayName})` : ""}`}
+            >
+              <LogoutIcon />
+            </button>
           ) : (
             <button
               onClick={() => setIsAuthModalOpen(true)}
@@ -119,7 +113,7 @@ export const Header = () => {
       </div>
 
       {isMobileSearchOpen && (
-        <div className="md:hidden px-6 py-3 border-b border-gris-claro bg-white">
+        <div className="md:hidden px-6 py-3 border-b border-gris-borde bg-white">
           <SearchInput onSearch={handleSearch} placeholder="Buscar productos..." />
         </div>
       )}

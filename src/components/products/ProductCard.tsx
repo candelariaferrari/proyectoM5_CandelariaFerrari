@@ -14,21 +14,24 @@ export const ProductCard = ({ product }: ProductCardProps) => {
   const category = CATEGORY_INFO[product.categoryId];
 
   return (
-    <div className="bg-white rounded-card p-3 flex flex-col gap-1.5 shadow-card">
+    <div className="group bg-white rounded-card p-3 flex flex-col gap-1.5 shadow-card transition-all duration-200 hover:-translate-y-1 hover:shadow-cta">
       <Link to={`/producto/${product.id}`}>
         <div className="w-full aspect-square rounded-input overflow-hidden">
           <ProductImage
             imageUrl={product.imageUrl}
             categoryId={product.categoryId}
             alt={product.name}
-            className="w-full h-full"
+            className="w-full h-full transition-transform duration-300 group-hover:scale-105"
           />
         </div>
       </Link>
       <div className={`text-[10px] uppercase tracking-wide font-semibold ${category.textColor}`}>
         {category.label}
       </div>
-      <Link to={`/producto/${product.id}`} className="font-bold text-sm leading-tight text-azul-noche">
+      <Link
+        to={`/producto/${product.id}`}
+        className="font-bold text-sm leading-tight text-azul-noche group-hover:text-azul-cobalto transition-colors"
+      >
         {product.name}
       </Link>
       <div className="flex items-center gap-1 text-xs text-azul-noche/70">
@@ -38,7 +41,7 @@ export const ProductCard = ({ product }: ProductCardProps) => {
       <div className="font-bold text-base text-azul-noche">{formatCurrency(product.price)}</div>
       <button
         onClick={() => addToCart(product)}
-        className="mt-1 text-xs font-bold text-white bg-mostaza rounded-pill py-2"
+        className="mt-1 text-xs font-bold text-white bg-mostaza rounded-pill py-2 transition-colors hover:bg-mostaza-texto"
       >
         Agregar al carrito
       </button>
