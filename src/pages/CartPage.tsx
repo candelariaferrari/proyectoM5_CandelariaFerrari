@@ -109,7 +109,7 @@ export const CartPage = () => {
     // md:h-full/min-h-0: mismo criterio que ProductsPage -- <main> en
     // App.tsx le da un techo real de altura en esta ruta (isFixedShellRoute).
     <section
-      className={`max-w-[1280px] mx-auto px-6 py-8 grid gap-8 md:grid-cols-[1fr_320px] md:pb-8 md:h-full md:min-h-0 ${
+      className={`max-w-[1280px] mx-auto px-6 py-8 grid gap-8 md:grid-cols-[1fr_320px] md:pb-8 md:h-full md:min-h-0 transition-[padding] duration-300 ${
         isSummaryExpanded ? "pb-72" : "pb-24"
       }`}
     >
@@ -186,8 +186,12 @@ export const CartPage = () => {
       {/* Desktop: dentro de la grilla, al lado de la lista */}
       <div className="hidden md:flex h-fit p-5 rounded-card-lg bg-crema flex-col gap-4">{summary}</div>
 
-      {/* Mobile */}
-      <div className="md:hidden fixed bottom-16 inset-x-0 z-30 bg-crema rounded-t-card-lg shadow-card">
+      {/* Mobile: el contenido colapsable se anima con una grilla de 0fr a 1fr
+          en vez de aparecer/desaparecer de golpe -- así el drawer se siente
+          como que se despliega, no que "salta". overflow-hidden en el
+          wrapper de adentro es lo que hace que el contenido no se vea
+          mientras la fila todavía mide 0fr. */}
+      <div className="md:hidden fixed bottom-16 inset-x-0 z-30 bg-crema rounded-t-card-lg shadow-card transition-shadow">
         <button
           onClick={() => setIsSummaryExpanded((expanded) => !expanded)}
           className="w-full flex items-center justify-between px-5 py-3.5"
@@ -199,10 +203,21 @@ export const CartPage = () => {
           </span>
           <ChevronUpIcon
             size={18}
-            className={`text-azul-noche/60 shrink-0 transition-transform ${isSummaryExpanded ? "" : "rotate-180"}`}
+            className={`text-azul-noche/60 shrink-0 transition-transform duration-300 ${isSummaryExpanded ? "" : "rotate-180"}`}
           />
         </button>
-        {isSummaryExpanded && <div className="px-5 pb-4 flex flex-col gap-3">{summaryBody}</div>}
+        <div
+          className={`grid transition-[grid-template-rows] duration-300 ease-in-out ${
+            isSummaryExpanded ? "grid-rows-[1fr]" : "grid-rows-[0fr]"
+          }`}
+        >
+          {/* min-h-0: un ítem de grid por defecto tiene min-height:auto, o
+              sea que no baja de la altura de su contenido -- sin esto la
+              fila "0fr" no llega a colapsar nunca y la animación no se ve. */}
+          <div className="overflow-hidden min-h-0">
+            <div className="px-5 pb-4 flex flex-col gap-3">{summaryBody}</div>
+          </div>
+        </div>
       </div>
 
       {isAuthModalOpen && <AuthModal onClose={() => setIsAuthModalOpen(false)} />}

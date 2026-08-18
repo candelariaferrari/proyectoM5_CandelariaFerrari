@@ -5,7 +5,7 @@ import { useCart } from "../../hooks/useCart";
 import { useProducts } from "../../hooks/useProducts";
 import { AuthModal } from "../auth/AuthModal";
 import { SearchInput } from "../ui/SearchInput";
-import { UserIcon, CartIcon, SearchIcon } from "../ui/icons";
+import { UserIcon, CartIcon, SearchIcon, CloseIcon } from "../ui/icons";
 import { LogoutButton } from "../ui/LogoutButton";
 import { MundoLogo } from "../ui/MundoLogo";
 
@@ -76,34 +76,61 @@ export const Header = () => {
         </div>
 
         <div className="flex items-center gap-4">
-          {isAuthenticated ? (
-            // Mismo lugar y forma que el ícono de "iniciar sesión" de abajo,
-            // pero ya logueado: un solo ícono de logout en vez de "Hola" +
-            // "Cerrar sesión" aparte. Componente compartido con AdminLayout --
-            // un solo lugar define el ícono de logout para toda la app.
-            <LogoutButton className="hidden md:flex" />
+          {/* Mismo ícono en mobile y desktop: en desktop el carrito ya no
+              está acá abajo, así que hay lugar para mostrarlo siempre; en
+              mobile se oculta mientras el buscador está abierto (mismo
+              criterio que el buscador -- un solo elemento a la vez en esa
+              línea) y reaparece solo si se lo saca de foco en pantallas
+              grandes gracias al md:flex. */}
+          <div className={isMobileSearchOpen ? "hidden md:flex" : "flex"}>
+            {isAuthenticated ? (
+              // Un solo ícono de logout en vez de "Hola" + "Cerrar sesión"
+              // aparte. Componente compartido con AdminLayout -- un solo
+              // lugar define el ícono de logout para toda la app.
+              <LogoutButton />
+            ) : (
+              <button
+                onClick={() => setIsAuthModalOpen(true)}
+                className="w-9 h-9 rounded-full bg-card-surface flex items-center justify-center"
+                aria-label="Iniciar sesión"
+              >
+                <UserIcon className="text-azul-noche" />
+              </button>
+            )}
+          </div>
+
+          {/* Lupa: en mobile, el mismo ícono se convierte en el buscador en
+              la misma línea (no abre una fila aparte abajo). El carrito ya
+              no vive en el header mobile -- está en el BottomTabBar --, así
+              que ese lugar es el que le da espacio al input. En desktop el
+              buscador ya está siempre visible aparte, así que este botón
+              directamente no se muestra. */}
+          {isMobileSearchOpen ? (
+            <div className="flex md:hidden items-center gap-2 flex-1">
+              <SearchInput onSearch={handleSearch} placeholder="Buscar productos..." autoFocus />
+              <button
+                onClick={() => setIsMobileSearchOpen(false)}
+                className="w-9 h-9 rounded-full bg-card-surface flex items-center justify-center shrink-0"
+                aria-label="Cerrar búsqueda"
+              >
+                <CloseIcon className="text-azul-noche" />
+              </button>
+            </div>
           ) : (
             <button
-              onClick={() => setIsAuthModalOpen(true)}
-              className="hidden md:flex w-9 h-9 rounded-full bg-card-surface items-center justify-center"
-              aria-label="Iniciar sesión"
+              onClick={() => setIsMobileSearchOpen(true)}
+              className="md:hidden w-9 h-9 rounded-full bg-card-surface flex items-center justify-center"
+              aria-label="Buscar"
             >
-              <UserIcon className="text-azul-noche" />
+              <SearchIcon className="text-azul-noche" />
             </button>
           )}
 
-          {/* Lupa: solo en mobile (en desktop el buscador ya está siempre visible) */}
-          <button
-            onClick={() => setIsMobileSearchOpen((open) => !open)}
-            className="md:hidden w-9 h-9 rounded-full bg-card-surface flex items-center justify-center"
-            aria-label="Buscar"
-          >
-            <SearchIcon className="text-azul-noche" />
-          </button>
-
+          {/* Carrito: solo en desktop -- en mobile ya está en el BottomTabBar,
+              tenerlo acá también era un ícono repetido de más. */}
           <Link
             to="/carrito"
-            className="relative w-9 h-9 rounded-full bg-card-surface flex items-center justify-center"
+            className="hidden md:flex relative w-9 h-9 rounded-full bg-card-surface items-center justify-center"
             aria-label="Ver carrito"
           >
             <CartIcon className="text-azul-noche" />
@@ -115,12 +142,6 @@ export const Header = () => {
           </Link>
         </div>
       </div>
-
-      {isMobileSearchOpen && (
-        <div className="md:hidden px-6 py-3 border-b border-gris-borde bg-white">
-          <SearchInput onSearch={handleSearch} placeholder="Buscar productos..." />
-        </div>
-      )}
 
       {isAuthModalOpen && <AuthModal onClose={() => setIsAuthModalOpen(false)} />}
     </header>

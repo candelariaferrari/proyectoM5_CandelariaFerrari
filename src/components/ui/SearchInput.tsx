@@ -6,6 +6,7 @@ interface SearchInputProps {
   placeholder?: string;
   debounceMs?: number;
   minLength?: number;
+  autoFocus?: boolean; // para cuando el input aparece a partir de una acción del usuario (ej. tocar la lupa en mobile)
 }
 
 // Genérico y reutilizable:
@@ -16,6 +17,7 @@ export const SearchInput = ({
   placeholder = "Buscar...",
   debounceMs = 400,
   minLength = 2,
+  autoFocus = false,
 }: SearchInputProps) => {
   const [input, setInput] = useState("");
 
@@ -58,6 +60,7 @@ export const SearchInput = ({
         value={input}
         onChange={(e) => setInput(e.target.value)}
         placeholder={placeholder}
+        autoFocus={autoFocus}
         className="w-full border border-gris-borde rounded-pill pl-4 pr-10 py-2 text-sm"
       />
       {input ? (
