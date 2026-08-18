@@ -106,20 +106,23 @@ export const CartPage = () => {
   );
 
   return (
+    // md:h-full/min-h-0: mismo criterio que ProductsPage -- <main> en
+    // App.tsx le da un techo real de altura en esta ruta (isFixedShellRoute).
     <section
-      className={`max-w-[1280px] mx-auto px-6 py-8 grid gap-8 md:grid-cols-[1fr_320px] md:pb-8 ${
+      className={`max-w-[1280px] mx-auto px-6 py-8 grid gap-8 md:grid-cols-[1fr_320px] md:pb-8 md:h-full md:min-h-0 ${
         isSummaryExpanded ? "pb-72" : "pb-24"
       }`}
     >
-      <div className="min-w-0">
-        <div className="flex items-center justify-between mb-4">
+      <div className="min-w-0 md:flex md:flex-col md:h-full md:min-h-0">
+        <div className="flex items-center justify-between mb-4 md:shrink-0">
           <h1 className="font-heading font-extrabold text-2xl text-azul-noche">Tu carrito ({items.length})</h1>
           <button onClick={clearCart} className="text-sm font-bold text-azul-cobalto underline">
             Vaciar carrito
           </button>
         </div>
 
-        <div className="flex flex-col gap-4">
+        {/* Única parte que scrollea en desktop: la lista de productos. */}
+        <div className="flex flex-col gap-4 md:flex-1 md:overflow-y-auto md:min-h-0 md:pr-1">
           {items.map(({ product, quantity }) => (
             <div key={product.id} className="flex gap-4 p-4 rounded-card bg-white border border-gris-claro">
               <ProductImage
@@ -172,7 +175,10 @@ export const CartPage = () => {
           ))}
         </div>
 
-        <Link to="/productos" className="inline-flex items-center gap-1 text-sm font-bold text-azul-cobalto mt-6">
+        <Link
+          to="/productos"
+          className="inline-flex items-center gap-1 text-sm font-bold text-azul-cobalto mt-6 md:shrink-0"
+        >
           ← Seguir comprando
         </Link>
       </div>

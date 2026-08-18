@@ -59,7 +59,11 @@ export const ProductsPage = () => {
   const hasPriceFilter = priceMin !== "" || priceMax !== "";
 
   return (
-    <section className="max-w-[1280px] mx-auto px-6 py-6 grid gap-8 md:grid-cols-[220px_1fr]">
+    // md:h-full: toma la altura que le da <main> en App.tsx (que ahí sí
+    // tiene un techo real -ver isFixedShellRoute-); min-h-0 evita que el
+    // contenido "empuje" esa altura hacia arriba, que es lo que rompería
+    // el scroll interno de más abajo.
+    <section className="max-w-[1280px] mx-auto px-6 py-6 grid gap-8 md:grid-cols-[220px_1fr] md:h-full md:min-h-0">
       <CategoryFilterSidebar
         categoryFilter={categoryFilter}
         onSelectCategory={handleSelectCategory}
@@ -69,19 +73,26 @@ export const ProductsPage = () => {
         onPriceMaxChange={setPriceMax}
         onClearFilters={handleClearFilters}
       />
-      <div>
-        <h2 className="font-heading font-extrabold text-lg text-azul-noche mb-3">
+      <div className="md:flex md:flex-col md:h-full md:min-h-0">
+        <h2 className="font-heading font-extrabold text-lg text-azul-noche mb-3 md:shrink-0">
           Todos los juguetes{" "}
           <span className="text-sm font-normal text-azul-noche/50">
             {hasPriceFilter ? `${filteredProducts.length} en esta página` : `${totalCount} resultado(s)`}
           </span>
         </h2>
-        <ProductGrid products={filteredProducts} />
-        <Pagination
-          currentPage={currentPage}
-          totalPages={totalPages}
-          onPageChange={(page) => (page > currentPage ? goToNextPage() : goToPreviousPage())}
-        />
+        {/* Esta es la única parte que scrollea en desktop: el grid de
+            productos. La paginación queda afuera (shrink-0), siempre
+            visible debajo, sin tener que scrollear para llegar a ella. */}
+        <div className="md:flex-1 md:overflow-y-auto md:min-h-0 md:pr-1">
+          <ProductGrid products={filteredProducts} />
+        </div>
+        <div className="md:shrink-0">
+          <Pagination
+            currentPage={currentPage}
+            totalPages={totalPages}
+            onPageChange={(page) => (page > currentPage ? goToNextPage() : goToPreviousPage())}
+          />
+        </div>
       </div>
     </section>
   );

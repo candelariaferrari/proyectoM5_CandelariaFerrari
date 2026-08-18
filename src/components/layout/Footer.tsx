@@ -3,7 +3,7 @@ import { MundoLogo } from "../ui/MundoLogo";
 export const Footer = () => {
   return (
     <footer className="bg-azul-noche text-white/75">
-      <div className="max-w-[1280px] mx-auto px-6 py-10 flex items-center justify-between gap-8">
+      <div className="max-w-[1280px] mx-auto px-6 py-2 flex items-center justify-between gap-8">
         <MundoLogo
           lettersClassName="text-xl"
           taglineClassName="text-[9px]"
