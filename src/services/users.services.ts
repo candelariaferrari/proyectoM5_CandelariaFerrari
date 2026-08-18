@@ -11,8 +11,6 @@ import {
 import { db } from "../config/firebase";
 import type { User } from "../types/user.types";
 
-const ADMIN_EMAIL = "mundo@jugueteria.com";
-
 // Obtener todos los Users
 export const getUser = async (): Promise<User[]> => {
   const snapshot = await getDocs(collection(db, "users"));
@@ -27,9 +25,7 @@ export const getUser = async (): Promise<User[]> => {
 };
 
 // Cuenta cuántos usuarios hay, sin traer los documentos (agregación del
-// lado del servidor) -- mismo criterio que `countProducts` en
-// products.services.ts, en vez de traer todos los docs de `users` solo
-// para contar cuántos son.
+// lado del servidor) 
 export const countUsers = async (): Promise<number> => {
   const snapshot = await getCountFromServer(collection(db, "users"));
   return snapshot.data().count;
@@ -50,7 +46,7 @@ export const getUsersById = async (
   } as User;
 };
 
-// Crear perfil de usuario
+// Crear perfil de usuario. Todo perfil nuevo se crea SIEMPRE como "customer"
 export const createUserProfile = async (
   uid: string,
   email: string
@@ -60,7 +56,7 @@ export const createUserProfile = async (
   const userData = {
     uid,
     email,
-    role: email === ADMIN_EMAIL ? "admin" : "customer",
+    role: "customer",
     createdAt: serverTimestamp(),
   };
 
