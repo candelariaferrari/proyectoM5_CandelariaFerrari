@@ -88,7 +88,7 @@ export const Header = () => {
             ) : (
               <button
                 onClick={() => setIsAuthModalOpen(true)}
-                className="w-9 h-9 rounded-full bg-card-surface flex items-center justify-center"
+                className="w-9 h-9 rounded-full bg-card-surface flex items-center justify-center transition-shadow hover:ring-2 hover:ring-inset hover:ring-gris-borde"
                 aria-label="Iniciar sesión"
               >
                 <UserIcon className="text-azul-noche" />
@@ -105,7 +105,7 @@ export const Header = () => {
               <SearchInput onSearch={handleSearch} placeholder="Buscar productos..." autoFocus />
               <button
                 onClick={() => setIsMobileSearchOpen(false)}
-                className="w-9 h-9 rounded-full bg-card-surface flex items-center justify-center shrink-0"
+                className="w-9 h-9 rounded-full bg-card-surface flex items-center justify-center shrink-0 transition-shadow hover:ring-2 hover:ring-inset hover:ring-gris-borde"
                 aria-label="Cerrar búsqueda"
               >
                 <CloseIcon className="text-azul-noche" />
@@ -114,7 +114,7 @@ export const Header = () => {
           ) : (
             <button
               onClick={() => setIsMobileSearchOpen(true)}
-              className="md:hidden w-9 h-9 rounded-full bg-card-surface flex items-center justify-center"
+              className="md:hidden w-9 h-9 rounded-full bg-card-surface flex items-center justify-center transition-shadow hover:ring-2 hover:ring-inset hover:ring-gris-borde"
               aria-label="Buscar"
             >
               <SearchIcon className="text-azul-noche" />
@@ -125,7 +125,7 @@ export const Header = () => {
               tenerlo acá también era un ícono repetido de más. */}
           <Link
             to="/carrito"
-            className="hidden md:flex relative w-9 h-9 rounded-full bg-card-surface items-center justify-center"
+            className="hidden md:flex relative w-9 h-9 rounded-full bg-card-surface items-center justify-center transition-shadow hover:ring-2 hover:ring-inset hover:ring-gris-borde"
             aria-label="Ver carrito"
           >
             <CartIcon className="text-azul-noche" />

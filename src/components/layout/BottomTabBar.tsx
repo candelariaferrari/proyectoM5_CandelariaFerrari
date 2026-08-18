@@ -22,7 +22,7 @@ export const BottomTabBar = () => {
       <nav className="md:hidden fixed bottom-0 inset-x-0 bg-white border-t border-gris-borde flex items-stretch justify-around z-40">
         <Link
           to="/"
-          className={`flex flex-col items-center gap-0.5 py-2.5 flex-1 text-[11px] font-bold ${isHome ? "text-azul-cobalto" : "text-azul-noche/50"
+          className={`flex flex-col items-center gap-0.5 py-2.5 flex-1 text-[11px] font-bold transition-colors hover:bg-card-surface ${isHome ? "text-azul-cobalto" : "text-azul-noche/50"
             }`}
         >
           <HomeIcon size={20} />
@@ -31,7 +31,7 @@ export const BottomTabBar = () => {
 
         <Link
           to="/productos"
-          className={`flex flex-col items-center gap-0.5 py-2.5 flex-1 text-[11px] font-bold ${isProducts ? "text-azul-cobalto" : "text-azul-noche/50"
+          className={`flex flex-col items-center gap-0.5 py-2.5 flex-1 text-[11px] font-bold transition-colors hover:bg-card-surface ${isProducts ? "text-azul-cobalto" : "text-azul-noche/50"
             }`}
         >
           <GridIcon size={20} />
@@ -40,7 +40,7 @@ export const BottomTabBar = () => {
 
         <Link
           to="/carrito"
-          className={`relative flex flex-col items-center gap-0.5 py-2.5 flex-1 text-[11px] font-bold ${isCart ? "text-azul-cobalto" : "text-azul-noche/50"
+          className={`relative flex flex-col items-center gap-0.5 py-2.5 flex-1 text-[11px] font-bold transition-colors hover:bg-card-surface ${isCart ? "text-azul-cobalto" : "text-azul-noche/50"
             }`}
         >
           <CartIcon size={20} />
@@ -54,7 +54,7 @@ export const BottomTabBar = () => {
 
         <Link
           to="/pedidos"
-          className={`flex flex-col items-center gap-0.5 py-2.5 flex-1 text-[11px] font-bold ${isOrders ? "text-azul-cobalto" : "text-azul-noche/50"
+          className={`flex flex-col items-center gap-0.5 py-2.5 flex-1 text-[11px] font-bold transition-colors hover:bg-card-surface ${isOrders ? "text-azul-cobalto" : "text-azul-noche/50"
             }`}
         >
           <ListIcon size={20} />
@@ -71,7 +71,7 @@ export const BottomTabBar = () => {
           ) : (
             <button
               onClick={() => setIsAuthModalOpen(true)}
-              className="w-9 h-9 rounded-full bg-card-surface flex items-center justify-center"
+              className="w-9 h-9 rounded-full bg-card-surface flex items-center justify-center transition-shadow hover:ring-2 hover:ring-inset hover:ring-gris-borde"
               aria-label="Iniciar sesión"
             >
               <UserIcon className="text-azul-noche" />

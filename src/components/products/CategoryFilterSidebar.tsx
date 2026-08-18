@@ -27,8 +27,10 @@ export const CategoryFilterSidebar = ({
         <div className="flex gap-2 overflow-x-auto overflow-y-hidden pb-1 -mx-6 px-6 md:mx-0 md:px-0 md:flex-col md:gap-1.5 md:overflow-visible">
           <button
             onClick={() => onSelectCategory(null)}
-            className={`shrink-0 text-left text-sm font-bold px-4 py-2.5 rounded-pill md:rounded-input ${
-              categoryFilter === null ? "bg-azul-cobalto text-white" : "bg-card-surface text-azul-noche"
+            className={`shrink-0 text-left text-sm font-bold px-4 py-2.5 rounded-pill md:rounded-input transition-shadow hover:ring-2 hover:ring-inset ${
+              categoryFilter === null
+                ? "bg-azul-cobalto text-white hover:ring-white/50"
+                : "bg-card-surface text-azul-noche hover:ring-gris-borde"
             }`}
           >
             Todos
@@ -37,10 +39,10 @@ export const CategoryFilterSidebar = ({
             <button
               key={id}
               onClick={() => onSelectCategory(id)}
-              className={`shrink-0 text-left text-sm font-bold px-4 py-2.5 rounded-pill md:rounded-input ${
+              className={`shrink-0 text-left text-sm font-bold px-4 py-2.5 rounded-pill md:rounded-input transition-shadow hover:ring-2 hover:ring-inset ${
                 categoryFilter === id
-                  ? `${CATEGORY_INFO[id].color} text-white`
-                  : `bg-card-surface ${CATEGORY_INFO[id].textColor}`
+                  ? `${CATEGORY_INFO[id].color} text-white hover:ring-white/50`
+                  : `bg-card-surface ${CATEGORY_INFO[id].textColor} hover:ring-gris-borde`
               }`}
             >
               {CATEGORY_INFO[id].label}
@@ -73,7 +75,7 @@ export const CategoryFilterSidebar = ({
 
       <button
         onClick={onClearFilters}
-        className="text-sm font-bold text-azul-noche bg-card-surface rounded-pill py-2.5"
+        className="text-sm font-bold text-azul-noche bg-card-surface rounded-pill py-2.5 transition-shadow hover:ring-2 hover:ring-inset hover:ring-gris-borde"
       >
         Limpiar filtros
       </button>

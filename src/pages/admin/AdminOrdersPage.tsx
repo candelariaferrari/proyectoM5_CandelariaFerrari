@@ -57,7 +57,7 @@ const ChangeStatusButtons = ({
               isCurrent
                 ? "ring-2 ring-offset-1 ring-azul-cobalto"
                 : isValidTarget
-                  ? "cursor-pointer"
+                  ? "cursor-pointer transition-opacity hover:opacity-80"
                   : "opacity-30 cursor-not-allowed"
             }`}
           >
@@ -213,8 +213,10 @@ export const AdminOrdersPage = () => {
       <div className="flex gap-2 overflow-x-auto mb-5">
         <button
           onClick={() => handleFilterChange(null)}
-          className={`text-sm font-bold px-4 py-2 rounded-pill shrink-0 ${
-            statusFilter === null ? "bg-azul-cobalto text-white" : "bg-card-surface text-azul-noche/70"
+          className={`text-sm font-bold px-4 py-2 rounded-pill shrink-0 transition-shadow hover:ring-2 hover:ring-inset ${
+            statusFilter === null
+              ? "bg-azul-cobalto text-white hover:ring-white/50"
+              : "bg-card-surface text-azul-noche/70 hover:ring-gris-borde"
           }`}
         >
           Todas
@@ -223,8 +225,10 @@ export const AdminOrdersPage = () => {
           <button
             key={status}
             onClick={() => handleFilterChange(status)}
-            className={`text-sm font-bold px-4 py-2 rounded-pill shrink-0 ${
-              statusFilter === status ? "bg-azul-cobalto text-white" : "bg-card-surface text-azul-noche/70"
+            className={`text-sm font-bold px-4 py-2 rounded-pill shrink-0 transition-shadow hover:ring-2 hover:ring-inset ${
+              statusFilter === status
+                ? "bg-azul-cobalto text-white hover:ring-white/50"
+                : "bg-card-surface text-azul-noche/70 hover:ring-gris-borde"
             }`}
           >
             {ORDER_STATUS_INFO[status].label}
@@ -289,7 +293,7 @@ export const AdminOrdersPage = () => {
                   <div key={order.id}>
                     <button
                       onClick={() => setSelectedOrderId(isSelected ? null : order.id)}
-                      className="w-full flex flex-col gap-2 p-4 rounded-card bg-white shadow-card text-left"
+                      className="w-full flex flex-col gap-2 p-4 rounded-card bg-white shadow-card text-left transition-colors hover:bg-card-surface"
                     >
                       <div className="flex items-start justify-between gap-3">
                         <div>

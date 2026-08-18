@@ -27,14 +27,14 @@ export const ConfirmDialog = ({
         <button
           type="button"
           onClick={onCancel}
-          className="flex-1 text-sm font-bold text-azul-noche bg-card-surface rounded-pill py-2.5"
+          className="flex-1 text-sm font-bold text-azul-noche bg-card-surface rounded-pill py-2.5 transition-shadow hover:ring-2 hover:ring-inset hover:ring-gris-borde"
         >
           Cancelar
         </button>
         <button
           type="button"
           onClick={onConfirm}
-          className="flex-1 text-sm font-bold text-white bg-danger rounded-pill py-2.5"
+          className="flex-1 text-sm font-bold text-white bg-danger rounded-pill py-2.5 transition-shadow hover:ring-2 hover:ring-inset hover:ring-white/50"
         >
           {confirmLabel}
         </button>

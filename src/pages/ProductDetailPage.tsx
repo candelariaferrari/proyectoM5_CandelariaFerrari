@@ -57,7 +57,7 @@ export const ProductDetailPage = (): JSX.Element => {
     return (
       <div className="p-6 text-center">
         <p className="text-azul-noche mb-3">No encontramos este producto.</p>
-        <Link to="/" className="text-azul-cobalto font-bold underline">
+        <Link to="/" className="text-azul-cobalto font-bold underline hover:text-azul-cobalto/70 transition-colors">
           Volver al catálogo
         </Link>
       </div>
@@ -130,7 +130,7 @@ export const ProductDetailPage = (): JSX.Element => {
               <button
                 onClick={decreaseQty}
                 disabled={quantity <= 1}
-                className="w-7 h-7 rounded-full bg-white text-azul-noche font-bold disabled:opacity-40"
+                className="w-7 h-7 rounded-full bg-white text-azul-noche font-bold transition-shadow hover:ring-2 hover:ring-inset hover:ring-gris-borde disabled:opacity-40 disabled:hover:ring-0"
                 aria-label="Restar"
               >
                 −
@@ -139,7 +139,7 @@ export const ProductDetailPage = (): JSX.Element => {
               <button
                 onClick={increaseQty}
                 disabled={quantity >= product.stock}
-                className="w-7 h-7 rounded-full bg-white text-azul-noche font-bold disabled:opacity-40"
+                className="w-7 h-7 rounded-full bg-white text-azul-noche font-bold transition-shadow hover:ring-2 hover:ring-inset hover:ring-gris-borde disabled:opacity-40 disabled:hover:ring-0"
                 aria-label="Sumar"
               >
                 +

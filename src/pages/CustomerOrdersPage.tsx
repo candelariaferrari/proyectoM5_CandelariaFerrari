@@ -81,7 +81,7 @@ export const CustomerOrdersPage = () => {
             <div key={order.id} className="rounded-card bg-white border border-gris-borde overflow-hidden">
               <button
                 onClick={() => setExpandedOrderId(isExpanded ? null : order.id)}
-                className="w-full flex items-center justify-between gap-4 p-4"
+                className="w-full flex items-center justify-between gap-4 p-4 transition-colors hover:bg-card-surface"
                 aria-expanded={isExpanded}
               >
                 <div className="text-left min-w-0">

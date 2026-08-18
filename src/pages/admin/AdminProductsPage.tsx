@@ -113,8 +113,10 @@ export const AdminProductsPage = () => {
         <div className="flex gap-2 overflow-x-auto">
           <button
             onClick={() => handleCategoryFilter(null)}
-            className={`text-sm font-bold px-4 py-2 rounded-pill shrink-0 ${
-              categoryFilter === null ? "bg-azul-cobalto text-white" : "bg-card-surface text-azul-noche/70"
+            className={`text-sm font-bold px-4 py-2 rounded-pill shrink-0 transition-shadow hover:ring-2 hover:ring-inset ${
+              categoryFilter === null
+                ? "bg-azul-cobalto text-white hover:ring-white/50"
+                : "bg-card-surface text-azul-noche/70 hover:ring-gris-borde"
             }`}
           >
             Todos
@@ -123,8 +125,10 @@ export const AdminProductsPage = () => {
             <button
               key={id}
               onClick={() => handleCategoryFilter(id)}
-              className={`text-sm font-bold px-4 py-2 rounded-pill shrink-0 ${
-                categoryFilter === id ? `${CATEGORY_INFO[id].color} text-white` : "bg-card-surface text-azul-noche/70"
+              className={`text-sm font-bold px-4 py-2 rounded-pill shrink-0 transition-shadow hover:ring-2 hover:ring-inset ${
+                categoryFilter === id
+                  ? `${CATEGORY_INFO[id].color} text-white hover:ring-white/50`
+                  : "bg-card-surface text-azul-noche/70 hover:ring-gris-borde"
               }`}
             >
               {CATEGORY_INFO[id].label}
@@ -205,7 +209,7 @@ export const AdminProductsPage = () => {
                     <div className="flex items-center justify-end gap-2">
                       <button
                         onClick={() => setEditingProduct(product)}
-                        className="w-8 h-8 rounded-full bg-card-surface flex items-center justify-center text-azul-noche"
+                        className="w-8 h-8 rounded-full bg-card-surface flex items-center justify-center text-azul-noche transition-shadow hover:ring-2 hover:ring-inset hover:ring-gris-borde"
                         aria-label="Editar producto"
                       >
                         <PencilIcon size={14} />
@@ -213,7 +217,7 @@ export const AdminProductsPage = () => {
                       <button
                         onClick={() => setProductPendingDelete(product)}
                         disabled={deletingId === product.id}
-                        className="w-8 h-8 rounded-full bg-stock-low flex items-center justify-center text-danger disabled:opacity-40"
+                        className="w-8 h-8 rounded-full bg-stock-low flex items-center justify-center text-danger transition-shadow hover:ring-2 hover:ring-inset hover:ring-danger/30 disabled:opacity-40 disabled:hover:ring-0"
                         aria-label="Borrar producto"
                       >
                         <TrashIcon size={14} />
@@ -255,7 +259,7 @@ export const AdminProductsPage = () => {
                 <div className="flex items-center gap-2 shrink-0">
                   <button
                     onClick={() => setEditingProduct(product)}
-                    className="w-9 h-9 rounded-full bg-card-surface flex items-center justify-center text-azul-noche"
+                    className="w-9 h-9 rounded-full bg-card-surface flex items-center justify-center text-azul-noche transition-shadow hover:ring-2 hover:ring-inset hover:ring-gris-borde"
                     aria-label="Editar producto"
                   >
                     <PencilIcon size={15} />
@@ -263,7 +267,7 @@ export const AdminProductsPage = () => {
                   <button
                     onClick={() => setProductPendingDelete(product)}
                     disabled={deletingId === product.id}
-                    className="w-9 h-9 rounded-full bg-stock-low flex items-center justify-center text-danger disabled:opacity-40"
+                    className="w-9 h-9 rounded-full bg-stock-low flex items-center justify-center text-danger transition-shadow hover:ring-2 hover:ring-inset hover:ring-danger/30 disabled:opacity-40 disabled:hover:ring-0"
                     aria-label="Borrar producto"
                   >
                     <TrashIcon size={15} />

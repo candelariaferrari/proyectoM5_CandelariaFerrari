@@ -163,7 +163,11 @@ export const AuthModal = ({ onClose }: AuthModalProps) => {
 
         <p className="text-center text-sm text-azul-noche/60">
           {isLogin ? "¿No tenés cuenta? " : "¿Ya tenés cuenta? "}
-          <button type="button" onClick={switchTab} className="font-bold text-azul-cobalto">
+          <button
+            type="button"
+            onClick={switchTab}
+            className="font-bold text-azul-cobalto hover:text-azul-cobalto/70 transition-colors"
+          >
             {isLogin ? "Registrate" : "Iniciá sesión"}
           </button>
         </p>

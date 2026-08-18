@@ -281,7 +281,7 @@ export const ProductForm = ({ product, onClose, onSaved }: ProductFormProps) => 
           <button
             type="button"
             onClick={onClose}
-            className="flex-1 text-sm font-bold text-azul-noche border border-gris-borde rounded-pill py-2"
+            className="flex-1 text-sm font-bold text-azul-noche border border-gris-borde rounded-pill py-2 transition-colors hover:bg-card-surface"
           >
             Cancelar
           </button>

@@ -116,7 +116,10 @@ export const CartPage = () => {
       <div className="min-w-0 md:flex md:flex-col md:h-full md:min-h-0">
         <div className="flex items-center justify-between mb-4 md:shrink-0">
           <h1 className="font-heading font-extrabold text-2xl text-azul-noche">Tu carrito ({items.length})</h1>
-          <button onClick={clearCart} className="text-sm font-bold text-azul-cobalto underline">
+          <button
+            onClick={clearCart}
+            className="text-sm font-bold text-azul-cobalto underline hover:text-azul-cobalto/70 transition-colors"
+          >
             Vaciar carrito
           </button>
         </div>
@@ -147,7 +150,7 @@ export const CartPage = () => {
                   <div className="flex items-center gap-1 bg-card-surface rounded-pill px-1">
                     <button
                       onClick={() => handleQuantityChange(product.id, quantity - 1, product.stock)}
-                      className="w-7 h-7 rounded-full flex items-center justify-center text-azul-noche font-bold"
+                      className="w-7 h-7 rounded-full flex items-center justify-center text-azul-noche font-bold transition-shadow hover:ring-2 hover:ring-inset hover:ring-gris-borde"
                       aria-label="Restar"
                     >
                       −
@@ -155,7 +158,7 @@ export const CartPage = () => {
                     <span className="w-6 text-center text-sm font-bold text-azul-noche">{quantity}</span>
                     <button
                       onClick={() => handleQuantityChange(product.id, quantity + 1, product.stock)}
-                      className="w-7 h-7 rounded-full flex items-center justify-center text-azul-noche font-bold"
+                      className="w-7 h-7 rounded-full flex items-center justify-center text-azul-noche font-bold transition-shadow hover:ring-2 hover:ring-inset hover:ring-gris-borde"
                       aria-label="Sumar"
                     >
                       +
@@ -164,7 +167,7 @@ export const CartPage = () => {
 
                   <button
                     onClick={() => setItemPendingRemoval(product)}
-                    className="w-7 h-7 rounded-full bg-rosa-coral text-white flex items-center justify-center"
+                    className="w-7 h-7 rounded-full bg-rosa-coral text-white flex items-center justify-center transition-shadow hover:ring-2 hover:ring-inset hover:ring-white/50"
                     aria-label="Quitar del carrito"
                   >
                     <CloseIcon size={12} />
@@ -177,7 +180,7 @@ export const CartPage = () => {
 
         <Link
           to="/productos"
-          className="inline-flex items-center gap-1 text-sm font-bold text-azul-cobalto mt-6 md:shrink-0"
+          className="inline-flex items-center gap-1 text-sm font-bold text-azul-cobalto mt-6 md:shrink-0 hover:text-azul-cobalto/70 transition-colors"
         >
           ← Seguir comprando
         </Link>
@@ -191,10 +194,10 @@ export const CartPage = () => {
           como que se despliega, no que "salta". overflow-hidden en el
           wrapper de adentro es lo que hace que el contenido no se vea
           mientras la fila todavía mide 0fr. */}
-      <div className="md:hidden fixed bottom-16 inset-x-0 z-30 bg-crema rounded-t-card-lg shadow-card transition-shadow">
+      <div className="md:hidden fixed bottom-16 inset-x-0 z-30 bg-crema rounded-t-card-lg shadow-card transition-shadow overflow-hidden">
         <button
           onClick={() => setIsSummaryExpanded((expanded) => !expanded)}
-          className="w-full flex items-center justify-between px-5 py-3.5"
+          className="w-full flex items-center justify-between px-5 py-3.5 transition-colors hover:bg-azul-noche/[0.03]"
           aria-expanded={isSummaryExpanded}
           aria-label={isSummaryExpanded ? "Ocultar resumen del pedido" : "Mostrar resumen del pedido"}
         >
