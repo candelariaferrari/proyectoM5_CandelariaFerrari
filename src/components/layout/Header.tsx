@@ -76,17 +76,14 @@ export const Header = () => {
         </div>
 
         <div className="flex items-center gap-4">
-          {/* Mismo ícono en mobile y desktop: en desktop el carrito ya no
-              está acá abajo, así que hay lugar para mostrarlo siempre; en
-              mobile se oculta mientras el buscador está abierto (mismo
-              criterio que el buscador -- un solo elemento a la vez en esa
-              línea) y reaparece solo si se lo saca de foco en pantallas
-              grandes gracias al md:flex. */}
-          <div className={isMobileSearchOpen ? "hidden md:flex" : "flex"}>
+          {/* Solo desktop: en mobile el ícono de usuario/logout vive en el
+              BottomTabBar (no repetido acá también), así que en esa línea
+              de mobile queda solamente la lupa. */}
+          <div className="hidden md:flex">
             {isAuthenticated ? (
               // Un solo ícono de logout en vez de "Hola" + "Cerrar sesión"
-              // aparte. Componente compartido con AdminLayout -- un solo
-              // lugar define el ícono de logout para toda la app.
+              // aparte. Componente compartido con AdminLayout/BottomTabBar --
+              // un solo lugar define el ícono de logout para toda la app.
               <LogoutButton />
             ) : (
               <button
@@ -100,9 +97,7 @@ export const Header = () => {
           </div>
 
           {/* Lupa: en mobile, el mismo ícono se convierte en el buscador en
-              la misma línea (no abre una fila aparte abajo). El carrito ya
-              no vive en el header mobile -- está en el BottomTabBar --, así
-              que ese lugar es el que le da espacio al input. En desktop el
+              la misma línea (no abre una fila aparte abajo). En desktop el
               buscador ya está siempre visible aparte, así que este botón
               directamente no se muestra. */}
           {isMobileSearchOpen ? (
