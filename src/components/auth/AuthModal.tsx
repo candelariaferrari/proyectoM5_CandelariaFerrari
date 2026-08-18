@@ -5,6 +5,7 @@ import { FormField, fieldInputClassName } from "../ui/FormField";
 import { GoogleIcon } from "../ui/icons";
 import { MundoLogo } from "../ui/MundoLogo";
 import { Button } from "../ui/Button";
+import { getFirebaseAuthErrorMessage } from "../../utils/authErrors";
 
 type AuthTab = "login" | "signup";
 
@@ -73,11 +74,14 @@ export const AuthModal = ({ onClose }: AuthModalProps) => {
         await signUp(email, password);
       }
       onClose();
-    } catch {
+    } catch (err) {
       setError(
-        isLogin
-          ? "No pudimos iniciar sesión. Revisá tu email y contraseña."
-          : "No pudimos crear la cuenta. Probá con otro email."
+        getFirebaseAuthErrorMessage(
+          err,
+          isLogin
+            ? "No pudimos iniciar sesión. Revisá tu email y contraseña."
+            : "No pudimos crear la cuenta. Probá con otro email."
+        )
       );
     } finally {
       setSubmitting(false);
@@ -89,8 +93,8 @@ export const AuthModal = ({ onClose }: AuthModalProps) => {
     try {
       await loginWithGoogle();
       onClose();
-    } catch {
-      setError("No pudimos iniciar sesión con Google.");
+    } catch (err) {
+      setError(getFirebaseAuthErrorMessage(err, "No pudimos iniciar sesión con Google."));
     }
   };
 
