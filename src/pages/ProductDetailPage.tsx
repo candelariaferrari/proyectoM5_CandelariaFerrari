@@ -37,7 +37,7 @@ export const ProductDetailPage = (): JSX.Element => {
     return (
       <div className="max-w-[1280px] mx-auto px-6 py-8">
         <Skeleton className="h-3 w-48 mb-5" />
-        <div className="grid gap-10 md:grid-cols-2">
+        <div className="grid gap-8 md:grid-cols-[0.8fr_1fr]">
           <Skeleton className="w-full aspect-square rounded-card" />
           <div className="flex flex-col gap-3">
             <Skeleton className="h-6 w-24 rounded-pill" />
@@ -85,8 +85,8 @@ export const ProductDetailPage = (): JSX.Element => {
         <span className="text-azul-noche">{product.name}</span>
       </nav>
 
-      <div className="grid gap-10 md:grid-cols-2">
-        <div className="w-full aspect-square rounded-card overflow-hidden">
+      <div className="grid gap-8 md:grid-cols-[0.8fr_1fr]">
+        <div className="w-full max-w-[500px] aspect-square rounded-card overflow-hidden mx-auto">
           <ProductImage
             imageUrl={product.imageUrl}
             categoryId={product.categoryId}
@@ -101,9 +101,8 @@ export const ProductDetailPage = (): JSX.Element => {
               {category.label}
             </span>
             <span
-              className={`text-xs font-bold px-3 py-1.5 rounded-pill ${
-                inStock ? "bg-stock-ok text-verde-menta" : "bg-stock-low text-danger"
-              }`}
+              className={`text-xs font-bold px-3 py-1.5 rounded-pill ${inStock ? "bg-stock-ok text-verde-menta" : "bg-stock-low text-danger"
+                }`}
             >
               {inStock ? `En stock · ${product.stock}` : "Sin stock"}
             </span>
