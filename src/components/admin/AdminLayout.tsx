@@ -1,4 +1,4 @@
-import { NavLink, Outlet } from "react-router-dom";
+import { Link, NavLink, Outlet } from "react-router-dom";
 import { useAuth } from "../../hooks/useAuth";
 import { HomeIcon, ListIcon, type IconComponent } from "../ui/icons";
 import { MundoLogo } from "../ui/MundoLogo";
@@ -44,16 +44,23 @@ export const AdminLayout = () => {
                 {item.label}
               </NavLink>
             ))}
+             {/* Salida a propósito del panel de admin, para ver la tienda
+                como la ve un customer -- no es parte de ADMIN_NAV_ITEMS
+                porque no es una página del panel, es salir de él. */}
+            <NavLink to="/" className="text-sm font-bold text-azul-noche/60 px-4 py-2 rounded-pill hover:bg-card-surface">
+              Ver tienda
+            </NavLink>
           </nav>
 
           <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-full bg-mostaza text-white font-extrabold text-sm flex items-center justify-center">
-              {initials}
+           
+          {/*   <div className="w-9 h-9 rounded-full bg-mostaza text-white font-extrabold text-sm flex items-center justify-center">
+              {initials} 
             </div>
             <div className="leading-tight">
               <p className="text-sm font-bold text-azul-noche">{user?.displayName ?? "Admin"}</p>
               <p className="text-xs text-azul-noche/50">Rol: {user?.role}</p>
-            </div>
+            </div> */}
             <button onClick={logout} className="text-sm font-bold text-danger bg-stock-low px-4 py-2 rounded-pill">
               Cerrar sesión
             </button>
@@ -69,9 +76,14 @@ export const AdminLayout = () => {
             <MundoLogo lettersClassName="text-xl" taglineClassName="text-[9px]" showTagline />
             <span className="text-[10px] font-extrabold tracking-widest text-azul-noche/40 mb-0.5">ADMIN</span>
           </div>
-          <button onClick={logout} className="text-xs font-bold text-danger mb-1">
-            Salir
-          </button>
+          <div className="flex items-center gap-3 mb-1">
+            <Link to="/" className="text-xs font-bold text-azul-noche/60">
+              Ver tienda
+            </Link>
+            <button onClick={logout} className="text-xs font-bold text-danger">
+              Salir
+            </button>
+          </div>
         </div>
       </header>
 

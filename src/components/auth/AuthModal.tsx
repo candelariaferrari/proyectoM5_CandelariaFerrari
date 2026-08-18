@@ -1,4 +1,5 @@
 import { useState, type FormEvent } from "react";
+import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../hooks/useAuth";
 import { Modal } from "../ui/Modal";
 import { FormField, fieldInputClassName } from "../ui/FormField";
@@ -23,6 +24,7 @@ type AuthFormErrors = Partial<Record<"email" | "password", string>>;
 
 export const AuthModal = ({ onClose }: AuthModalProps) => {
   const { login, signUp, loginWithGoogle } = useAuth();
+  const navigate = useNavigate();
   const [tab, setTab] = useState<AuthTab>("login");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -68,12 +70,14 @@ export const AuthModal = ({ onClose }: AuthModalProps) => {
 
     setSubmitting(true);
     try {
-      if (isLogin) {
-        await login(email, password);
-      } else {
-        await signUp(email, password);
-      }
+      const profile = isLogin ? await login(email, password) : await signUp(email, password);
       onClose();
+      // Un admin que se loguea va directo a su panel, en vez de quedarse
+      // viendo la misma home que ve cualquier customer. Nada de esto pasa
+      // para un customer: sigue en la página en la que ya estaba.
+      if (profile?.role === "admin") {
+        navigate("/admin");
+      }
     } catch (err) {
       setError(
         getFirebaseAuthErrorMessage(
@@ -91,8 +95,11 @@ export const AuthModal = ({ onClose }: AuthModalProps) => {
   const handleGoogle = async () => {
     setError(null);
     try {
-      await loginWithGoogle();
+      const profile = await loginWithGoogle();
       onClose();
+      if (profile?.role === "admin") {
+        navigate("/admin");
+      }
     } catch (err) {
       setError(getFirebaseAuthErrorMessage(err, "No pudimos iniciar sesión con Google."));
     }
