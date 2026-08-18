@@ -868,3 +868,28 @@ La solución fue usar un `useRef` en vez de un `useState` para esa bandera puntu
 ### Qué decidí
 
 Como regla general para el resto del proyecto: cuando una condición necesita frenar algo que puede pasar en el mismo instante en que se actualiza el propio estado que la dispara (una carrera contra el propio `setState`), un `state` común no alcanza — hace falta un `ref`, que se lee "en el momento" y no espera el siguiente render.
+
+
+---
+
+## El carrito usaba useState y la consigna pedía useReducer: lo refactoricé antes de escribir los tests
+
+### Contexto
+
+Al ponerme a escribir los tests del carrito siguiendo mis apuntes de clase (fixtures, `renderWithProvider`, `cartReducer.test.ts`), me di cuenta de que ese archivo no podía existir: `CartContext` manejaba el carrito con `useState`, no con `useReducer`, así que no había ningún reducer puro para testear por separado.
+
+### Prompt
+
+> tengo una duda con respecto a los ordenes... [pregunta anterior sobre tests] ... no se muy bien que es necesario si o si testear porque se que tampoco se testea todo
+
+### Qué decidí
+
+Le pregunté a Claude si convenía refactorizar el carrito a `useReducer` antes de seguir, o dejarlo como estaba y testear el hook directamente. La consigna pide `useReducer` para el carrito en varios lugares (checklist de arquitectura, checklist de testing, y es literalmente una de las preguntas de la defensa oral: "¿por qué useReducer y no useState para el carrito?"), así que decidí refactorizar.
+
+Se extrajo toda la lógica de `addToCart`, `removeFromCart`, `updateQuantity`, `clearCart` y la fusión del carrito de invitado al loguearse a una función pura `cartReducer` (en `src/contexts/cartReducer.ts`), con un action por caso (`ADD_TO_CART`, `REMOVE_FROM_CART`, `UPDATE_QUANTITY`, `CLEAR_CART`, `MERGE_GUEST_CART`). `CartContext` ahora solo hace `dispatch(...)` y se encarga de los side effects (los toasts), que no pueden vivir adentro del reducer porque tienen que quedar puros.
+
+### Qué aprendí
+
+Un reducer puro (mismo estado + misma acción → siempre el mismo resultado nuevo, sin tocar nada de afuera) es mucho más fácil de testear que un `useState` con lógica de actualización desparramada en varios `setCartsByUser(prev => ...)`: alcanza con pasarle un estado de entrada y una acción, y comparar contra el estado de salida esperado, sin renderizar nada ni mockear Firebase. Esa es la ventaja concreta de `useReducer` sobre `useState` cuando el estado tiene varias acciones posibles: centraliza toda la lógica de "cómo cambia el estado" en un solo lugar testeable de forma aislada, en vez de tenerla repartida en cada función que actualiza estado.
+
+De paso armé el resto de la base de testing: `src/test/fixtures.ts` (datos falsos de producto/usuario/carrito/orden), mocks globales de Firebase en `setupTests.ts` (para que ningún test dependa de una conexión real), `src/test/renderWithProviders.tsx` (wrapper con el mismo árbol de providers que la app real), un test de integración del flujo "agregar al carrito" end-to-end, y un test aislado de `useCart` con `renderHook`.

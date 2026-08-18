@@ -3,6 +3,7 @@ import { test, expect, vi } from "vitest";
 import type { ReactNode } from "react";
 import { AuthProvider } from "../../src/contexts/AuthContext";
 import { CartProvider } from "../../src/contexts/CartContext";
+import { ToastProvider } from "../../src/contexts/ToastContext";
 import { useAuth } from "../../src/hooks/useAuth";
 import { useCart } from "../../src/hooks/useCart";
 import type { Product } from "../../src/types/product.types";
@@ -53,10 +54,15 @@ const mockProduct: Product = {
 };
 
 // Envuelve el hook bajo test con los dos providers necesarios.
+// CartContext usa useToast() (para los toasts de "agregado"/"eliminado"),
+// así que necesita estar envuelto también en ToastProvider -- si no, tira
+// "useToast debe utilizarse dentro de un ToastProvider" apenas se monta.
 const wrapper = ({ children }: { children: ReactNode }) => (
-  <AuthProvider>
-    <CartProvider>{children}</CartProvider>
-  </AuthProvider>
+  <ToastProvider>
+    <AuthProvider>
+      <CartProvider>{children}</CartProvider>
+    </AuthProvider>
+  </ToastProvider>
 );
 
 test("el carrito de invitado se fusiona con el del usuario al loguearse", async () => {
