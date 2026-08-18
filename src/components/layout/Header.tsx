@@ -1,5 +1,5 @@
 import { useCallback, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, NavLink, useNavigate } from "react-router-dom";
 import { useAuth } from "../../hooks/useAuth";
 import { useCart } from "../../hooks/useCart";
 import { useProducts } from "../../hooks/useProducts";
@@ -44,19 +44,29 @@ export const Header = () => {
 
         {/* A partir de md: todo el header completo, en una sola fila */}
         <nav className="hidden md:flex items-center gap-5">
-          <Link to="/productos" className="text-md font-bold text-azul-noche">
+          <NavLink to="/productos"  className={({ isActive }) =>
+                  `text-sm font-bold px-4 py-2 rounded-pill ${
+                    isActive ? "bg-azul-cobalto/10 text-azul-cobalto" : "text-azul-noche/60"
+                  }`
+                }>
             Juguetes
-          </Link>
-          <span className="text-md font-bold text-azul-noche/30 cursor-not-allowed" title="Próximamente">
-            Ofertas
-          </span>
-          <Link to="/pedidos" className="text-md font-bold text-azul-noche">
+          </NavLink>
+    
+          <NavLink to="/pedidos"  className={({ isActive }) =>
+                  `text-sm font-bold px-4 py-2 rounded-pill ${
+                    isActive ? "bg-azul-cobalto/10 text-azul-cobalto" : "text-azul-noche/60"
+                  }`
+                }>
             Mis pedidos
-          </Link>
+          </NavLink>
           {user?.role === "admin" && (
-            <Link to="/admin" className="text-md font-bold text-azul-cobalto">
-              Admin
-            </Link>
+            <NavLink to="/admin"  className={({ isActive }) =>
+                  `text-sm font-bold px-4 py-2 rounded-pill ${
+                    isActive ? "bg-azul-cobalto/10 text-azul-cobalto" : "text-azul-noche/60"
+                  }`
+                }>
+              Dashboard
+            </NavLink>
           )}
         </nav>
 
