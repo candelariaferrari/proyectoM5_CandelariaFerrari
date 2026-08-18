@@ -1,134 +1,291 @@
-# MUNDO — E-commerce Kickoff (Módulo 5)
+# MUNDO — E-commerce de juguetería
 
-Bases arquitectónicas de un e-commerce escalable, construidas con **Vite + React 18 + TypeScript** y **Context API** como estado global.
+Proyecto Integrador del Módulo 5 (Especialización Frontend, Henry): un e-commerce completo con dos experiencias diferenciadas — la de quien compra y la de quien administra el catálogo y las órdenes — construido con **React + TypeScript**, **Firebase** (Auth + Firestore), **AWS S3** para imágenes de producto y deploy en **Vercel**.
 
-Esta entrega corresponde a la Homework de la Clase 1 del Módulo 5. El objetivo de esta etapa es establecer las bases arquitectónicas del e-commerce —capas, contexts, hooks con guards, tipado y testing— y no desarrollar todavía una tienda funcional completa.
+> 🔗 **Producción:** `[completar con la URL de Vercel]`
+> 📁 **Repo:** https://github.com/candelariaferrari/proyectoM5_CandelariaFerrari
+
+## Contexto del proyecto
+
+MUNDO es una juguetería ficticia. La consigna del Módulo 5 pide construir el e-commerce completo de un cliente real: catálogo navegable, carrito, checkout, cuentas de usuario y un panel de administración para gestionar productos y pedidos — con dos roles claramente separados (`customer` y `admin`) y las tres integraciones externas que exige un e-commerce de verdad (autenticación, base de datos y almacenamiento de imágenes).
+
+## Índice
+
+- [Capturas](#capturas)
+- [Stack](#stack)
+- [Funcionalidades](#funcionalidades)
+- [Arquitectura y decisiones](#arquitectura-y-decisiones)
+- [Estructura de carpetas](#estructura-de-carpetas)
+- [Cómo correr el proyecto](#cómo-correr-el-proyecto)
+- [Variables de entorno](#variables-de-entorno)
+- [Subida de imágenes a S3 (presigned URLs)](#subida-de-imágenes-a-s3-presigned-urls)
+- [Testing](#testing)
+- [Deploy](#deploy)
+- [Bitácora de uso de IA](#bitácora-de-uso-de-ia)
+
+## Capturas
+
+_[Pendiente: agregar 3 o 4 capturas o un GIF corto acá — sugerido: Home, catálogo con filtros, carrito, y el dashboard de admin. Ver `PROGRESO.md` → "listo" para confirmar que las pantallas ya están terminadas antes de capturarlas.]_
 
 ## Stack
 
-* React 18 + TypeScript + Vite
-* React Router DOM (navegación)
-* Tailwind CSS v4 (tokens de diseño de MUNDO — paleta, tipografías Baloo 2 / Nunito, radios, sombras)
-* Context API (estado global)
-* Vitest + React Testing Library (tests)
-* ESLint (typescript-eslint + react-hooks + react-refresh)
+| Capa | Tecnología |
+|---|---|
+| Frontend | React 18 + TypeScript + Vite |
+| Ruteo | React Router DOM v7 |
+| Estado global | Context API + `useReducer` (carrito) |
+| Estilos | Tailwind CSS v4 (tokens de diseño propios vía `@theme`) |
+| Autenticación | Firebase Authentication (email/contraseña + Google) |
+| Base de datos | Firestore |
+| Imágenes | AWS S3 (subida directa con presigned URLs) |
+| Backend serverless | Vercel Functions (`api/presign.ts`) |
+| Testing | Vitest + React Testing Library |
+| Lint | ESLint (typescript-eslint + react-hooks + react-refresh) |
+| Deploy | Vercel |
 
-El proyecto está pensado para escalar en los próximos módulos con **Firebase Authentication + Firestore**, **AWS S3** para imágenes y **Vercel** para el deploy.
+## Funcionalidades
 
-Por este motivo, `services/` existe como una carpeta reservada aunque actualmente no tenga contenido. Será la capa destinada a las integraciones externas, permitiendo mantener esa lógica separada de los contexts y componentes y facilitando la futura transición de mocks a servicios reales.
+**Cliente**
 
-## Cómo correr el proyecto
+- Home con hero, categorías destacadas y "más elegidos"; catálogo (`/productos`) separado, con filtro por categoría (sincronizado en la URL vía `?categoria=`), filtro por precio y búsqueda por nombre con debounce.
+- Detalle de producto con selector de cantidad.
+- Carrito persistente en memoria por usuario (incluye carrito de invitado, fusionado automáticamente al iniciar sesión), con scroll interno propio en desktop para que el resumen y el footer queden siempre visibles.
+- Registro / login (email y contraseña, y Google) con mensajes de error traducidos y validaciones propias en los formularios.
+- Checkout con paso de revisión y confirmación, que crea la orden en Firestore con un snapshot de los productos comprados (nombre y precio "congelados" al momento de la compra).
+- "Mis pedidos", con historial e items de cada orden.
+- Estados de carga con skeletons (en vez de texto de "Cargando...") en todas las pantallas que dependen de Firestore.
 
-```bash
-npm install
-npm run dev          # servidor de desarrollo
-npm run test:run     # corre los tests una vez
-npm run test         # tests en modo watch
-npm run lint         # ESLint
-npm run build        # build de producción
-```
+**Administración** (rutas bajo `/admin`, protegidas por rol)
 
-## Estructura de carpetas
+- Dashboard con métricas reales (productos, usuarios, órdenes, ventas totales — excluyendo canceladas), órdenes recientes y stock a revisar (productos por debajo del umbral configurado).
+- CRUD completo de productos, con paginación por cursor, filtro por categoría, búsqueda y subida de imagen a S3.
+- Gestión de órdenes con vista maestro-detalle, filtro por estado y cambio de estado siguiendo una máquina de estados simple (`pending → processing → completed`, con `cancelled` como salida en cualquier punto no terminal).
 
-```text
-src/
-  components/        # componentes de dominio y layout
-    layout/          # estructura de página (Header, etc.)
-    ui/              # piezas genéricas reutilizables, sin lógica de negocio
-  contexts/          # Context + Provider de cada dominio y AppProviders
-  hooks/             # custom hooks de consumo, con guard fuera del Provider
-  pages/             # componentes de página
-  services/          # integraciones externas (reservada para próximos módulos)
-  types/             # contratos de TypeScript compartidos
+## Arquitectura y decisiones
 
-test/
-  hooks/             # tests de guard de cada hook
-  contexts/          # tests de integración entre providers
-```
+### Por qué Context API + `useReducer` para el carrito
 
-## Árbol de Providers
+El carrito es el estado más complejo del proyecto: varias acciones posibles (agregar, quitar, actualizar cantidad, vaciar, fusionar el carrito de invitado al loguearse), todas mutando la misma estructura de datos. `useReducer` centraliza esa lógica en una única función pura (`cartReducer`, en `src/contexts/cartReducer.ts`): recibe el estado actual y una acción, y devuelve el estado siguiente, sin depender de nada externo. Eso trae dos ventajas concretas frente a repartir la lógica en varios `setState`:
+
+- **Es trivial de testear**: un reducer puro se prueba pasándole un estado de entrada y una acción, y comparando contra el estado esperado — sin renderizar componentes ni mockear Firebase.
+- **Es la única fuente de verdad de "cómo cambia el carrito"**: cualquier bug de lógica del carrito se debuggea en un solo archivo, no rastreando `setCartsByUser` desparramados.
+
+`CartContext` se queda solo con el `dispatch(...)` y los side effects que no pueden vivir dentro de un reducer puro (mostrar un toast, por ejemplo). El carrito original se armó con `useState` y se refactorizó a `useReducer` antes de escribir los tests — el detalle de esa decisión está en `bitacora_ia.md`.
+
+### Por qué presigned URLs para las imágenes (y no subirlas desde el servidor)
+
+Las credenciales de AWS nunca deben llegar al navegador. El flujo implementado es:
+
+1. El navegador le pide a una Vercel Function propia (`api/presign.ts`) permiso para subir un archivo, mandando solo el nombre y el tipo.
+2. Esa función es la única parte del sistema que tiene las credenciales de AWS (variables de entorno del servidor, **sin** el prefijo `VITE_`, así Vite nunca las empaqueta en el JS que baja el navegador). Con esas credenciales le pide a S3 una URL firmada que autoriza *un único* `PUT`, a *una única* ubicación, y que expira en 60 segundos.
+3. El navegador usa esa URL para subir el archivo **directo a S3** (sin pasar por ningún servidor propio).
+4. La URL pública resultante se guarda en Firestore como `imageUrl` del producto.
+
+Ver el detalle completo en [Subida de imágenes a S3](#subida-de-imágenes-a-s3-presigned-urls) más abajo.
+
+### Roles de usuario
+
+Firebase Authentication resuelve la identidad, pero no el rol — eso vive en Firestore (`users/{uid}.role`). Como el proyecto tiene un único administrador, el rol se asigna automáticamente al crear el perfil: si el email coincide con una constante `ADMIN_EMAIL` (`users.services.ts`), el usuario se crea con `role: "admin"`; en cualquier otro caso, `role: "customer"`. Así no existe ningún flujo público para registrarse como administrador, y las reglas de Firestore (`firestore.rules`) validan ese rol también del lado del servidor — no solo en el frontend — usando un helper `isAdmin()` que lee el propio documento del usuario autenticado.
+
+Las rutas se protegen con un único componente reutilizable, `ProtectedRoute` (`src/routes/ProtectedRoute.tsx`), con dos niveles: sesión requerida (`/confirmar-compra`, `/pedidos`, `/pedido-confirmado`) y sesión + rol admin (`/admin/*`). Mientras Firebase todavía no confirmó si hay una sesión guardada (`loading`), no se redirige a nadie — evita que un admin que recarga `/admin` rebote a `/` un instante antes de que responda `onAuthStateChanged`.
+
+### Árbol de Providers
 
 ```mermaid
 graph TD
     A[main.tsx] --> B[AppProviders]
     B --> C[BrowserRouter]
-    C --> D[AuthProvider]
-    D --> E[ProductsProvider]
-    E --> F[CartProvider]
-    F --> G[App]
+    C --> D[ToastProvider]
+    D --> E[AuthProvider]
+    E --> F[ProductsProvider]
+    F --> G[CartProvider]
+    G --> H[App]
 ```
 
-### Justificación del orden
+El orden `AuthProvider → ProductsProvider → CartProvider` no es arbitrario: `CartProvider` necesita leer `useAuth()` para implementar el carrito por usuario (cada `uid` tiene el suyo, y un usuario sin sesión usa la clave `"guest"`). Como React resuelve el contexto más cercano hacia arriba en el árbol, `CartProvider` tiene que estar anidado dentro de `AuthProvider`.
 
-El orden `AuthProvider → ProductsProvider → CartProvider` no es arbitrario.
+### Layer-based, no feature-based
 
-`CartProvider` necesita poder leer `useAuth()` para implementar el carrito por usuario: cada `uid` tiene su propio carrito y un usuario no autenticado utiliza un carrito identificado como `"guest"`.
+El código se organiza por tipo de responsabilidad (`components`, `pages`, `hooks`, `contexts`, `services`, `types`), no por dominio/feature. Se evaluaron ambas alternativas al arrancar el proyecto: una estructura feature-based (`features/cart`, `features/auth`, etc.) generaría dependencias cruzadas difíciles de evitar — el carrito necesita leer autenticación, el admin reutiliza componentes del catálogo — y para el tamaño actual del proyecto agregaría más complejidad de la que resuelve. El razonamiento completo, con las alternativas comparadas, está documentado en `bitacora_ia.md`.
 
-Como React resuelve el contexto más cercano hacia arriba en el árbol, `CartProvider` debe estar anidado dentro de `AuthProvider` para poder utilizar `useAuth()` sin activar el guard del hook.
+### Paginación por cursor, genérica
 
-Si el orden se invirtiera, `useAuth()` llamado desde `CartProvider` lanzaría el error correspondiente a un uso fuera de `AuthProvider`.
+`useCursorPagination<T, C>` (`src/hooks/`) no sabe nada de ningún dominio: recibe funciones `fetchPage`/`fetchCount` y resuelve la mecánica de cursores de Firestore, la página actual y el reseteo a la página 1 cuando cambia un filtro. `useProductsPagination` es una capa fina arriba que la conecta con `products.services.ts`. Se separó así después de necesitar la misma paginación en dos lugares (catálogo de cliente y tabla de productos del admin) — extraer la parte genérica evita reescribir la lógica de cursores cada vez que aparezca un tercer lugar (por ejemplo, una futura paginación de órdenes).
 
-`ProductsProvider` no depende actualmente de `Auth` ni de `Cart`, por lo que su posición intermedia no responde a una dependencia estricta.
+## Estructura de carpetas
 
-## Justificación de capas
+```text
+src/
+  components/
+    admin/        # layout y formularios propios del panel de administración
+    auth/          # modal de login/registro
+    layout/        # Header, Footer, BottomTabBar (estructura de página)
+    orders/        # piezas compartidas entre "Mis pedidos" y el admin de órdenes
+    products/      # grilla, card, filtros y skeletons de producto
+    ui/            # piezas genéricas sin lógica de negocio (Button, Modal, Toast, Skeleton...)
+  config/          # inicialización de Firebase
+  constants/       # fuente única de verdad de categorías, estados de orden, umbral de stock
+  contexts/        # Context + Provider de cada dominio, y el reducer puro del carrito
+  hooks/           # hooks de consumo (con guard fuera del Provider) y paginación
+  pages/           # componentes de pantalla completa (cliente y admin)
+  routes/          # definición de rutas y ProtectedRoute
+  services/        # integraciones externas: Firestore (products/orders/users) y S3 (upload)
+  types/           # contratos de TypeScript compartidos
+  utils/           # helpers puros (formato de moneda, traducción de errores de Firebase Auth)
 
-* **`types/`**: contiene los contratos (`Product`, `CartItem`, `User`) utilizados por contexts, hooks y componentes. Se definieron desde el comienzo para establecer un lenguaje común entre las distintas capas.
+api/
+  presign.ts       # Vercel Function: genera la presigned URL de S3
 
-* **`contexts/`**: cada Context vive junto a su Provider en el mismo archivo (`AuthContext.tsx`, `CartContext.tsx`, `ProductsContext.tsx`). Esta fue una decisión consciente para evitar separar archivos que actualmente tienen poca complejidad. `AppProviders.tsx` también vive aquí porque su única responsabilidad es componer los distintos providers.
+scripts/
+  seed.ts          # carga los 60 productos base (y sus imágenes) en Firestore/S3
 
-* **`hooks/`**: contiene los custom hooks de consumo (`useAuth`, `useCart`, `useProducts`). Se mantienen separados de los contexts porque tienen una responsabilidad diferente: encapsular el consumo seguro del estado mediante guards.
+test/
+  hooks/           # tests de guard y de lógica de cada hook
+  contexts/        # tests de integración entre providers (incluye cartReducer.test.ts)
+  integration/     # flujos completos (ej. agregar al carrito)
+```
 
-* **`components/`**: contiene componentes de dominio que conocen los tipos del negocio (`ProductCard`, `ProductGrid`) y componentes de layout. Se subdivide en `layout/`, para la estructura de las páginas, y `ui/`, reservada para piezas genéricas reutilizables sin lógica de negocio.
+## Cómo correr el proyecto
 
-* **`pages/`**: contiene los componentes correspondientes a pantallas completas, que componen otros componentes de la aplicación.
+### 1. Clonar e instalar
 
-* **`services/`**: permanece vacía por ahora de forma intencional. Será la capa destinada a las integraciones con servicios externos como Firebase o AWS.
+```bash
+git clone https://github.com/candelariaferrari/proyectoM5_CandelariaFerrari.git
+cd proyectoM5_CandelariaFerrari
+npm install
+```
 
-* **`test/`**: se encuentra separada de `src/` y replica parcialmente la estructura interna del proyecto. Esta organización responde a una decisión personal de mantener los tests agrupados y separados del código de producción.
+### 2. Crear un proyecto de Firebase
 
-## Qué hice distinto y por qué
+1. Crear un proyecto en la [consola de Firebase](https://console.firebase.google.com/).
+2. Habilitar **Authentication** → método Email/contraseña y Google.
+3. Habilitar **Firestore Database** (modo producción).
+4. Desplegar las reglas de seguridad del repo (`firestore.rules`) desde la consola o con la Firebase CLI (`firebase deploy --only firestore:rules`).
+5. Registrar una app Web dentro del proyecto de Firebase y copiar las credenciales (`apiKey`, `authDomain`, etc.) a las variables `VITE_FIREBASE_*` del `.env` (ver [Variables de entorno](#variables-de-entorno)).
 
-* **Hooks separados de los Contexts:** se creó una carpeta `hooks/` propia, en lugar de definir los hooks de consumo dentro de los mismos archivos de los Contexts. Esto permite separar "cómo se comparte el estado" de "cómo se consume de forma segura" y facilita testear los guards de manera aislada con `renderHook`.
+### 3. Crear el bucket de S3
 
-* **Tests separados de `src/`:** se utiliza una carpeta `test/` independiente, replicando la estructura interna, en lugar de co-ubicar los tests junto a cada archivo. Es una decisión de organización personal basada en la consistencia con proyectos anteriores.
+1. Crear un bucket en AWS S3 (privado por default).
+2. Agregar una política de bucket que permita **lectura pública** (`s3:GetObject`) únicamente dentro de la carpeta `imgProducts/`.
+3. Crear un usuario de IAM aparte (no la cuenta raíz) con permiso únicamente para **escribir** (`s3:PutObject`) en esa misma carpeta.
+4. Configurar CORS en el bucket para permitir el `PUT` directo desde el navegador (origen de desarrollo y el de producción en Vercel).
+5. Copiar el nombre del bucket, la región y las credenciales del usuario de IAM a las variables `AWS_*` del `.env`.
 
-* **Convención de nombres por tipo:** se utilizan nombres como `AuthContext.tsx`, `useAuth.ts` y `product.types.ts`, en lugar de organizar los archivos por dominio mediante subcarpetas y barrel files. Esta alternativa fue evaluada y descartada porque agregaría estructura innecesaria para el tamaño actual del proyecto.
+### 4. Variables de entorno
 
-* **Conventional Commits:** se adoptó esta convención desde el primer commit para mantener un historial claro y clasificado según el tipo de cambio.
+Copiar `.env.example` a `.env` y completar los valores reales:
 
-* **`CartItem` con `Product` embebido:** se decidió mantener el objeto `Product` completo dentro de `CartItem`, en lugar de guardar únicamente `productId`. Se evaluó la alternativa de guardar solo el identificador para evitar posibles datos desactualizados, pero se mantuvo la estructura utilizada en el curso por el momento.
+```bash
+cp .env.example .env
+```
 
-* **Carrito para invitados:** los usuarios pueden armar un carrito sin iniciar sesión utilizando la clave `"guest"`. La autenticación se exigirá posteriormente al momento de continuar con el checkout, reduciendo la fricción durante la navegación.
+Ver el detalle de cada variable en [Variables de entorno](#variables-de-entorno).
 
-* **`displayName` opcional:** el tipo `User` utiliza `displayName?: string` en lugar de un `name` obligatorio. Se eligió este nombre para mantener consistencia con Firebase Authentication y se dejó como opcional para contemplar el caso en que el usuario no tenga un nombre disponible.
+### 5. Cargar datos de ejemplo (opcional)
 
-* **`uid` en `User`:** se utiliza `uid` en lugar de `id` para mantener consistencia con el identificador utilizado por Firebase Authentication y evitar un remapeo innecesario en una futura integración.
+El seeder crea un usuario administrador (con las credenciales `SEED_ADMIN_EMAIL`/`SEED_ADMIN_PASSWORD` del `.env` — tienen que corresponder a un usuario ya registrado en Firebase Authentication con ese email) y sube los 60 productos base a Firestore:
 
-## Bitácora de IA
+```bash
+npm run seed
+```
 
-Durante el desarrollo se utilizó IA como herramienta de apoyo para analizar decisiones arquitectónicas, revisar modelos de datos, comprender errores, evaluar alternativas de implementación y validar buenas prácticas.
+### 6. Correr el proyecto
 
-La IA no se utilizó como reemplazo del desarrollo, sino como una herramienta para comparar opciones, comprender sus consecuencias y tomar decisiones de manera fundamentada.
+```bash
+npm run dev          # servidor de desarrollo
+npm run test:run     # corre los tests una vez
+npm run test          # tests en modo watch
+npm run test:coverage # tests con reporte de cobertura
+npm run lint          # ESLint
+npm run build          # build de producción (tsc -b && vite build)
+```
 
-El registro completo de prompts, respuestas, decisiones tomadas y alternativas descartadas se encuentra en [`bitacora_ia.md`](./bitacora_ia.md).
+Las funciones serverless de `api/` (usadas para las presigned URLs) no corren con `npm run dev` — necesitan la Vercel CLI (`npm install -g vercel`, `vercel login`, `vercel dev`) o probarse directo contra un deploy real.
 
-Algunos de los principales temas trabajados fueron:
+## Variables de entorno
 
-* Definición de una arquitectura Layer-based.
-* Convenciones de nombres y commits.
-* Diseño de los tipos `Product`, `CartItem` y `User`.
-* Manejo del carrito para usuarios autenticados e invitados.
-* Composición y orden de los Providers.
-* Optimización de `CartContext` utilizando `useMemo` y `useCallback`.
-* Revisión y testing de hooks con guards.
-* Validación de decisiones antes de incorporar cambios al código.
+| Variable | Dónde se usa | Descripción |
+|---|---|---|
+| `VITE_FIREBASE_API_KEY` | Frontend | Config de Firebase (app Web) |
+| `VITE_FIREBASE_AUTH_DOMAIN` | Frontend | Config de Firebase |
+| `VITE_FIREBASE_PROJECT_ID` | Frontend | Config de Firebase |
+| `VITE_FIREBASE_STORAGE_BUCKET` | Frontend | Config de Firebase |
+| `VITE_FIREBASE_MESSAGING_SENDER_ID` | Frontend | Config de Firebase |
+| `VITE_FIREBASE_APP_ID` | Frontend | Config de Firebase |
+| `AWS_REGION` | Vercel Function / seeder | Región del bucket de S3 |
+| `AWS_ACCESS_KEY_ID` | Vercel Function / seeder | Credencial del usuario de IAM (solo `PutObject`) |
+| `AWS_SECRET_ACCESS_KEY` | Vercel Function / seeder | Credencial del usuario de IAM |
+| `AWS_S3_BUCKET_NAME` | Vercel Function / seeder | Nombre del bucket |
+| `SEED_ADMIN_EMAIL` | Seeder | Email del usuario admin usado para sembrar productos |
+| `SEED_ADMIN_PASSWORD` | Seeder | Contraseña de ese usuario |
 
-### Principales decisiones analizadas con IA
+Las variables `VITE_*` son las únicas que Vite empaqueta en el frontend — por eso son las únicas con ese prefijo. Todas las demás solo existen del lado del servidor (Vercel Functions) o en la máquina donde se corre el seeder, y nunca deberían tener el prefijo `VITE_`.
 
-**Modelo de datos:** se revisaron los tipos `Product`, `CartItem` y `User`, evaluando campos, optionality, relaciones y naming en función de la futura integración con Firebase.
+`.env` está en `.gitignore` y nunca se sube al repositorio; `.env.example` sí, sin valores reales.
 
-**Composición de Providers:** se analizó el orden de `AppProviders`, identificando la dependencia de `CartProvider` respecto de `AuthProvider`, y se evaluaron distintas alternativas de organización.
+## Subida de imágenes a S3 (presigned URLs)
 
-**Optimización de `CartContext`:** al utilizar `useMemo` para memorizar el `value` del contexto, ESLint detectó dependencias faltantes. En lugar de eliminar el warning, se analizó la causa y se aplicó `useCallback` a las acciones del carrito para mantener referencias estables y hacer efectiva la memoización.
+```text
+Admin sube una imagen en el form de producto
+        │
+        ▼
+1) Frontend → POST /api/presign { filename, fileType }
+        │
+        ▼
+2) api/presign.ts (Vercel Function, tiene las credenciales de AWS)
+   valida el tipo de archivo, arma una key única
+   (imgProducts/{uuid}-{filename}) y pide a S3 una
+   presigned URL que autoriza SOLO ese PUT, expira en 60s
+        │
+        ▼
+3) Frontend → PUT {uploadUrl} con el archivo (directo a S3,
+   sin pasar por ningún servidor propio)
+        │
+        ▼
+4) Frontend guarda la publicUrl devuelta como imageUrl del
+   producto en Firestore
+```
 
-Las decisiones completas, incluyendo las propuestas aceptadas, rechazadas y el razonamiento detrás de cada una, están documentadas en `bitacora_ia.md`.
+Las credenciales de AWS solo existen en `api/presign.ts` (variables de entorno del servidor) y en `scripts/seed.ts` (que corre en Node, nunca en el navegador) — en ningún momento llegan al bundle que se manda al cliente. Si un producto no tiene imagen (o la que tiene falla al cargar), `ProductImage` muestra un cuadrado del color de su categoría en vez del ícono de imagen rota del navegador.
+
+## Testing
+
+```bash
+npm run test:run       # una corrida
+npm run test:coverage  # con reporte de cobertura (v8)
+```
+
+La estrategia prioriza lo que más costaría que se rompiera silenciosamente:
+
+- **`cartReducer`**: cada acción (`ADD_TO_CART`, `REMOVE_FROM_CART`, `UPDATE_QUANTITY`, `CLEAR_CART`, `MERGE_GUEST_CART`) probada como función pura, sin renderizar nada.
+- **Hooks de consumo** (`useAuth`, `useCart`, `useProducts`): se verifica que el guard lanza el error correspondiente cuando se usan fuera de su Provider, con `renderHook`.
+- **Integración**: al menos un flujo completo (agregar al carrito) sobre el árbol real de providers, con Firebase mockeado globalmente (`test/setupTests.ts`) para que ningún test dependa de una conexión real.
+
+Los tests viven en `test/`, separados de `src/`, replicando su estructura — decisión de organización personal, documentada en el `README` original y en `bitacora_ia.md`.
+
+## Deploy
+
+El proyecto está pensado para desplegarse en Vercel:
+
+1. Conectar el repositorio de GitHub a un proyecto de Vercel.
+2. Cargar las mismas variables de entorno del `.env` en la configuración del proyecto en Vercel (Settings → Environment Variables).
+3. `vercel.json` incluye un rewrite para que cualquier ruta que no sea `/api/*` sirva `index.html` — necesario porque React Router maneja las rutas en el navegador, y sin este rewrite recargar una ruta que no sea `/` (por ejemplo `/carrito` o `/admin`) devuelve 404 antes de que React llegue a cargar.
+
+**URL de producción:** `[completar acá]`
+
+## Bitácora de uso de IA
+
+El registro completo (más de 25 entradas, con prompt, alternativas evaluadas y decisión final) está en [`bitacora_ia.md`](./bitacora_ia.md). La IA se usó para comparar alternativas, entender errores y validar decisiones — no como reemplazo del desarrollo. Algunos de los momentos más representativos:
+
+| Tema | Qué se consultó | Qué se aprendió / decidió |
+|---|---|---|
+| **Planificación** — estructura de carpetas | Layer-based vs. feature-based, comparando mantenibilidad y dependencias cruzadas | Se eligió layer-based: una estructura por feature generaría dependencias cruzadas difíciles de evitar (el carrito necesita leer `Auth`) para el tamaño actual del proyecto |
+| **Validación de decisión técnica** — `useReducer` vs. `useState` en el carrito | Al escribir los tests del carrito se detectó que no existía ningún reducer puro para testear, porque `CartContext` todavía usaba `useState` | Se refactorizó el carrito completo a `useReducer` *antes* de escribir los tests, extrayendo `cartReducer` como función pura — la consigna lo pedía explícitamente y es más fácil de testear de forma aislada |
+| **Generación de tests / code review** — memoización de `CartContext` | ESLint marcaba dependencias faltantes en el `useMemo` del `value` del contexto; agregarlas generaba un loop porque las funciones se recreaban en cada render | Se aplicó `useCallback` a las acciones del carrito para estabilizar sus referencias — el warning de ESLint señalaba un problema real, no solo ruido |
+| **Resolución de problemas** — desborde horizontal en mobile | `position: fixed` en el panel de resumen del carrito generaba scroll horizontal que persistía incluso al cambiar de ruta | Se identificaron dos causas (`min-width` implícito de un `grid` sin columnas definidas + `overflow-hidden` que no contiene elementos `fixed`) y se resolvió moviendo `overflow-x: hidden` a `html`/`body` |
+| **Resolución de problemas** — reglas de seguridad de Firestore | El admin no podía listar órdenes ni usuarios (`Missing or insufficient permissions`), aunque la regla `request.auth.uid == userId` parecía correcta | Se aprendió la diferencia entre `get` (documento puntual) y `list` (query sobre la colección) en las reglas de Firestore: una condición que solo es cierta para el propio documento no alcanza para autorizar un `list`, hace falta una condición (`isAdmin()`) que Firestore pueda garantizar para toda la colección |
+| **Validación de decisión de producto** — carrito de invitado | ¿Bloquear el carrito hasta loguearse, o dejar armarlo como invitado? | Se eligió permitir el carrito de invitado (mejor UX, estándar en e-commerce real) y fusionarlo con el del usuario en el momento del login — con el detalle de detectar ese instante exacto usando un `useRef` |
+
+## Créditos y guía del proyecto
+
+Este proyecto sigue la consigna y la guía de desarrollo del **Proyecto Integrador del Módulo 5, Especialización Frontend** de [Henry](https://www.soyhenry.com/). El detalle de la rúbrica y las etapas sugeridas por la cátedra está en `PROGRESO.md`.
