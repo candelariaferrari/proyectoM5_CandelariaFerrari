@@ -1,6 +1,6 @@
 import { Link, NavLink, Outlet } from "react-router-dom";
 import { useAuth } from "../../hooks/useAuth";
-import { HomeIcon, ListIcon, type IconComponent } from "../ui/icons";
+import { HomeIcon, ListIcon, LogoutIcon, type IconComponent } from "../ui/icons";
 import { MundoLogo } from "../ui/MundoLogo";
 
 // Layout propio del panel de admin: nav distinto al del sitio de cliente
@@ -60,8 +60,16 @@ export const AdminLayout = () => {
               <p className="text-sm font-bold text-azul-noche">{user?.displayName ?? "Admin"}</p>
               <p className="text-xs text-azul-noche/50">Rol: {user?.role}</p>
             </div>
-            <button onClick={logout} className="text-sm font-bold text-danger bg-stock-low px-4 py-2 rounded-pill">
-              Cerrar sesión
+            {/* Mismo criterio que el Header de cliente: un solo ícono de
+                logout (neutro, se pone "danger" recién al hover) en vez de
+                un botón de texto siempre en rojo. */}
+            <button
+              onClick={logout}
+              className="w-9 h-9 rounded-full bg-card-surface flex items-center justify-center text-azul-noche hover:bg-stock-low hover:text-danger transition-colors"
+              aria-label="Cerrar sesión"
+              title="Cerrar sesión"
+            >
+              <LogoutIcon />
             </button>
           </div>
         </div>
@@ -79,8 +87,13 @@ export const AdminLayout = () => {
             <Link to="/" className="text-xs font-bold text-azul-noche/60">
               Ver tienda
             </Link>
-            <button onClick={logout} className="text-xs font-bold text-danger">
-              Salir
+            <button
+              onClick={logout}
+              className="w-7 h-7 rounded-full bg-card-surface flex items-center justify-center text-azul-noche"
+              aria-label="Salir"
+              title="Salir"
+            >
+              <LogoutIcon size={14} />
             </button>
           </div>
         </div>
