@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { listAllOrders, updateOrderStatus } from "../../services/orders.services";
+import { useOrders } from "../../hooks/useOrders";
 import { getUser } from "../../services/users.services";
 import { ORDER_STATUS_INFO, ORDER_STATUS_IDS, ORDER_STATUS_TRANSITIONS } from "../../constants/orderStatus";
 import { OrderItemsSummary } from "../../components/orders/OrderItemsSummary";
@@ -25,11 +25,7 @@ const formatOrderDate = (date: Date) =>
   " " +
   date.toLocaleTimeString("es-AR", { hour: "2-digit", minute: "2-digit" });
 
-// Botonera "Cambiar estado": el estado actual queda resaltado (no se puede
-// re-clickear), las transiciones válidas desde ahí quedan clickeables, y el
-// resto queda deshabilitado -- misma máquina de estados que ya usábamos en
-// el <select> anterior (ver ORDER_STATUS_TRANSITIONS), solo que ahora como
-// botones para calcar el mockup.
+// Botonera "Cambiar estado"
 const ChangeStatusButtons = ({
   order,
   disabled,
@@ -110,25 +106,17 @@ const OrderDetailPanel = ({
 
 export const AdminOrdersPage = () => {
   const { showToast } = useToast();
-  const [orders, setOrders] = useState<Order[]>([]);
+  //  Esta página solo se encarga de
+  // filtrar/seleccionar/mostrar, no de ir a buscar datos.
+  const { orders, loading, error, updateOrderStatus } = useOrders();
   const [customersById, setCustomersById] = useState<Record<string, CustomerInfo>>({});
-  const [loading, setLoading] = useState(true);
   const [statusFilter, setStatusFilter] = useState<OrderStatus | null>(null);
   const [updatingId, setUpdatingId] = useState<string | null>(null);
   const [selectedOrderId, setSelectedOrderId] = useState<string | null>(null);
 
+  // La lista de clientes (email/nombre por uid) sigue siendo un pedido
+  // aparte: es información de usuarios, no de órdenes.
   useEffect(() => {
-    // Las dos cargas van independientes: si falla el listado de usuarios
-    // (por ejemplo por permisos) no queremos que eso tire abajo también
-    // las órdenes -- en el peor caso, mostramos el uid en vez del email.
-    listAllOrders()
-      .then((allOrders) => {
-        setOrders(allOrders);
-        setSelectedOrderId((current) => current ?? allOrders[0]?.id ?? null);
-      })
-      .catch(() => showToast("No pudimos cargar las órdenes.", "danger"))
-      .finally(() => setLoading(false));
-
     getUser()
       .then((allUsers) => {
         setCustomersById(
@@ -140,11 +128,15 @@ export const AdminOrdersPage = () => {
       });
   }, []);
 
+  // El contexto avisa por su `error` si falló la carga de órdenes 
+  useEffect(() => {
+    if (error) showToast("No pudimos cargar las órdenes.", "danger");
+  }, [error, showToast]);
+
   const handleStatusChange = async (order: Order, status: OrderStatus) => {
     setUpdatingId(order.id);
     try {
       await updateOrderStatus(order.id, status);
-      setOrders((prev) => prev.map((o) => (o.id === order.id ? { ...o, status } : o)));
       showToast(`Pedido #${order.id.slice(0, 8)} ahora está "${ORDER_STATUS_INFO[status].label}"`);
     } catch {
       showToast("No pudimos actualizar el estado. Probá de nuevo.", "danger");
@@ -160,7 +152,10 @@ export const AdminOrdersPage = () => {
   };
 
   const filteredOrders = statusFilter ? orders.filter((o) => o.status === statusFilter) : orders;
-  const selectedOrder = filteredOrders.find((o) => o.id === selectedOrderId) ?? null;
+  // Sin efecto para "seleccionar el primero por default": si `selectedOrderId`
+  // todavía es null (recién cargó) o ya no está en la lista filtrada, cae
+  // directo al primero de `filteredOrders` durante el render
+  const selectedOrder = filteredOrders.find((o) => o.id === selectedOrderId) ?? filteredOrders[0] ?? null;
 
   if (loading) {
     return (

@@ -1,29 +1,20 @@
-import { useEffect, useState } from "react";
-import { useAuth } from "../hooks/useAuth";
-import { listUserOrders } from "../services/orders.services";
+import { useState } from "react";
+import { useOrders } from "../hooks/useOrders";
 import { ORDER_STATUS_INFO } from "../constants/orderStatus";
 import { ListIcon, ChevronUpIcon } from "../components/ui/icons";
 import { OrderItemsSummary } from "../components/orders/OrderItemsSummary";
 import { Button } from "../components/ui/Button";
 import { Skeleton } from "../components/ui/Skeleton";
 import { formatCurrency } from "../utils/format";
-import type { Order } from "../types/order.types";
 
 export const CustomerOrdersPage = () => {
-  const { user } = useAuth();
-  const [orders, setOrders] = useState<Order[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [loadError, setLoadError] = useState(false);
+  // OrdersContext ya sabe que este usuario es un customer, así
+  // que `orders` acá viene filtrado a "los pedidos de este usuario" -- la
+  // página no pide nada a Firestore, solo consume lo que el contexto
+  // decidió traer.
+  const { orders, loading, error: loadError } = useOrders();
   // Detalle de cada pedido: expandir/colapsar en la lista, sin ir a otra pantalla.
   const [expandedOrderId, setExpandedOrderId] = useState<string | null>(null);
-
-  useEffect(() => {
-    if (!user) return;
-    listUserOrders(user.uid)
-      .then(setOrders)
-      .catch(() => setLoadError(true))
-      .finally(() => setLoading(false));
-  }, [user]);
 
   if (loading) {
     return (

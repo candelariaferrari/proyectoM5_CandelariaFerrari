@@ -3,40 +3,28 @@ import { Navigate, useNavigate } from "react-router-dom";
 import { useCart } from "../hooks/useCart";
 import { useAuth } from "../hooks/useAuth";
 import { useToast } from "../hooks/useToast";
-import { createOrder } from "../services/orders.services";
+import { useOrders } from "../hooks/useOrders";
 import { OrderItemsSummary } from "../components/orders/OrderItemsSummary";
 import { Button } from "../components/ui/Button";
 import type { OrderItemSnapshot } from "../types/order.types";
 
 // Paso intermedio del checkout: "revisar el carrito, confirmar, crear la
-// orden" (así lo pide la consigna). Acá todavía no existe ninguna orden --
-// se crea recién cuando se toca "Confirmar compra". Si se llega acá con el
-// carrito vacío (por ejemplo, entrando directo por URL) no hay nada que
-// confirmar, así que mandamos de vuelta al carrito.
+// orden". Acá todavía no existe ninguna orden --
+// se crea recién cuando se toca "Confirmar compra".
 export const CheckoutConfirmPage = () => {
   const { items, clearCart } = useCart();
   const { user } = useAuth();
   const { showToast } = useToast();
+  const { createOrder } = useOrders();
   const navigate = useNavigate();
   // Doble-submit: mientras se crea la orden, el botón queda deshabilitado.
   const [isSubmitting, setIsSubmitting] = useState(false);
   // Un ref (no un state) porque necesitamos que el valor esté disponible
-  // YA en el próximo render, sin esperar el ciclo de React: en el mismo
-  // "tick" en que confirmamos, navigate() + clearCart() + setIsSubmitting()
-  // se ejecutan todos seguidos y React los procesa juntos en un solo
-  // render -- para ese momento, `isSubmitting` ya volvió a false (por el
-  // finally) y el carrito ya está vacío, así que un chequeo basado en
-  // state no llega a tiempo para evitar el redirect. El ref sí, porque se
-  // lee tal cual está en cuanto se lo asigna, sin pasar por ese batching.
+  // YA en el próximo render, sin esperar el ciclo de React
   const orderPlacedRef = useRef(false);
 
   const total = items.reduce((sum, item) => sum + item.product.price * item.quantity, 0);
 
-  // Lectura de ref durante el render, a propósito: es la razón de ser de
-  // orderPlacedRef (ver comentario más arriba) -- necesitamos el valor
-  // sincrónico, sin esperar un re-render, para no redirigir por error
-  // justo después de confirmar la compra y vaciar el carrito.
-  // eslint-disable-next-line react-hooks/refs -- lectura de ref durante el render, patrón intencional (ver comentario de orderPlacedRef)
   if (items.length === 0 && !orderPlacedRef.current) {
     return <Navigate to="/carrito" replace />;
   }
@@ -56,7 +44,7 @@ export const CheckoutConfirmPage = () => {
       // Creamos la orden en Firestore con un snapshot de los items (nombre y
       // precio "congelados" al momento de la compra) y recién si eso se
       // confirma vaciamos el carrito.
-      const orderId = await createOrder(user.uid, orderItems, total);
+      const orderId = await createOrder(orderItems, total);
       orderPlacedRef.current = true;
       navigate("/pedido-confirmado", { state: { orderId, items: orderItems, total } });
       clearCart();

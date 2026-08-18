@@ -2,15 +2,14 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { countProducts, listLowStockProducts } from "../../services/products.services";
 import { countUsers, getUser } from "../../services/users.services";
-import { listAllOrders } from "../../services/orders.services";
+import { useOrders } from "../../hooks/useOrders";
 import { ORDER_STATUS_INFO } from "../../constants/orderStatus";
 import { Button } from "../../components/ui/Button";
 import { formatCurrency } from "../../utils/format";
 import type { Order } from "../../types/order.types";
 import type { Product } from "../../types/product.types";
 
-// Cuántas filas mostrar en cada card del dashboard: son un adelanto, no el
-// listado completo (para eso está "Órdenes" y "Productos" en el nav).
+// Cuántas filas mostrar en cada card del dashboard: son un adelanto, no el listado completo 
 const RECENT_ORDERS_LIMIT = 5;
 const LOW_STOCK_LIMIT = 5;
 
@@ -33,32 +32,23 @@ const StatusBadge = ({ status }: { status: Order["status"] }) => {
 export const AdminDashboardPage = () => {
   const [productCount, setProductCount] = useState<number | null>(null);
   const [userCount, setUserCount] = useState<number | null>(null);
-  const [orderCount, setOrderCount] = useState<number | null>(null);
-  const [totalSales, setTotalSales] = useState<number | null>(null);
-  const [recentOrders, setRecentOrders] = useState<Order[]>([]);
   const [customersById, setCustomersById] = useState<Record<string, CustomerInfo>>({});
   const [lowStockProducts, setLowStockProducts] = useState<Product[]>([]);
+  // OrdersContext trae las ordenes, deriva de 3 metricas
+  const { orders: allOrders, loading: ordersLoading } = useOrders();
+  const orderCount = ordersLoading ? null : allOrders.length;
+  // Una orden cancelada no es una venta real: no la contamos.
+  const totalSales = ordersLoading
+    ? null
+    : allOrders.filter((order) => order.status !== "cancelled").reduce((sum, order) => sum + order.total, 0);
+  // El contexto ya viene ordenado por createdAt desc: las primeras N son directamente las más recientes.
+  const recentOrders = allOrders.slice(0, RECENT_ORDERS_LIMIT);
 
   useEffect(() => {
     countProducts().then(setProductCount); // agregacion del lado del servidor: no hace falta traer los 60 productos solo para contarlos
     countUsers()
       .then(setUserCount)
       .catch(() => setUserCount(null));
-    listAllOrders()
-      .then((orders) => {
-        setOrderCount(orders.length);
-        // Una orden cancelada no es una venta real: no la contamos.
-        const sales = orders
-          .filter((order) => order.status !== "cancelled")
-          .reduce((sum, order) => sum + order.total, 0);
-        setTotalSales(sales);
-        // listAllOrders ya viene ordenada por createdAt desc: las primeras
-        // N son directamente las más recientes, sin ordenar de nuevo acá.
-        setRecentOrders(orders.slice(0, RECENT_ORDERS_LIMIT));
-      })
-      .catch(() => setOrderCount(null));
-    // Mismo patrón que AdminOrdersPage para mostrar nombre/email en vez del
-    // uid: si falla, nos quedamos mostrando el uid, no es crítico.
     getUser()
       .then((allUsers) => {
         setCustomersById(

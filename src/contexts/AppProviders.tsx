@@ -4,15 +4,18 @@ import { AuthProvider } from "./AuthContext";
 import { ProductsProvider } from "./ProductsContext";
 import { CartProvider } from "./CartContext";
 import { ToastProvider } from "./ToastContext";
+import { OrdersProvider } from "./OrdersContext";
 
 export const AppProviders = ({ children }: { children: ReactNode }) => {
   return (
     <BrowserRouter>
       <ToastProvider>
         <AuthProvider>
-          <ProductsProvider>
-            <CartProvider>{children}</CartProvider>
-          </ProductsProvider>
+          <OrdersProvider>
+            <ProductsProvider>
+              <CartProvider>{children}</CartProvider>
+            </ProductsProvider>
+          </OrdersProvider>
         </AuthProvider>
       </ToastProvider>
     </BrowserRouter>
