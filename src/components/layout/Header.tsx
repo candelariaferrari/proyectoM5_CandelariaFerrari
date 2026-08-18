@@ -60,7 +60,7 @@ export const Header = () => {
             Mis pedidos
           </NavLink>
           {user?.role === "admin" && (
-            <NavLink to="/admin"  className={({ isActive }) =>
+            <NavLink to="/admin" className={({ isActive }) =>
                   `text-sm font-bold px-4 py-2 rounded-pill ${
                     isActive ? "bg-azul-cobalto/10 text-azul-cobalto" : "text-azul-noche/60"
                   }`
