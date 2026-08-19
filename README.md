@@ -103,7 +103,7 @@ graph TD
     H --> I[App]
 ```
 
-El orden `AuthProvider → OrdersProvider → ProductsProvider → CartProvider` no es arbitrario: `OrdersProvider` necesita leer `useAuth()` para saber quién es el usuario y si es admin (así decide si trae solo sus propias órdenes o todas), y `CartProvider` necesita leer `useAuth()` para implementar el carrito por usuario (cada `uid` tiene el suyo, y un usuario sin sesión usa la clave `"custumer"`). Como React resuelve el contexto más cercano hacia arriba en el árbol, `OrdersProvider` y `CartProvider` tienen que estar anidados dentro de `AuthProvider` — toda la UI que muestra o modifica órdenes (páginas de cliente y de admin) lee este contexto en vez de pedirle datos directo a Firestore.
+El orden `AuthProvider → OrdersProvider → ProductsProvider → CartProvider` no es arbitrario: `OrdersProvider` necesita leer `useAuth()` para saber quién es el usuario y si es admin (así decide si trae solo sus propias órdenes o todas), y `CartProvider` necesita leer `useAuth()` para implementar el carrito por usuario (cada `uid` tiene el suyo, y un usuario sin sesión usa la clave `"customer"`). Como React resuelve el contexto más cercano hacia arriba en el árbol, `OrdersProvider` y `CartProvider` tienen que estar anidados dentro de `AuthProvider` — toda la UI que muestra o modifica órdenes (páginas de cliente y de admin) lee este contexto en vez de pedirle datos directo a Firestore.
 
 ### Layer-based, no feature-based
 
