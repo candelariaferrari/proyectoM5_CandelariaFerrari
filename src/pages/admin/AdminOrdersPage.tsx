@@ -7,9 +7,16 @@ import { formatCurrency } from "../../utils/format";
 import { useToast } from "../../hooks/useToast";
 import { ListIcon, ChevronUpIcon } from "../../components/ui/icons";
 import { Skeleton } from "../../components/ui/Skeleton";
+import { Pagination } from "../../components/ui/Pagination";
 import type { Order, OrderStatus } from "../../types/order.types";
 
 type CustomerInfo = { email: string; displayName?: string };
+
+// Mismo PAGE_SIZE que usan las páginas de productos (AdminProductsPage,
+// ProductsPage) -- acá no hace falta pedirle a Firestore de a páginas (ver
+// comentario de `useOrders` más abajo: el contexto ya trae TODAS las
+// órdenes), así que paginamos en memoria con un slice simple.
+const PAGE_SIZE = 10;
 
 const StatusBadge = ({ status }: { status: OrderStatus }) => {
   const info = ORDER_STATUS_INFO[status];
@@ -25,7 +32,11 @@ const formatOrderDate = (date: Date) =>
   " " +
   date.toLocaleTimeString("es-AR", { hour: "2-digit", minute: "2-digit" });
 
-// Botonera "Cambiar estado"
+// Botonera "Cambiar estado": el estado actual queda resaltado (no se puede
+// re-clickear), las transiciones válidas desde ahí quedan clickeables, y el
+// resto queda deshabilitado -- misma máquina de estados que ya usábamos en
+// el <select> anterior (ver ORDER_STATUS_TRANSITIONS), solo que ahora como
+// botones para calcar el mockup.
 const ChangeStatusButtons = ({
   order,
   disabled,
@@ -106,16 +117,21 @@ const OrderDetailPanel = ({
 
 export const AdminOrdersPage = () => {
   const { showToast } = useToast();
-  //  Esta página solo se encarga de
+  // orders/loading/updateOrderStatus ya no se piden acá: vienen del
+  // contexto (OrdersContext ya sabe que este usuario es admin, así que
+  // `orders` viene con TODAS las órdenes). Esta página solo se encarga de
   // filtrar/seleccionar/mostrar, no de ir a buscar datos.
   const { orders, loading, error, updateOrderStatus } = useOrders();
   const [customersById, setCustomersById] = useState<Record<string, CustomerInfo>>({});
   const [statusFilter, setStatusFilter] = useState<OrderStatus | null>(null);
   const [updatingId, setUpdatingId] = useState<string | null>(null);
   const [selectedOrderId, setSelectedOrderId] = useState<string | null>(null);
+  const [currentPage, setCurrentPage] = useState(1);
 
   // La lista de clientes (email/nombre por uid) sigue siendo un pedido
-  // aparte: es información de usuarios, no de órdenes.
+  // aparte: es información de usuarios, no de órdenes, así que no le
+  // corresponde a OrdersContext -- mismo criterio de "cada contexto un
+  // dominio" que separa Cart de Products.
   useEffect(() => {
     getUser()
       .then((allUsers) => {
@@ -128,7 +144,8 @@ export const AdminOrdersPage = () => {
       });
   }, []);
 
-  // El contexto avisa por su `error` si falló la carga de órdenes 
+  // El contexto avisa por su `error` si falló la carga de órdenes -- acá
+  // lo convertimos en el mismo toast que ya mostraba esta página antes.
   useEffect(() => {
     if (error) showToast("No pudimos cargar las órdenes.", "danger");
   }, [error, showToast]);
@@ -147,15 +164,22 @@ export const AdminOrdersPage = () => {
 
   const handleFilterChange = (status: OrderStatus | null) => {
     setStatusFilter(status);
+    setCurrentPage(1);
     const nextOrders = status ? orders.filter((o) => o.status === status) : orders;
     setSelectedOrderId(nextOrders[0]?.id ?? null);
   };
 
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
+    setSelectedOrderId(filteredOrders[(page - 1) * PAGE_SIZE]?.id ?? null);
+  };
+
   const filteredOrders = statusFilter ? orders.filter((o) => o.status === statusFilter) : orders;
-  // Sin efecto para "seleccionar el primero por default": si `selectedOrderId`
-  // todavía es null (recién cargó) o ya no está en la lista filtrada, cae
-  // directo al primero de `filteredOrders` durante el render
-  const selectedOrder = filteredOrders.find((o) => o.id === selectedOrderId) ?? filteredOrders[0] ?? null;
+  const totalPages = Math.max(1, Math.ceil(filteredOrders.length / PAGE_SIZE));
+
+  const safePage = Math.min(currentPage, totalPages);
+  const pagedOrders = filteredOrders.slice((safePage - 1) * PAGE_SIZE, safePage * PAGE_SIZE);
+  const selectedOrder = pagedOrders.find((o) => o.id === selectedOrderId) ?? pagedOrders[0] ?? null;
 
   if (loading) {
     return (
@@ -248,7 +272,7 @@ export const AdminOrdersPage = () => {
                 </tr>
               </thead>
               <tbody>
-                {filteredOrders.map((order) => {
+                {pagedOrders.map((order) => {
                   const customer = customersById[order.userId];
                   const isSelected = order.id === selectedOrderId;
                   return (
@@ -281,7 +305,7 @@ export const AdminOrdersPage = () => {
 
             {/* Mobile: cada tarjeta se puede tocar para ver el detalle debajo (mismo patrón que "Mis pedidos") */}
             <div className="lg:hidden flex flex-col gap-3">
-              {filteredOrders.map((order) => {
+              {pagedOrders.map((order) => {
                 const customer = customersById[order.userId];
                 const isSelected = order.id === selectedOrderId;
                 return (
@@ -310,9 +334,9 @@ export const AdminOrdersPage = () => {
                           <ChevronUpIcon
                             size={16}
                             className={`text-azul-noche/40 transition-transform ${isSelected ? "" : "rotate-180"}`}
-                          />
-                        </div>
+                        />
                       </div>
+                    </div>
                     </button>
 
                     {isSelected && (
@@ -329,6 +353,8 @@ export const AdminOrdersPage = () => {
                 );
               })}
             </div>
+
+            <Pagination currentPage={safePage} totalPages={totalPages} onPageChange={handlePageChange} />
           </div>
 
           {/* Desktop: panel de detalle fijo al costado */}

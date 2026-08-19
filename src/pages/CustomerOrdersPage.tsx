@@ -5,16 +5,23 @@ import { ListIcon, ChevronUpIcon } from "../components/ui/icons";
 import { OrderItemsSummary } from "../components/orders/OrderItemsSummary";
 import { Button } from "../components/ui/Button";
 import { Skeleton } from "../components/ui/Skeleton";
+import { Pagination } from "../components/ui/Pagination";
 import { formatCurrency } from "../utils/format";
 
+const PAGE_SIZE = 10;
+
 export const CustomerOrdersPage = () => {
-  // OrdersContext ya sabe que este usuario es un customer, así
+  // OrdersContext ya sabe que este usuario es un customer (no admin), así
   // que `orders` acá viene filtrado a "los pedidos de este usuario" -- la
   // página no pide nada a Firestore, solo consume lo que el contexto
   // decidió traer.
   const { orders, loading, error: loadError } = useOrders();
   // Detalle de cada pedido: expandir/colapsar en la lista, sin ir a otra pantalla.
   const [expandedOrderId, setExpandedOrderId] = useState<string | null>(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const totalPages = Math.max(1, Math.ceil(orders.length / PAGE_SIZE));
+  const safePage = Math.min(currentPage, totalPages);
+  const pagedOrders = orders.slice((safePage - 1) * PAGE_SIZE, safePage * PAGE_SIZE);
 
   if (loading) {
     return (
@@ -64,7 +71,7 @@ export const CustomerOrdersPage = () => {
       <h1 className="font-heading font-extrabold text-2xl text-azul-noche mb-6">Mis pedidos</h1>
 
       <div className="flex flex-col gap-4">
-        {orders.map((order) => {
+        {pagedOrders.map((order) => {
           const isExpanded = expandedOrderId === order.id;
           const statusInfo = ORDER_STATUS_INFO[order.status];
 
@@ -103,6 +110,8 @@ export const CustomerOrdersPage = () => {
           );
         })}
       </div>
+
+      <Pagination currentPage={safePage} totalPages={totalPages} onPageChange={setCurrentPage} />
     </section>
   );
 };
