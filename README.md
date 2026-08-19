@@ -103,7 +103,7 @@ graph TD
     H --> I[App]
 ```
 
-El orden `AuthProvider → OrdersProvider → ProductsProvider → CartProvider` no es arbitrario: `OrdersProvider` necesita leer `useAuth()` para saber quién es el usuario y si es admin (así decide si trae solo sus propias órdenes o todas), y `CartProvider` necesita leer `useAuth()` para implementar el carrito por usuario (cada `uid` tiene el suyo, y un usuario sin sesión usa la clave `"customer"`). Como React resuelve el contexto más cercano hacia arriba en el árbol, `OrdersProvider` y `CartProvider` tienen que estar anidados dentro de `AuthProvider` — toda la UI que muestra o modifica órdenes (páginas de cliente y de admin) lee este contexto en vez de pedirle datos directo a Firestore.
+El orden `AuthProvider → OrdersProvider → ProductsProvider → CartProvider` no es arbitrario: `OrdersProvider` necesita leer `useAuth()` para saber quién es el usuario y si es admin (así decide si trae solo sus propias órdenes o todas), y `CartProvider` necesita leer `useAuth()` para implementar el carrito por usuario (cada `uid` tiene el suyo, y un usuario sin sesión usa la clave `"guest"`). Como React resuelve el contexto más cercano hacia arriba en el árbol, `OrdersProvider` y `CartProvider` tienen que estar anidados dentro de `AuthProvider` — toda la UI que muestra o modifica órdenes (páginas de cliente y de admin) lee este contexto en vez de pedirle datos directo a Firestore.
 
 ### Layer-based, no feature-based
 
@@ -190,7 +190,7 @@ Ver el detalle de cada variable en [Variables de entorno](#variables-de-entorno)
 
 ### 5. Cargar datos de ejemplo (opcional)
 
-El seeder inicia sesión como un usuario administrador que ya tiene que existir de antes (con las credenciales `SEED_ADMIN_EMAIL`/`SEED_ADMIN_PASSWORD` del `.env` — tienen que corresponder a un usuario ya registrado en Firebase Authentication, con `role: "admin"` ya asignado a mano en Firestore) y, usando esa sesión, sube los 60 productos base a Firestore:
+El seeder inicia sesión como un usuario administrador que ya tiene que existir de antes. Tienen que corresponder a un usuario ya registrado en Firebase Authentication, con `role: "admin"` asignado a mano en Firestore y, usando esa sesión, sube los 60 productos base a Firestore:
 
 ```bash
 npm run seed
@@ -223,8 +223,7 @@ Las funciones serverless de `api/` (usadas para las presigned URLs) no corren co
 | `AWS_ACCESS_KEY_ID` | Vercel Function / seeder | Credencial del usuario de IAM (solo `PutObject`) |
 | `AWS_SECRET_ACCESS_KEY` | Vercel Function / seeder | Credencial del usuario de IAM |
 | `AWS_S3_BUCKET_NAME` | Vercel Function / seeder | Nombre del bucket |
-| `SEED_ADMIN_EMAIL` | Seeder | Email del usuario admin usado para sembrar productos |
-| `SEED_ADMIN_PASSWORD` | Seeder | Contraseña de ese usuario |
+
 
 Las variables `VITE_*` son las únicas que Vite empaqueta en el frontend — por eso son las únicas con ese prefijo. Todas las demás solo existen del lado del servidor (Vercel Functions) o en la máquina donde se corre el seeder, y nunca deberían tener el prefijo `VITE_`.
 
@@ -296,6 +295,3 @@ El registro completo (más de 25 entradas, con prompt, alternativas evaluadas y 
 | **Resolución de problemas** — reglas de seguridad de Firestore | El admin no podía listar órdenes ni usuarios (`Missing or insufficient permissions`), aunque la regla `request.auth.uid == userId` parecía correcta | Se aprendió la diferencia entre `get` (documento puntual) y `list` (query sobre la colección) en las reglas de Firestore: una condición que solo es cierta para el propio documento no alcanza para autorizar un `list`, hace falta una condición (`isAdmin()`) que Firestore pueda garantizar para toda la colección |
 | **Validación de decisión de producto** — carrito de invitado | ¿Bloquear el carrito hasta loguearse, o dejar armarlo como invitado? | Se eligió permitir el carrito de invitado (mejor UX, estándar en e-commerce real) y fusionarlo con el del usuario en el momento del login — con el detalle de detectar ese instante exacto usando un `useRef` |
 
-## Créditos y guía del proyecto
-
-Este proyecto sigue la consigna y la guía de desarrollo del **Proyecto Integrador del Módulo 5, Especialización Frontend** de [Henry](https://www.soyhenry.com/). El detalle de la rúbrica y las etapas sugeridas por la cátedra está en `PROGRESO.md`.
