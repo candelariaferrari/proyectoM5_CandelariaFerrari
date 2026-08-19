@@ -2,7 +2,7 @@
 
 Proyecto Integrador del Módulo 5 (Especialización Frontend, Henry): un e-commerce completo con dos experiencias diferenciadas — la de quien compra y la de quien administra el catálogo y las órdenes — construido con **React + TypeScript**, **Firebase** (Auth + Firestore), **AWS S3** para imágenes de producto y deploy en **Vercel**.
 
-> 🔗 **Producción:** `[https://proyecto-m5-candelaria-ferrari.vercel.app/]`
+> 🔗 **Producción:** https://proyecto-m5-candelaria-ferrari.vercel.app/
 > 📁 **Repo:** https://github.com/candelariaferrari/proyectoM5_CandelariaFerrari
 
 ## Contexto del proyecto
@@ -25,7 +25,7 @@ MUNDO es una juguetería ficticia. La consigna del Módulo 5 pide construir el e
 
 ## Capturas
 
-_[Pendiente: agregar 3 o 4 capturas o un GIF corto acá — sugerido: Home, catálogo con filtros, carrito, y el dashboard de admin. Ver `PROGRESO.md` → "listo" para confirmar que las pantallas ya están terminadas antes de capturarlas.]_
+![Vistas de la Plataforma MUNDO](./src/assets/imagen-readme.jpeg)
 
 ## Stack
 
@@ -52,14 +52,14 @@ _[Pendiente: agregar 3 o 4 capturas o un GIF corto acá — sugerido: Home, cat�
 - Carrito persistente en memoria por usuario (incluye carrito de invitado, fusionado automáticamente al iniciar sesión), con scroll interno propio en desktop para que el resumen y el footer queden siempre visibles.
 - Registro / login (email y contraseña, y Google) con mensajes de error traducidos y validaciones propias en los formularios.
 - Checkout con paso de revisión y confirmación, que crea la orden en Firestore con un snapshot de los productos comprados (nombre y precio "congelados" al momento de la compra).
-- "Mis pedidos", con historial e items de cada orden.
+- "Mis pedidos", con historial paginado (10 por página) e items de cada orden.
 - Estados de carga con skeletons (en vez de texto de "Cargando...") en todas las pantallas que dependen de Firestore.
 
 **Administración** (rutas bajo `/admin`, protegidas por rol)
 
 - Dashboard con métricas reales (productos, usuarios, órdenes, ventas totales — excluyendo canceladas), órdenes recientes y stock a revisar (productos por debajo del umbral configurado).
 - CRUD completo de productos, con paginación por cursor, filtro por categoría, búsqueda y subida de imagen a S3.
-- Gestión de órdenes con vista maestro-detalle, filtro por estado y cambio de estado siguiendo una máquina de estados simple (`pending → processing → completed`, con `cancelled` como salida en cualquier punto no terminal).
+- Gestión de órdenes con vista maestro-detalle, filtro por estado, paginación (10 por página) y cambio de estado siguiendo una máquina de estados simple (`pending → processing → completed`, con `cancelled` como salida en cualquier punto no terminal).
 
 ## Arquitectura y decisiones
 
@@ -97,12 +97,13 @@ graph TD
     B --> C[BrowserRouter]
     C --> D[ToastProvider]
     D --> E[AuthProvider]
-    E --> F[ProductsProvider]
-    F --> G[CartProvider]
-    G --> H[App]
+    E --> F[OrdersProvider]
+    F --> G[ProductsProvider]
+    G --> H[CartProvider]
+    H --> I[App]
 ```
 
-El orden `AuthProvider → ProductsProvider → CartProvider` no es arbitrario: `CartProvider` necesita leer `useAuth()` para implementar el carrito por usuario (cada `uid` tiene el suyo, y un usuario sin sesión usa la clave `"guest"`). Como React resuelve el contexto más cercano hacia arriba en el árbol, `CartProvider` tiene que estar anidado dentro de `AuthProvider`.
+El orden `AuthProvider → OrdersProvider → ProductsProvider → CartProvider` no es arbitrario: `OrdersProvider` necesita leer `useAuth()` para saber quién es el usuario y si es admin (así decide si trae solo sus propias órdenes o todas), y `CartProvider` necesita leer `useAuth()` para implementar el carrito por usuario (cada `uid` tiene el suyo, y un usuario sin sesión usa la clave `"guest"`). Como React resuelve el contexto más cercano hacia arriba en el árbol, `OrdersProvider` y `CartProvider` tienen que estar anidados dentro de `AuthProvider` — toda la UI que muestra o modifica órdenes (páginas de cliente y de admin) lee este contexto en vez de pedirle datos directo a Firestore.
 
 ### Layer-based, no feature-based
 
@@ -110,7 +111,9 @@ El código se organiza por tipo de responsabilidad (`components`, `pages`, `hook
 
 ### Paginación por cursor, genérica
 
-`useCursorPagination<T, C>` (`src/hooks/`) no sabe nada de ningún dominio: recibe funciones `fetchPage`/`fetchCount` y resuelve la mecánica de cursores de Firestore, la página actual y el reseteo a la página 1 cuando cambia un filtro. `useProductsPagination` es una capa fina arriba que la conecta con `products.services.ts`. Se separó así después de necesitar la misma paginación en dos lugares (catálogo de cliente y tabla de productos del admin) — extraer la parte genérica evita reescribir la lógica de cursores cada vez que aparezca un tercer lugar (por ejemplo, una futura paginación de órdenes).
+`useCursorPagination<T, C>` (`src/hooks/`) no sabe nada de ningún dominio: recibe funciones `fetchPage`/`fetchCount` y resuelve la mecánica de cursores de Firestore, la página actual y el reseteo a la página 1 cuando cambia un filtro. `useProductsPagination` es una capa fina arriba que la conecta con `products.services.ts`. Se separó así después de necesitar la misma paginación en dos lugares (catálogo de cliente y tabla de productos del admin) — extraer la parte genérica evita reescribir la lógica de cursores cada vez que aparezca un tercer lugar.
+
+Las órdenes, en cambio, se paginan distinto: `OrdersContext` ya trae todas las órdenes del usuario (o todas las de la app, si es admin) de una sola vez, así que ahí alcanza con un slice simple en memoria sobre el array ya cargado, reutilizando el mismo componente visual `<Pagination>` — no hace falta la mecánica de cursores de Firestore porque no hay una segunda consulta de por medio.
 
 ## Estructura de carpetas
 
@@ -122,7 +125,7 @@ src/
     layout/        # Header, Footer, BottomTabBar (estructura de página)
     orders/        # piezas compartidas entre "Mis pedidos" y el admin de órdenes
     products/      # grilla, card, filtros y skeletons de producto
-    ui/            # piezas genéricas sin lógica de negocio (Button, Modal, Toast, Skeleton...)
+    ui/            # piezas genéricas sin lógica de negocio (Button, Modal, Toast, Skeleton, Pagination...)
   config/          # inicialización de Firebase
   constants/       # fuente única de verdad de categorías, estados de orden, umbral de stock
   contexts/        # Context + Provider de cada dominio, y el reducer puro del carrito
@@ -142,6 +145,10 @@ scripts/
 test/
   hooks/           # tests de guard y de lógica de cada hook
   contexts/        # tests de integración entre providers (incluye cartReducer.test.ts)
+  pages/           # tests de páginas completas (ej. CheckoutConfirmPage y su guard anti-doble-submit)
+  routes/          # tests de ruteo real: páginas públicas, rutas protegidas y admin según el rol
+  services/        # tests de la capa de integración con Firestore/S3 (products, orders, users, upload)
+  utils/           # tests de helpers puros (ej. traducción de errores de Firebase Auth)
   integration/     # flujos completos (ej. agregar al carrito)
 ```
 
@@ -258,7 +265,10 @@ npm run test:coverage  # con reporte de cobertura (v8)
 La estrategia prioriza lo que más costaría que se rompiera silenciosamente:
 
 - **`cartReducer`**: cada acción (`ADD_TO_CART`, `REMOVE_FROM_CART`, `UPDATE_QUANTITY`, `CLEAR_CART`, `MERGE_GUEST_CART`) probada como función pura, sin renderizar nada.
-- **Hooks de consumo** (`useAuth`, `useCart`, `useProducts`): se verifica que el guard lanza el error correspondiente cuando se usan fuera de su Provider, con `renderHook`.
+- **Hooks y Contexts de consumo** (`useAuth`/`AuthContext`, `useCart`/`CartContext`, `useOrders`/`OrdersContext`, `useProducts`): se verifica que el guard lanza el error correspondiente cuando se usan fuera de su Provider (con `renderHook`), y además el comportamiento real de cada Provider (login/signup/logout, altas y cambios de estado de órdenes según el rol, etc.).
+- **Servicios** (`products.services`, `orders.services`, `users.services`, `upload.services`): cada función que habla con Firestore o con la API de presigned URLs, probada con esas dependencias mockeadas.
+- **Páginas críticas para el negocio**: `CheckoutConfirmPage` tiene un test dedicado a que no se pueda generar una orden duplicada haciendo doble click en "Confirmar compra".
+- **Ruteo**: `AppRoutes` prueba las páginas públicas, las protegidas con y sin sesión, y `/admin` según el rol (`customer` vs `admin`) sobre el árbol real de providers.
 - **Integración**: al menos un flujo completo (agregar al carrito) sobre el árbol real de providers, con Firebase mockeado globalmente (`test/setupTests.ts`) para que ningún test dependa de una conexión real.
 
 Los tests viven en `test/`, separados de `src/`, replicando su estructura — decisión de organización personal, documentada en el `README` original y en `bitacora_ia.md`.
@@ -271,7 +281,7 @@ El proyecto está pensado para desplegarse en Vercel:
 2. Cargar las mismas variables de entorno del `.env` en la configuración del proyecto en Vercel (Settings → Environment Variables).
 3. `vercel.json` incluye un rewrite para que cualquier ruta que no sea `/api/*` sirva `index.html` — necesario porque React Router maneja las rutas en el navegador, y sin este rewrite recargar una ruta que no sea `/` (por ejemplo `/carrito` o `/admin`) devuelve 404 antes de que React llegue a cargar.
 
-**URL de producción:** `[completar acá]`
+**URL de producción: (https://proyecto-m5-candelaria-ferrari.vercel.app/) **
 
 ## Bitácora de uso de IA
 
