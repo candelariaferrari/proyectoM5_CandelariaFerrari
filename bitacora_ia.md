@@ -1,4 +1,3 @@
-1) 
 ## Definición de la estructura de carpetas del proyecto
 
 ### Contexto técnico
@@ -659,9 +658,10 @@ Armando el panel de admin fui repitiendo cosas que ya existían del lado cliente
 
 ### Prompt
 
-> lo que si habiamos hablado que yo te dije que el navbar iba a tener links distintos en admin que si habia que ponerlos en variables, te acordas? con el bottomTabBar tambien lo mismo, reutilizar el de producto
->
-> al buscar productos en admin le falta el icono
+> Estoy implementando el panel de administración y detecté que estoy repitiendo algunos elementos que ya existen en la aplicación cliente: los links del navbar, el bottom tab bar, el logo de MUNDO y el buscador.
+> Quiero revisar antes de seguir si conviene reutilizar los componentes existentes o crear versiones específicas para admin.
+>Analizá qué partes deberían convertirse en componentes o configuraciones reutilizables y cuáles deberían mantenerse separadas por contexto. Busco evitar duplicación sin crear abstracciones innecesarias.
+
 
 ### Qué decidí
 
@@ -682,7 +682,13 @@ Un usuario no logueado puede navegar y agregar productos al carrito libremente (
 
 ### Prompt
 
-> estoy pensando si lo dejamos que agregue productos al carrito sin estar logueado, cuando inicie sesion va a perder los productos que tenga agregados porque no van a estar guardados a ningun usuario o no? entonces en ese caso, ¿sería que para agregar productos al carrito ya tiene que estar logueado?
+> En el proyecto decidí permitir que un usuario agregue productos al carrito sin autenticarse, utilizando "guest" como identificador del carrito.
+> Ahora necesito definir qué debería ocurrir cuando ese usuario inicia sesión: actualmente el carrito de invitado y el carrito del usuario están separados.
+> Compará estas alternativas:
+> perder el carrito de invitado al iniciar sesión;
+> exigir autenticación antes de permitir agregar productos;
+> fusionar el carrito de invitado con el carrito del usuario al autenticarse.
+> Analizá las implicancias de cada alternativa en UX, modelo de estado y complejidad de implementación. Recomendame una opción para este proyecto y explicá qué casos borde debería contemplar.
 
 ### Qué decidí
 
@@ -703,7 +709,17 @@ Hasta ahora el campo "imagen" del producto era un `<input type="url">` donde hab
 
 ### Prompt
 
-> sigamos con lo de S3,  tengo esto de anotaciones back from frontend: 1) crear carpeta `api`, 2) crear `presign.ts` con la config de S3, el nombre del bucket, los formatos permitidos, restringir el método a POST, sacar `filename` y `fileType` del body, validar que existan, generar una key única tipo `products/${randomUUID()}-${filename}`, crear la URL prefirmada con el método de S3, devolver un JSON con la URL pública y manejar errores; 3) cómo correr el backend: `npm install -g vercel`, `vercel login`, `vercel dev`; 4) crear un servicio que conecte S3 con Firestore: pedir la URL firmada, chequear que salió bien, subir el archivo directo a S3 con un PUT, devolver la URL pública
+> Necesito implementar la subida de imágenes de productos a AWS S3 desde un frontend React/Vite, pero quiero evitar exponer credenciales de AWS en el navegador.
+>El flujo que necesito es:
+>React → función serverless → URL prefirmada → S3 → imageUrl en Firestore
+>Antes de implementarlo, explicame cómo debería dividir las responsabilidades entre frontend, función serverless y S3, y qué información >puede viajar al cliente sin comprometer las credenciales.
+>También quiero que tengas en cuenta:
+>las credenciales deben permanecer únicamente del lado servidor;
+>la URL de subida debe tener una duración limitada;
+>el usuario debe poder subir únicamente imágenes;
+>el bucket debe aplicar principio de mínimo privilegio;
+>la URL final debe poder almacenarse como imageUrl en Firestore.
+>No quiero solamente el código: quiero entender por qué necesitamos la función intermedia y qué riesgo existiría si llamáramos a S3 >directamente desde el navegador.
 
 ### Qué aprendí
 
@@ -733,7 +749,14 @@ Al planear el seeder de 60 productos, surgió el problema de que no iba a tener 
 
 ### Prompt
 
-> para que quede todo más armonioso y "estético", en vez de verse una imagen rota, ¿se puede generar que si el admin no sube una imagen se genere un cuadrado (donde iría la img) del color de cada categoría?
+> Algunos productos todavía no tienen imageUrl porque las imágenes se van a cargar progresivamente desde S3. Quiero evitar que la interfaz muestre el ícono de imagen rota del navegador.
+>Pensando en que el mismo producto se muestra en cards, detalle, carrito y panel de administración, ¿conviene resolver este fallback en cada >componente o crear un componente reutilizable?
+>Proponeme una solución que:
+>contemple productos sin imageUrl;
+>también maneje URLs de imágenes que fallen;
+>reutilice la información existente de categorías;
+>evite duplicar lógica visual en cada lugar donde se muestra un producto.
+>Priorizá una solución simple y mantenible, sin crear una abstracción innecesaria.
 
 ### Qué decidí
 
@@ -754,7 +777,14 @@ Armé un hook `useProductsPagination` con la paginación por cursor de Firestore
 
 ### Prompt
 
-> consulta antes de hacer el commit, ¿no quedaría más genérico volver a ponerle el nombre de los archivos que me dijiste que borrara, porque la paginación la podemos usar en las órdenes, en los usuarios o no?
+> Implementé useProductsPagination utilizando paginación por cursores de Firestore. Ahora necesito reutilizar el mismo mecanismo en el panel de administración y posiblemente más adelante en órdenes y usuarios.
+>El problema es que actualmente el hook está acoplado a listProducts y countProducts.
+>¿Cómo separarías la mecánica genérica de paginación de la lógica específica de productos?
+>Proponé una solución utilizando TypeScript genérico si aporta valor y explicá:
+>qué responsabilidad debería tener el hook genérico;
+>qué debería permanecer en useProductsPagination;
+>cómo evitar duplicar la lógica cuando aparezcan otros dominios.
+>Quiero evitar tanto duplicación como sobreingeniería.
 
 ### Qué decidí
 
@@ -778,7 +808,13 @@ Investigando en vivo (con herramientas de browser automation) el bug de "buscar 
 
 ### Prompt
 
-> dale sigamos con ese error, veo que sucede con todas las rutas excepto la de incio, con la de carrito también pasa , con las de admin. Lo otro si quedo todo listo
+> La aplicación funciona correctamente al navegar mediante React Router, pero al recargar directamente rutas como /productos, /carrito o /admin en el deploy de Vercel aparece un 404. La ruta / funciona correctamente.
+
+>El proyecto es una SPA construida con React + Vite + React Router.
+
+>Quiero que diagnostiques por qué la navegación interna funciona pero una recarga directa falla.
+
+>Explicame qué ocurre entre el navegador, Vercel y React Router en cada caso, y qué configuración de deploy necesito para que las rutas del >cliente sean resueltas correctamente sin interferir con las funciones serverless ubicadas en /api.
 
 ### Qué aprendí
 
@@ -807,7 +843,11 @@ Los dos formularios del proyecto (crear/editar producto en el admin, y login/reg
 
 ### Prompt
 
-> validaciones en los formularios, lineas en rojo si un campo obligatorio no se completo. que se puede y que no se puede (ej: un producto no puede tener el price en 0) no se que otra deberíamos tener en cuenta en ese sentido. Consulta el input no se puede hacer como un layout o ui ya que se utiliza en varios lugares?
+> Tengo dos formularios en la aplicación: login/registro y creación/edición de productos.
+>Actualmente dependen principalmente de la validación nativa del HTML (required, minLength, type="email"), pero quiero mostrar errores >visuales consistentes con el diseño de la aplicación y agregar reglas de negocio.
+>Analizá qué validaciones debería tener cada formulario y qué responsabilidades conviene compartir.
+>También quiero evaluar si conviene crear un componente reutilizable para label + input + error, teniendo en cuenta que los campos concretos de cada formulario son diferentes.
+>Busco evitar duplicación, pero sin crear un componente Input demasiado genérico que termine teniendo demasiadas props y responsabilidades.
 
 ### Qué decidí
 
@@ -855,7 +895,14 @@ Al armar el paso de "Confirmar compra", el botón crea la orden, vacía el carri
 
 ### Prompt
 
-> el flujo esta fallando al ultimo , porque me aparece el toas de compra realizada con exito pero en la pantalla se ve el "tu carrito esta vacio" y se deberia ver algo como "compra realizada" ver mis pedidos eso se puede ?
+> Tengo un problema en el flujo de checkout. Al confirmar una compra, la orden se crea correctamente y aparece el toast de éxito, pero la aplicación termina mostrando "Tu carrito está vacío" en lugar de la pantalla de confirmación.
+>El flujo actual hace tres cosas:
+>crea la orden;
+>ejecuta clearCart();
+>navega a la pantalla de confirmación.
+>Además, la pantalla tiene una guarda que redirige a /carrito cuando el carrito está vacío.
+>Analizá la interacción entre estas actualizaciones de estado, navigate, el render posterior y el isSubmitting. Quiero entender por qué la >guarda se ejecuta aunque la compra haya sido exitosa.
+>Proponé una solución que además evite un doble submit y explicá cuándo tendría sentido utilizar useState y cuándo useRef para este caso.
 
 ### Qué aprendí
 
@@ -880,7 +927,15 @@ Al ponerme a escribir los tests del carrito siguiendo mis apuntes de clase (fixt
 
 ### Prompt
 
-> tengo una duda con respecto a los ordenes... [pregunta anterior sobre tests] ... no se muy bien que es necesario si o si testear porque se que tampoco se testea todo
+> Al comenzar a escribir los tests del carrito detecté que mi CartContext utiliza useState para manejar varias acciones (addToCart, removeFromCart, updateQuantity, clearCart), pero la consigna plantea utilizar useReducer y testear el reducer de forma aislada.
+> Antes de refactorizar quiero evaluar si realmente useReducer aporta una ventaja en este caso o si sería una complejidad innecesaria.
+> Compará useState vs useReducer para este carrito teniendo en cuenta:
+> cantidad de transiciones de estado;
+> facilidad de testing;
+> separación entre lógica pura y efectos secundarios;
+> mantenibilidad;
+> complejidad que agrega cada alternativa.
+> Si recomendás useReducer, explicá cómo debería quedar separada la lógica del reducer respecto de CartContext.
 
 ### Qué decidí
 
@@ -893,3 +948,29 @@ Se extrajo toda la lógica de `addToCart`, `removeFromCart`, `updateQuantity`, `
 Un reducer puro (mismo estado + misma acción → siempre el mismo resultado nuevo, sin tocar nada de afuera) es mucho más fácil de testear que un `useState` con lógica de actualización desparramada en varios `setCartsByUser(prev => ...)`: alcanza con pasarle un estado de entrada y una acción, y comparar contra el estado de salida esperado, sin renderizar nada ni mockear Firebase. Esa es la ventaja concreta de `useReducer` sobre `useState` cuando el estado tiene varias acciones posibles: centraliza toda la lógica de "cómo cambia el estado" en un solo lugar testeable de forma aislada, en vez de tenerla repartida en cada función que actualiza estado.
 
 De paso armé el resto de la base de testing: `src/test/fixtures.ts` (datos falsos de producto/usuario/carrito/orden), mocks globales de Firebase en `setupTests.ts` (para que ningún test dependa de una conexión real), `src/test/renderWithProviders.tsx` (wrapper con el mismo árbol de providers que la app real), un test de integración del flujo "agregar al carrito" end-to-end, y un test aislado de `useCart` con `renderHook`.
+
+
+## Cobertura de tests: priorizar antes de llegar al 85%
+ 
+### Contexto
+Después de sumar tests para orders, users y rutas, todavía estaba lejos del 85% que pide el profe. En vez de tirar tests a lo loco por todos lados, le pregunté a Claude qué le parecía priorizar por importancia real más que por perseguir el porcentaje.
+ 
+### Prompt
+> El proyecto actualmente tiene una cobertura aproximada del 44%, pero la consigna establece un objetivo del 85%.
+> No quiero agregar tests únicamente para aumentar el porcentaje. Quiero priorizar aquellos que cubran comportamiento crítico y reduzcan > riesgos reales.
+> Teniendo en cuenta la arquitectura actual, evaluá qué debería testear primero entre:
+> products.services;
+> CheckoutConfirmPage;
+> upload.services;
+> manejo de errores de autenticación;
+> AppRoutes;
+> AuthContext;
+> AppProviders.
+> Priorizá los casos según riesgo e impacto funcional y explicá qué tipo de test corresponde en cada caso (unitario, integración o > comportamiento de UI).
+> Si una pieza no aporta demasiado valor al testing, prefiero dejarla sin cubrir antes que escribir tests artificiales solo para aumentar el coverage.
+ 
+### Qué decidí
+Decidí priorizar por lo que de verdad importa para el negocio y no por perseguir el número: primero products.services y CheckoutConfirmPage (evitar dobles compras es crítico), después upload.services y authErrors por ser piezas chicas y aisladas fáciles de dejar en 100%, y por último los archivos que arman el esqueleto de la app (AppRoutes, AuthContext, AppProviders) porque ahí se juega que todo el sistema arranque bien. Con esto la cobertura subió de 44.71% a 63.45% en statements, y me sirvió más entender qué estaba probando cada archivo que perseguir el 85% a ciegas.
+ 
+### Qué aprendí
+Aprendí que CheckoutConfirmPage evita el doble submit con dos mecanismos combinados: un estado `isSubmitting` que deshabilita el botón mientras se procesa la orden, y una ref (`orderPlacedRef`) que se lee en el mismo render para no disparar una redirección falsa al carrito justo en el instante en que se limpia el carrito y se navega a la confirmación. También aprendí una trampa común al testear rutas protegidas: si el mock de `onAuthStateChanged` dispara automáticamente "sin usuario" apenas se registra, `ProtectedRoute` redirige con `replace` ANTES de que el test llegue a loguearse, y esa navegación ya no se puede deshacer después aunque el login sea válido.
