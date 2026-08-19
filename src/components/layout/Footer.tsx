@@ -1,10 +1,6 @@
 import { MundoLogo } from "../ui/MundoLogo";
 
-// hidden md:block: en mobile el footer se saca del todo (ya está el
-// BottomTabBar fijo abajo, y el resumen del carrito colapsable en esa
-// misma página -- un footer angosto ahí solo suma ruido). El padding que
-// le deja lugar al BottomTabBar fijo sigue viviendo en el wrapper de
-// App.tsx, no acá, así que sacar el footer no rompe ese espacio.
+//presentacional 
 export const Footer = () => {
   return (
     <footer className="hidden md:block bg-azul-noche text-white/75">

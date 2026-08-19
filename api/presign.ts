@@ -20,7 +20,7 @@ const BUCKET_NAME = process.env.AWS_S3_BUCKET_NAME as string;
 const ALLOWED_TYPES = ["image/jpeg", "image/png", "image/webp"];
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
-  // Esta función solo sirve para pedir una URL de subida — nada de GET/DELETE acá.
+  // Esta función solo sirve para pedir una URL de subida.
   if (req.method !== "POST") {
     return res.status(405).json({ error: "Método no permitido" });
   }

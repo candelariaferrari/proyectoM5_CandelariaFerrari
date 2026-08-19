@@ -1,5 +1,5 @@
 import { Modal } from "./Modal";
-
+//presentacional
 interface ConfirmDialogProps {
   title: string;
   message: string;
@@ -8,10 +8,6 @@ interface ConfirmDialogProps {
   onCancel: () => void;
 }
 
-// Reemplaza el window.confirm() nativo del navegador (que quedó por
-// default al armar el borrado de productos) por un modal con el mismo
-// estilo del resto de la app — mismo patrón que ya tenía diseñado el
-// mockup para "¿Quitar del carrito?".
 export const ConfirmDialog = ({
   title,
   message,

@@ -24,8 +24,7 @@ export const getUser = async (): Promise<User[]> => {
   );
 };
 
-// Cuenta cuántos usuarios hay, sin traer los documentos (agregación del
-// lado del servidor) 
+// Cuenta cuántos usuarios hay, sin traer los documentos
 export const countUsers = async (): Promise<number> => {
   const snapshot = await getCountFromServer(collection(db, "users"));
   return snapshot.data().count;

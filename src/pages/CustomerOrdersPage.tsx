@@ -11,10 +11,7 @@ import { formatCurrency } from "../utils/format";
 const PAGE_SIZE = 10;
 
 export const CustomerOrdersPage = () => {
-  // OrdersContext ya sabe que este usuario es un customer (no admin), así
-  // que `orders` acá viene filtrado a "los pedidos de este usuario" -- la
-  // página no pide nada a Firestore, solo consume lo que el contexto
-  // decidió traer.
+
   const { orders, loading, error: loadError } = useOrders();
   // Detalle de cada pedido: expandir/colapsar en la lista, sin ir a otra pantalla.
   const [expandedOrderId, setExpandedOrderId] = useState<string | null>(null);

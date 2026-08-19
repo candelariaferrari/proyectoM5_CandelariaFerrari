@@ -1,5 +1,6 @@
 import type { CategoryId } from "../../types/product.types";
 import { CATEGORY_INFO, CATEGORY_IDS } from "../../constants/categories";
+//presentacional 
 
 interface CategoryFilterSidebarProps {
   categoryFilter: CategoryId | null;

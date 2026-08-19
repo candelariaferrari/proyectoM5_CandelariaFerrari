@@ -1,14 +1,7 @@
 import type { CategoryId } from "../types/product.types";
 import { LightbulbIcon, PaletteIcon, HeartIcon, CompassIcon, type IconComponent } from "../components/ui/icons";
 
-// Fuente única de info de categorías (label, color, descripción), para no
-// repetir estos datos en CategoryTiles, CategoryFilterSidebar, ProductCard y
-// ProductDetailPage.
-// - "color": bg sólido, para tiles/badges de fondo de color.
-// - "textColor": variante oscura del mismo tono, para usar como texto sobre
-//   fondo blanco/claro (mostaza y rosa-coral son muy claros para eso).
-// - "icon": el mismo ícono que ya se usaba a mano en CategoryTiles, ahora
-//   parte de la fuente única (lo reutiliza también ProductImage).
+// Fuente única de info de categorías (label, color, descripción).
 export const CATEGORY_INFO: Record<
   CategoryId,
   { label: string; description: string; color: string; textColor: string; icon: IconComponent }

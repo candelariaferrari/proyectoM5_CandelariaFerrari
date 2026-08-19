@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 
+//100% genereico, no sabe de productos, ni orders, cursores de firestore
 interface PageResult<T, C> {
   items: T[];
   nextCursor: C | null; // null = no hay más páginas después de esta
@@ -9,22 +10,11 @@ interface UseCursorPaginationParams<T, C> {
   fetchPage: (cursor: C | null) => Promise<PageResult<T, C>>;
   fetchCount: () => Promise<number>;
   pageSize: number;
-  // Identifica el filtro activo (categoría + búsqueda para productos,
-  // estado para órdenes, lo que sea). Cuando cambia, los cursores
-  // guardados quedan obsoletos -- pensado como un string armado por quien
-  // usa el hook, por ejemplo `${categoryId}|${searchPrefix}`.
   filterKey: string;
 }
-
-// Pagina cualquier colección de Firestore con cursores reales (nunca trae
-// todo y corta en el cliente). Genérico a propósito: no sabe nada de
-// productos ni de ningún dominio en particular -- solo necesita que le
-// pasen cómo pedir una página (`fetchPage`) y cómo contar el total
-// (`fetchCount`). Así se puede reusar para productos, órdenes, usuarios,
-// etc., cada uno con su propia capa fina arriba (ver `useProductsPagination`).
 export function useCursorPagination<T, C>({
-  fetchPage,
-  fetchCount,
+  fetchPage, //pide paginas
+  fetchCount, //cuenta el total
   pageSize,
   filterKey,
 }: UseCursorPaginationParams<T, C>) {
@@ -33,25 +23,14 @@ export function useCursorPagination<T, C>({
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [totalCount, setTotalCount] = useState(0);
-  // Se incrementa para forzar un refetch de la página actual sin cambiar
-  // filtros ni posición (por ejemplo, después de crear/editar/borrar un item).
+  // Se incrementa para forzar un refetch de la página actual sin cambiar filtros ni posición.
   const [reloadToken, setReloadToken] = useState(0);
 
-  // Cursores de páginas ya visitadas: cursorsRef.current[i] guarda el
-  // cursor que hay que mandar para pedir la página i+2 (el "próximo
-  // cursor" que devolvió la página i+1).
+  // Cursores de páginas ya visitadas
   const cursorsRef = useRef<Array<C | null>>([]);
   const lastFilterKeyRef = useRef(filterKey);
 
-  // fetchPage/fetchCount son funciones nuevas en cada render (las arma
-  // quien usa el hook, con sus propios filtros adentro). Las guardamos en
-  // refs para poder leer siempre la versión más actualizada dentro del
-  // efecto sin declararlas como dependencia -- si no, el efecto correría
-  // en cada render, sin importar si algo relevante cambió de verdad.
-  // Mismo patrón "ref con el valor más reciente" que en SearchInput: se
-  // escribe durante el render pero solo se lee dentro del efecto, nunca
-  // durante el render, así que no afecta la pureza del render aunque la
-  // regla react-hooks/refs (nueva, ver SearchInput.tsx) no lo distinga.
+  // fetchPage/fetchCount son funciones nuevas en cada render
   const fetchPageRef = useRef(fetchPage);
   // eslint-disable-next-line react-hooks/refs
   fetchPageRef.current = fetchPage;
@@ -59,20 +38,7 @@ export function useCursorPagination<T, C>({
   // eslint-disable-next-line react-hooks/refs
   fetchCountRef.current = fetchCount;
 
-  // Si cambió el filtro, los cursores guardados son de otra consulta:
-  // los descartamos y volvemos a la página 1. Esto corre durante el
-  // render (no en un efecto) siguiendo el patrón que recomienda React
-  // para "ajustar estado cuando cambia algo": comparamos contra el valor
-  // anterior guardado en un ref, y si cambió, actualizamos el estado ya
-  // mismo. Evita una vuelta extra pidiendo la página vieja con un cursor
-  // que ya no corresponde a la consulta nueva.
-  // Esta comparación lee y escribe un ref durante el render a propósito:
-  // es la versión con ref (en vez de state) del patrón "ajustar estado
-  // mientras se renderiza" que documenta React para resetear estado
-  // cuando cambia una prop/valor (https://react.dev/learn/you-might-not-need-an-effect#adjusting-some-state-when-a-prop-changes).
-  // Se usa ref y no state para lastFilterKey/cursors porque no necesitan
-  // disparar un re-render por sí mismos -- ya lo dispara setCurrentPage.
-  /* eslint-disable react-hooks/refs -- lectura/escritura de ref durante el render, patrón intencional (ver comentario arriba) */
+  /* eslint-disable react-hooks/refs -- lectura/escritura de ref durante el render, patrón intencional */
   if (lastFilterKeyRef.current !== filterKey) {
     lastFilterKeyRef.current = filterKey;
     cursorsRef.current = [];

@@ -1,3 +1,4 @@
+//presentacional
 interface MundoLogoProps {
   lettersClassName?: string; // tamaño de las letras "MUNDO"
   taglineClassName?: string; // tamaño del tagline
@@ -5,9 +6,6 @@ interface MundoLogoProps {
   showTagline?: boolean;
 }
 
-// Wordmark "MUNDO" con sus 5 colores fijos. Se repetía igual en el Header
-// de cliente y en el header de admin (desktop y mobile) — ahora vive en un
-// solo lugar y cada uno solo ajusta el tamaño de letra.
 export const MundoLogo = ({
   lettersClassName = "text-3xl md:text-4xl",
   taglineClassName = "text-[10px] md:text-[12px]",

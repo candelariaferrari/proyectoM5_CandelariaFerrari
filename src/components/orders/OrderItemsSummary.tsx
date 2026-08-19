@@ -1,9 +1,7 @@
 import { formatCurrency } from "../../utils/format";
 import type { OrderItemSnapshot } from "../../types/order.types";
+//presentacional
 
-// Lista de items + total de una orden: se repite igual en "Mis pedidos"
-// (detalle expandido), en la confirmación de compra y en el detalle de
-// orden del admin, así que vive una sola vez acá.
 interface OrderItemsSummaryProps {
   items: OrderItemSnapshot[];
   total: number;

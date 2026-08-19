@@ -1,11 +1,7 @@
 import { useAuth } from "../../hooks/useAuth";
 import { LogoutIcon } from "./icons";
-
-// Botón de logout único, para no repetir el mismo ícono + estilos en el
-// Header de cliente y en el AdminLayout (mismo criterio que MundoLogo o
-// SearchInput: una sola fuente para algo que se usa en más de un lugar).
-// Llama a useAuth() acá adentro en vez de recibir `logout` por props --
-// evita prop drilling, mismo patrón que ProductCard con useCart().
+//contenedor
+// Botón de logout único
 interface LogoutButtonProps {
   size?: "sm" | "md"; // sm: header mobile del admin (más chico); md: default
   label?: string; // texto base del aria-label/title

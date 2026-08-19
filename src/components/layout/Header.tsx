@@ -8,6 +8,7 @@ import { SearchInput } from "../ui/SearchInput";
 import { UserIcon, CartIcon, SearchIcon, CloseIcon } from "../ui/icons";
 import { LogoutButton } from "../ui/LogoutButton";
 import { MundoLogo } from "../ui/MundoLogo";
+//contenedor
 
 export const Header = () => {
   const { user, isAuthenticated } = useAuth();
@@ -18,12 +19,7 @@ export const Header = () => {
   const cartCount = items.reduce((total, item) => total + item.quantity, 0);
   const navigate = useNavigate();
 
-  // Buscar desde cualquier página te lleva al catálogo, que es el único
-  // lugar que renderiza los resultados.
-  // useCallback con referencia estable: si no, SearchInput recibe una
-  // función nueva en cada render y su debounce se reinicia solo, lo que
-  // termina disparando este navigate de nuevo más tarde (por ej. pisando
-  // la navegación al detalle de un producto justo después de clickearlo).
+ 
   const handleSearch = useCallback(
     (term: string) => {
       setSearchTerm(term);
@@ -77,13 +73,9 @@ export const Header = () => {
 
         <div className="flex items-center gap-4">
           {/* Solo desktop: en mobile el ícono de usuario/logout vive en el
-              BottomTabBar (no repetido acá también), así que en esa línea
-              de mobile queda solamente la lupa. */}
+              BottomTabBar  */}
           <div className="hidden md:flex">
             {isAuthenticated ? (
-              // Un solo ícono de logout en vez de "Hola" + "Cerrar sesión"
-              // aparte. Componente compartido con AdminLayout/BottomTabBar --
-              // un solo lugar define el ícono de logout para toda la app.
               <LogoutButton />
             ) : (
               <button
@@ -97,9 +89,7 @@ export const Header = () => {
           </div>
 
           {/* Lupa: en mobile, el mismo ícono se convierte en el buscador en
-              la misma línea (no abre una fila aparte abajo). En desktop el
-              buscador ya está siempre visible aparte, así que este botón
-              directamente no se muestra. */}
+              la misma línea  */}
           {isMobileSearchOpen ? (
             <div className="flex md:hidden items-center gap-2 flex-1">
               <SearchInput onSearch={handleSearch} placeholder="Buscar productos..." autoFocus />
@@ -121,8 +111,7 @@ export const Header = () => {
             </button>
           )}
 
-          {/* Carrito: solo en desktop -- en mobile ya está en el BottomTabBar,
-              tenerlo acá también era un ícono repetido de más. */}
+          {/* Carrito: solo en desktop -- en mobile ya está en el BottomTabBar */}
           <Link
             to="/carrito"
             className="hidden md:flex relative w-9 h-9 rounded-full bg-card-surface items-center justify-center transition-shadow hover:ring-2 hover:ring-inset hover:ring-gris-borde"

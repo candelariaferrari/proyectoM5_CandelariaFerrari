@@ -27,26 +27,19 @@ export const CartProvider = ({ children }: { children: React.ReactNode }) => {
   const userKey = user?.uid ?? "guest"; // clave para separar carritos
   const { showToast } = useToast();
 
-  // La lógica de cada acción (agregar, eliminar, actualizar cantidad,
-  // limpiar, fusionar carrito de invitado) vive en cartReducer, como función
-  // pura: dado el mismo estado + la misma acción, siempre da el mismo
-  // resultado. Acá el Provider solo dispara acciones y maneja los side
-  // effects (toasts) que dependen de "por qué" se disparó cada una.
+  //logica en el reducer
   const [cartsByUser, dispatch] = useReducer(cartReducer, {});
 
   // memoizado con sus propias dependencias reales, para no recrearse en cada render
   const items = useMemo(() => cartsByUser[userKey] ?? [], [cartsByUser, userKey]); // el carrito "activo" se deriva, no se guarda aparte
 
-  // Guarda cuál era el userKey en el render anterior, para poder detectar el
-  // momento exacto en que se pasa de invitado a logueado (no se puede saber
-  // eso mirando solo el userKey actual).
+  // Guarda cuál era el userKey en el render anterior
   const previousUserKeyRef = useRef(userKey);
 
   useEffect(() => {
     const previousUserKey = previousUserKeyRef.current;
 
-    // Si antes era "guest" y ahora es un uid real, el usuario se acaba de
-    // loguear (o registrar): fusionamos su carrito de invitado con el suyo.
+    // fusionamos su carrito de invitado con custom.
     if (previousUserKey === "guest" && userKey !== "guest") {
       dispatch({ type: "MERGE_GUEST_CART", payload: { userKey } });
     }
@@ -55,7 +48,6 @@ export const CartProvider = ({ children }: { children: React.ReactNode }) => {
   }, [userKey]);
 
   //acciones (disparan la acción correspondiente al reducer + side effects)
-
   const addToCart = useCallback(
     (product: Product, quantity: number = 1) => {
       dispatch({ type: "ADD_TO_CART", payload: { userKey, product, quantity } });
@@ -66,9 +58,7 @@ export const CartProvider = ({ children }: { children: React.ReactNode }) => {
 
   const removeFromCart = useCallback(
     (id: string) => {
-      // Buscamos el nombre en `items` (el carrito ya derivado de este
-      // render) y no adentro del reducer: el reducer tiene que quedar puro,
-      // sin disparar showToast (que a su vez hace setState) desde ahí.
+      // Buscamos el nombre en `items` 
       const removedItem = items.find((item) => item.product.id === id);
 
       dispatch({ type: "REMOVE_FROM_CART", payload: { userKey, productId: id } });
@@ -80,7 +70,7 @@ export const CartProvider = ({ children }: { children: React.ReactNode }) => {
     [userKey, showToast, items]
   );
 
-  // Cambia la cantidad de un item puntual (lo usa la página de carrito con los botones +/-)
+  // Cambia la cantidad de un item puntual 
   const updateQuantity = useCallback(
     (id: string, quantity: number) => {
       dispatch({ type: "UPDATE_QUANTITY", payload: { userKey, productId: id, quantity } });
@@ -98,6 +88,5 @@ export const CartProvider = ({ children }: { children: React.ReactNode }) => {
     [items, addToCart, removeFromCart, updateQuantity, clearCart]
   );
   // el objeto value solo se recalcula si cambia items, para no re-renderizar a los consumidores de useCart sin necesidad
-
   return <CartContext.Provider value={value}>{children}</CartContext.Provider>;
 };

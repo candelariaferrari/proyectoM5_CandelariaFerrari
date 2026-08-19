@@ -10,9 +10,6 @@ import type { Product } from "../src/types/product.types.ts";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
-// Mismo bucket y credenciales que usa api/presign.ts, pero acá no hace
-// falta URL prefirmada: el seeder corre en Node (nunca en el navegador),
-// así que puede usar las credenciales de AWS directamente.
 const s3 = new S3Client({
   region: process.env.AWS_REGION,
   credentials: {
@@ -23,9 +20,7 @@ const s3 = new S3Client({
 const BUCKET_NAME = process.env.AWS_S3_BUCKET_NAME as string;
 const IMAGES_DIR = join(__dirname, "../src/assets/products");
 
-// Sube las imágenes locales a S3 y devuelve, en orden, la URL pública de
-// cada una. Los nombres de archivo vienen numerados (01_..., 02_..., etc.)
-// para que el orden coincida con el orden de `products` más abajo.
+// Sube las imágenes locales a S3 y devuelve, en orden, la URL pública de cada una.
 async function uploadLocalImages(): Promise<string[]> {
   const files = readdirSync(IMAGES_DIR).sort();
   const urls: string[] = [];
@@ -61,9 +56,6 @@ const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 const auth = getAuth(app);
 
-// Los 30 productos que ya habías armado para la base de datos.
-// Reutiliza el type Product real del proyecto, para que el seeder nunca
-// se desalinee en silencio si el modelo cambia.
 const products: Product[] = [
   {
     id: "p001",
@@ -728,10 +720,7 @@ const products: Product[] = [
 ];
 
 async function seed() {
-  // Las reglas de Firestore (firestore.rules) solo dejan crear/editar
-  // productos a un usuario logueado con rol "admin" -- el seeder corre
-  // como Node script, sin sesión propia, así que nos logueamos primero
-  // con las credenciales de un admin real antes de escribir nada.
+
   console.log(`🔐 Iniciando sesión como admin...`);
   await signInWithEmailAndPassword(
     auth,
@@ -746,10 +735,7 @@ async function seed() {
   console.log(`🌱 Sembrando ${products.length} productos...\n`);
 
   for (const [index, { id, ...data }] of products.entries()) {
-    // Solo los primeros N productos tienen imagen real (tantos como
-    // archivos haya en src/assets/products). El resto queda sin
-    // `imageUrl`: ProductImage muestra un cuadrado de color de su
-    // categoría en vez de un ícono de imagen rota.
+
     const imageUrl = imageUrls[index];
 
     // Documento con ID fijo (el "p001" del array), no autogenerado:

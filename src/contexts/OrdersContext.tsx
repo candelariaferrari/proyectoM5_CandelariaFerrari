@@ -64,8 +64,6 @@ export const OrdersProvider = ({ children }: { children: ReactNode }) => {
 
   const updateOrderStatus = useCallback(async (orderId: string, status: OrderStatus) => {
     await updateOrderStatusService(orderId, status);
-    // Acá sí actualizamos local y optimista (sin esperar un refetch),
-    // porque es una acción frecuente del admin 
     setOrders((prev) => prev.map((order) => (order.id === orderId ? { ...order, status } : order)));
   }, []);
 

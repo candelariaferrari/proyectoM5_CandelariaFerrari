@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom";
 import { CATEGORY_INFO } from "../../constants/categories";
+//presentacional 
 
 export const CategoryTiles = () => {
   return (

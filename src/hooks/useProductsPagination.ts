@@ -12,10 +12,7 @@ interface UseProductsPaginationParams {
   pageSize: number;
 }
 
-// Capa fina sobre `useCursorPagination`, específica de productos: solo se
-// encarga de traducir (categoryId, searchPrefix) en llamadas a
-// `listProducts` / `countProducts`. La comparten el catálogo de cliente
-// (ProductsContext) y la tabla de productos del admin.
+// Capa fina sobre `useCursorPagination`, específica de productos
 export function useProductsPagination({ categoryId, searchPrefix, pageSize }: UseProductsPaginationParams) {
   const fetchPage = useCallback(
     (cursor: ProductCursor) =>

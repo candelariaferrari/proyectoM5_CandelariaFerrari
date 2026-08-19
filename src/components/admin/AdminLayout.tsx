@@ -4,11 +4,8 @@ import { HomeIcon, ListIcon, type IconComponent } from "../ui/icons";
 import { LogoutButton } from "../ui/LogoutButton";
 import { MundoLogo } from "../ui/MundoLogo";
 
-// Layout propio del panel de admin: nav distinto al del sitio de cliente
-// (Header/BottomTabBar), porque esta es una sección aparte con su propia
-// navegación y no tiene sentido mezclarla con el buscador, el carrito, etc.
-// Un solo array de items alimenta el nav de desktop Y el tab bar de mobile,
-// para no repetir cada link a mano en los dos lugares.
+//contenedor 
+
 const ADMIN_NAV_ITEMS: { to: string; label: string; icon: IconComponent; end: boolean }[] = [
   { to: "/admin", label: "Dashboard", icon: HomeIcon, end: true },
   { to: "/admin/productos", label: "Productos", icon: ListIcon, end: false },
@@ -43,8 +40,7 @@ export const AdminLayout = () => {
                 {item.label}
               </NavLink>
             ))}
-            {/* Salida a propósito del panel de admin, para ver la tienda
-                como la ve un customer -- no es parte de ADMIN_NAV_ITEMS
+            {/* no es parte de ADMIN_NAV_ITEMS
                 porque no es una página del panel, es salir de él. */}
             <NavLink to="/" className="text-sm font-bold text-azul-noche/60 px-4 py-2 rounded-pill hover:bg-card-surface">
               Ver tienda
@@ -59,17 +55,12 @@ export const AdminLayout = () => {
               <p className="text-sm font-bold text-azul-noche">{user?.displayName ?? "Admin"}</p>
               <p className="text-xs text-azul-noche/50">Rol: {user?.role}</p>
             </div>
-            {/* Mismo componente que el Header de cliente: un solo lugar
-                define el ícono de logout (neutro, se pone "danger" recién
-                al hover) en vez de un botón de texto siempre en rojo.
-                showName={false} porque el nombre ya se muestra al lado. */}
             <LogoutButton showName={false} />
           </div>
         </div>
       </header>
 
-      {/* Mobile: mismos márgenes que el Header de cliente (px-6), wordmark
-          completo con tagline igual que del lado cliente. */}
+      {/* Mobile */}
       <header className="md:hidden bg-white border-b border-gris-borde">
         <div className="flex items-end justify-between gap-2 px-6 py-3">
           <div className="flex items-end gap-2">

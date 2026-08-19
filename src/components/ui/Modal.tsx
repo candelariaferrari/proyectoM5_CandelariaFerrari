@@ -1,6 +1,6 @@
 import { type ReactNode } from "react";
 import { CloseIcon } from "./icons";
-
+//presentacional
 interface ModalProps {
   onClose: () => void;
   children: ReactNode;
@@ -8,9 +8,6 @@ interface ModalProps {
 }
 
 // Modal genérico:
-// resuelve el overlay, centrado, el cierre al hacer click afuera y la cruz
-// de cerrar (arriba a la derecha) — un solo lugar para los dos modals que
-// existen (AuthModal y ProductForm).
 export const Modal = ({ onClose, children, maxWidthClassName = "max-w-sm" }: ModalProps) => {
   return (
     <div

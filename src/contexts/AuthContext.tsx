@@ -66,18 +66,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
     return unsubscribe; // cleanup: deja de escuchar cuando el Provider se desmonta
   }, []);
 
-  // Llaman a la función de Firebase y devuelven el perfil (con el rol) ya
-  // leído de Firestore -- no tocan el estado `user` de este contexto, eso
-  // sigue siendo trabajo exclusivo de onAuthStateChanged (ver comentario
-  // arriba). Quien llama a login/signUp puede usar el valor devuelto para
-  // decidir algo inmediato (ej. a dónde navegar) sin tener que esperar a
-  // que el estado del contexto se actualice, que tarda un instante más.
-  //
-  // Para un registro (signUp) recién hecho puede no existir todavía el doc
-  // en Firestore -- lo crea el listener de onAuthStateChanged, en paralelo
-  // -- y getUsersById devuelve null en ese caso. No es un problema: un
-  // usuario recién registrado nunca es admin, así que no hay ningún
-  // redirect basado en rol que se esté perdiendo.
+ 
   const signUp = useCallback(async (email: string, password: string) => {
     const credential = await createUserWithEmailAndPassword(auth, email, password);
     return getUsersById(credential.user.uid);

@@ -5,7 +5,7 @@ import { useCart } from "../../hooks/useCart";
 import { AuthModal } from "../auth/AuthModal";
 import { HomeIcon, GridIcon, CartIcon, ListIcon, UserIcon } from "../ui/icons";
 import { LogoutButton } from "../ui/LogoutButton";
-
+//contenedor
 export const BottomTabBar = () => {
   const location = useLocation();
   const { isAuthenticated } = useAuth();
@@ -61,10 +61,6 @@ export const BottomTabBar = () => {
           Pedidos
         </Link>
 
-        {/* Mismo ancho/alto que los otros 4 tabs (flex-1 + py-2.5) para que
-            la fila quede pareja, pero el contenido es el ícono único de
-            login/logout compartido con Header y AdminLayout -- ya no un
-            botón de texto "Perfil" que abría un popup aparte. */}
         <div className="flex flex-col items-center justify-center py-2.5 flex-1">
           {isAuthenticated ? (
             <LogoutButton />

@@ -7,15 +7,14 @@ import { GoogleIcon } from "../ui/icons";
 import { MundoLogo } from "../ui/MundoLogo";
 import { Button } from "../ui/Button";
 import { getFirebaseAuthErrorMessage } from "../../utils/authErrors";
-
+//contenedor
+//iniciar sesión , crear cuenta
 type AuthTab = "login" | "signup";
 
 interface AuthModalProps {
   onClose: () => void;
 }
 
-// Mismo chequeo simple de forma de email que alcanza para este proyecto:
-// no busca cubrir el 100% del RFC, solo detectar los casos obvios de "esto
 // no es un email" (sin @, sin dominio) antes de mandarlo a Firebase.
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const MIN_PASSWORD_LENGTH = 6;
@@ -33,9 +32,6 @@ export const AuthModal = ({ onClose }: AuthModalProps) => {
   const [fieldErrors, setFieldErrors] = useState<AuthFormErrors>({});
   const isLogin = tab === "login";
 
-  // Cambiar de modo es "empezar de nuevo": limpiamos errores viejos, que ya
-  // no tienen sentido (ej. "contraseña muy corta" no aplica hasta que
-  // vuelva a intentar enviar el form en el modo nuevo).
   const switchTab = () => {
     setTab(isLogin ? "signup" : "login");
     setError(null);
@@ -72,15 +68,13 @@ export const AuthModal = ({ onClose }: AuthModalProps) => {
     try {
       const profile = isLogin ? await login(email, password) : await signUp(email, password);
       onClose();
-      // Un admin que se loguea va directo a su panel, en vez de quedarse
-      // viendo la misma home que ve cualquier customer. Nada de esto pasa
-      // para un customer: sigue en la página en la que ya estaba.
+      // Un admin que se loguea va directo a su panel,
       if (profile?.role === "admin") {
         navigate("/admin");
       }
     } catch (err) {
       setError(
-        getFirebaseAuthErrorMessage(
+        getFirebaseAuthErrorMessage( //errores de firebase
           err,
           isLogin
             ? "No pudimos iniciar sesión. Revisá tu email y contraseña."

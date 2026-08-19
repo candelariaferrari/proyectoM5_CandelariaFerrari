@@ -10,8 +10,7 @@ import { Button } from "../components/ui/Button";
 import { formatCurrency } from "../utils/format";
 import type { Product } from "../types/product.types";
 
-// banner del header ("Envíos gratis en
-// compras mayores a $50.000").
+// banner del header 
 const FREE_SHIPPING_THRESHOLD = 50000;
 
 export const CartPage = () => {
@@ -106,8 +105,6 @@ export const CartPage = () => {
   );
 
   return (
-    // md:h-full/min-h-0: mismo criterio que ProductsPage -- <main> en
-    // App.tsx le da un techo real de altura en esta ruta (isFixedShellRoute).
     <section
       className={`max-w-[1280px] mx-auto px-6 py-8 grid gap-8 md:grid-cols-[1fr_320px] md:pb-8 md:h-full md:min-h-0 transition-[padding] duration-300 ${
         isSummaryExpanded ? "pb-72" : "pb-24"
@@ -123,8 +120,6 @@ export const CartPage = () => {
             Vaciar carrito
           </button>
         </div>
-
-        {/* Única parte que scrollea en desktop: la lista de productos. */}
         <div className="flex flex-col gap-4 md:flex-1 md:overflow-y-auto md:min-h-0 md:pr-1">
           {items.map(({ product, quantity }) => (
             <div key={product.id} className="flex gap-4 p-4 rounded-card bg-white border border-gris-borde">
@@ -189,11 +184,7 @@ export const CartPage = () => {
       {/* Desktop: dentro de la grilla, al lado de la lista */}
       <div className="hidden md:flex h-fit p-5 rounded-card-lg bg-crema flex-col gap-4">{summary}</div>
 
-      {/* Mobile: el contenido colapsable se anima con una grilla de 0fr a 1fr
-          en vez de aparecer/desaparecer de golpe -- así el drawer se siente
-          como que se despliega, no que "salta". overflow-hidden en el
-          wrapper de adentro es lo que hace que el contenido no se vea
-          mientras la fila todavía mide 0fr. */}
+      {/* Mobile */}
       <div className="md:hidden fixed bottom-16 inset-x-0 z-30 bg-crema rounded-t-card-lg shadow-card transition-shadow overflow-hidden">
         <button
           onClick={() => setIsSummaryExpanded((expanded) => !expanded)}
@@ -214,9 +205,6 @@ export const CartPage = () => {
             isSummaryExpanded ? "grid-rows-[1fr]" : "grid-rows-[0fr]"
           }`}
         >
-          {/* min-h-0: un ítem de grid por defecto tiene min-height:auto, o
-              sea que no baja de la altura de su contenido -- sin esto la
-              fila "0fr" no llega a colapsar nunca y la animación no se ve. */}
           <div className="overflow-hidden min-h-0">
             <div className="px-5 pb-4 flex flex-col gap-3">{summaryBody}</div>
           </div>

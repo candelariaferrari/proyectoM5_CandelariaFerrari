@@ -36,15 +36,9 @@ export const AdminProductsPage = () => {
   const { showToast } = useToast();
   const [search, setSearch] = useState("");
   const [categoryFilter, setCategoryFilterState] = useState<CategoryId | null>(null);
-  // Si llegamos acá desde "Stock a revisar" en el Dashboard, el form de
-  // edición de ESE producto se abre directo (ver Link con state más abajo
-  // en AdminDashboardPage) -- se pasa el producto completo por location.state
-  // para no tener que pedirlo de nuevo a Firestore acá.
   const [editingProduct, setEditingProduct] = useState<Product | null>(
     (location.state as { editProduct?: Product } | null)?.editProduct ?? null
   );
-  // Si llegamos acá desde el botón "+ Nuevo producto" del Dashboard, el
-  // form de alta se abre directo (ver Link con state en AdminDashboardPage).
   const [isCreating, setIsCreating] = useState(
     (location.state as { openCreate?: boolean } | null)?.openCreate ?? false
   );
@@ -53,10 +47,7 @@ export const AdminProductsPage = () => {
 
   const searchPrefix = search.toLowerCase();
 
-  // Misma prioridad que el catálogo de cliente: si hay búsqueda, esa
-  // manda (se busca en todo el catálogo, sin importar la categoría
-  // seleccionada) -- es el comportamiento esperado en cualquier
-  // e-commerce, y mantiene un solo criterio en todo el proyecto.
+  // si hay búsqueda, esa manda 
   const effectiveCategoryId = searchPrefix ? null : categoryFilter;
 
   const {
@@ -74,7 +65,7 @@ export const AdminProductsPage = () => {
     pageSize: PAGE_SIZE,
   });
 
-  // No hace falta resetear la página a mano: `useCursorPagination` vuelve
+  // `useCursorPagination` vuelve
   // sola a la página 1 en cuanto cambia la categoría o la búsqueda.
   const handleCategoryFilter = (category: CategoryId | null) => {
     setCategoryFilterState(category);
@@ -84,8 +75,7 @@ export const AdminProductsPage = () => {
     setSearch(term);
   };
 
-  // El trash icon solo pide confirmación (abre el modal); el borrado real
-  // pasa acá, disparado desde el botón "Eliminar" del ConfirmDialog.
+
   const confirmDelete = async () => {
     const product = productPendingDelete;
     if (!product) return;
@@ -171,7 +161,7 @@ export const AdminProductsPage = () => {
         </>
       ) : (
         <>
-          {/* Desktop: tabla real, como en el mockup */}
+          {/* Desktop */}
           <table className="hidden md:table w-full">
             <thead>
               <tr className="text-left text-xs font-bold text-azul-noche/40 uppercase">

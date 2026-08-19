@@ -1,14 +1,13 @@
-const MAX_FILE_SIZE_MB = 5;
+const MAX_FILE_SIZE_MB = 5; // Rechaza img de +5mb
 
 interface PresignResponse {
   uploadUrl: string;
   publicUrl: string;
 }
 
-// Sube una imagen de producto a S3 sin que las credenciales de AWS pasen
-// nunca por el navegador. 3 pasos:
+// Sube una imagen de producto a S3 sin que las credenciales de AWS pasen nunca por el navegador.
 // 1) le pedimos a nuestra Vercel Function (/api/presign) una URL temporal
-// 2) subimos el archivo DIRECTO a S3 con esa URL (no pasa por nuestro backend)
+// 2) subimos el archivo DIRECTO a S3 con esa URL 
 // 3) devolvemos la URL pública para guardarla en el producto
 export const uploadProductImage = async (file: File): Promise<string> => {
   if (file.size > MAX_FILE_SIZE_MB * 1024 * 1024) {

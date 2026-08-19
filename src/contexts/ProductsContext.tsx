@@ -34,10 +34,7 @@ export const ProductsProvider = ({
   const [searchTerm, setSearchTermState] = useState("");
   const searchPrefix = searchTerm.toLowerCase();
 
-  // Prioridad: si hay texto de búsqueda, ese manda -- por eso acá le
-  // mandamos `categoryId: null` al hook cuando hay búsqueda activa, sin
-  // borrar `categoryFilter` en sí (así, si el usuario borra el texto,
-  // vuelve a ver su categoría sin tener que reseleccionarla).
+  // Prioridad: si hay texto de búsqueda, ese manda
   const effectiveCategoryId = searchPrefix ? null : categoryFilter;
 
   const {
@@ -54,9 +51,7 @@ export const ProductsProvider = ({
     pageSize: PAGE_SIZE,
   });
 
-  // No hace falta resetear la página a mano acá: `useCursorPagination`
-  // ya vuelve a la página 1 solo en cuanto detecta que cambió el filtro
-  // (categoría o búsqueda).
+  // `useCursorPagination` vuelve a la página 1 con cambio de filtro o busqueda
   const setCategoryFilter = useCallback((category: CategoryId | null) => {
     setCategoryFilterState(category);
   }, []);

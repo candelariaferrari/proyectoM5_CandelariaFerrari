@@ -12,10 +12,6 @@ import type { Order, OrderStatus } from "../../types/order.types";
 
 type CustomerInfo = { email: string; displayName?: string };
 
-// Mismo PAGE_SIZE que usan las páginas de productos (AdminProductsPage,
-// ProductsPage) -- acá no hace falta pedirle a Firestore de a páginas (ver
-// comentario de `useOrders` más abajo: el contexto ya trae TODAS las
-// órdenes), así que paginamos en memoria con un slice simple.
 const PAGE_SIZE = 10;
 
 const StatusBadge = ({ status }: { status: OrderStatus }) => {
@@ -32,11 +28,6 @@ const formatOrderDate = (date: Date) =>
   " " +
   date.toLocaleTimeString("es-AR", { hour: "2-digit", minute: "2-digit" });
 
-// Botonera "Cambiar estado": el estado actual queda resaltado (no se puede
-// re-clickear), las transiciones válidas desde ahí quedan clickeables, y el
-// resto queda deshabilitado -- misma máquina de estados que ya usábamos en
-// el <select> anterior (ver ORDER_STATUS_TRANSITIONS), solo que ahora como
-// botones para calcar el mockup.
 const ChangeStatusButtons = ({
   order,
   disabled,
@@ -117,10 +108,6 @@ const OrderDetailPanel = ({
 
 export const AdminOrdersPage = () => {
   const { showToast } = useToast();
-  // orders/loading/updateOrderStatus ya no se piden acá: vienen del
-  // contexto (OrdersContext ya sabe que este usuario es admin, así que
-  // `orders` viene con TODAS las órdenes). Esta página solo se encarga de
-  // filtrar/seleccionar/mostrar, no de ir a buscar datos.
   const { orders, loading, error, updateOrderStatus } = useOrders();
   const [customersById, setCustomersById] = useState<Record<string, CustomerInfo>>({});
   const [statusFilter, setStatusFilter] = useState<OrderStatus | null>(null);
@@ -128,10 +115,6 @@ export const AdminOrdersPage = () => {
   const [selectedOrderId, setSelectedOrderId] = useState<string | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
 
-  // La lista de clientes (email/nombre por uid) sigue siendo un pedido
-  // aparte: es información de usuarios, no de órdenes, así que no le
-  // corresponde a OrdersContext -- mismo criterio de "cada contexto un
-  // dominio" que separa Cart de Products.
   useEffect(() => {
     getUser()
       .then((allUsers) => {
@@ -144,8 +127,6 @@ export const AdminOrdersPage = () => {
       });
   }, []);
 
-  // El contexto avisa por su `error` si falló la carga de órdenes -- acá
-  // lo convertimos en el mismo toast que ya mostraba esta página antes.
   useEffect(() => {
     if (error) showToast("No pudimos cargar las órdenes.", "danger");
   }, [error, showToast]);
@@ -303,7 +284,7 @@ export const AdminOrdersPage = () => {
               </tbody>
             </table>
 
-            {/* Mobile: cada tarjeta se puede tocar para ver el detalle debajo (mismo patrón que "Mis pedidos") */}
+            {/* Mobile */}
             <div className="lg:hidden flex flex-col gap-3">
               {pagedOrders.map((order) => {
                 const customer = customersById[order.userId];
@@ -357,7 +338,7 @@ export const AdminOrdersPage = () => {
             <Pagination currentPage={safePage} totalPages={totalPages} onPageChange={handlePageChange} />
           </div>
 
-          {/* Desktop: panel de detalle fijo al costado */}
+          {/* Desktop */}
           <div className="hidden lg:block sticky top-6">
             {selectedOrder ? (
               <OrderDetailPanel

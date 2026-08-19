@@ -1,9 +1,4 @@
 // Traduce los códigos de error de Firebase Auth (ej. "auth/email-already-in-use")
-// a mensajes en español que tienen sentido para quien usa la app. Firebase no
-// tipa sus errores como una clase reconocible por todo el SDK modular, así
-// que en vez de importar `FirebaseError` (que además rompería el mock global
-// de "firebase/app" en los tests, que no lo exporta) hacemos duck typing:
-// cualquier objeto con un `code: string` que empiece con "auth/" alcanza.
 const AUTH_ERROR_MESSAGES: Record<string, string> = {
   "auth/email-already-in-use": "Ya existe una cuenta registrada con ese email.",
   "auth/invalid-email": "El email no tiene un formato válido.",
@@ -23,9 +18,7 @@ const isFirebaseAuthErrorCode = (error: unknown): error is { code: string } =>
   "code" in error &&
   typeof (error as { code: unknown }).code === "string";
 
-// `fallback` es el mensaje genérico que ya se mostraba antes de este cambio:
-// si el código no está mapeado (o el error no vino de Firebase), lo seguimos
-// usando en vez de mostrarle a la persona un código técnico sin traducir.
+// `fallback` es el mensaje genérico 
 export const getFirebaseAuthErrorMessage = (error: unknown, fallback: string): string => {
   if (isFirebaseAuthErrorCode(error) && error.code in AUTH_ERROR_MESSAGES) {
     return AUTH_ERROR_MESSAGES[error.code];

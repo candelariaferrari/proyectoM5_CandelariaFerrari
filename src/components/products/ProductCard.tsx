@@ -4,6 +4,7 @@ import { CATEGORY_INFO } from "../../constants/categories";
 import { useCart } from "../../hooks/useCart"; // 👈 sin esto en props, evita el prop drilling
 import { ProductImage } from "../ui/ProductImage";
 import { formatCurrency } from "../../utils/format";
+//contenedor
 
 interface ProductCardProps {
   product: Product; // solo el dato del ítem, no funciones de cart

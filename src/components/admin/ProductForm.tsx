@@ -8,6 +8,7 @@ import { uploadProductImage } from "../../services/upload.services";
 import { useToast } from "../../hooks/useToast";
 import { CATEGORY_INFO, CATEGORY_IDS } from "../../constants/categories";
 import type { Product, CategoryId, MinAge } from "../../types/product.types";
+//contenedor
 
 const MIN_AGE_OPTIONS: MinAge[] = [1, 3, 6, 8, 10, 12];
 const MAX_NAME_LENGTH = 60;
@@ -41,10 +42,7 @@ export const ProductForm = ({ product, onClose, onSaved }: ProductFormProps) => 
   const [submitting, setSubmitting] = useState(false);
   const [fieldErrors, setFieldErrors] = useState<ProductFormErrors>({});
 
-  // Qué se puede y qué no: nombre/descripción no pueden quedar vacíos (ni
-  // ser solo espacios) ni pasarse del largo máximo; precio tiene que ser
-  // mayor a $0 (0 no es un precio válido); stock no puede ser negativo (0
-  // sí es válido, significa "sin stock", ya lo mostramos así en la UI).
+  // Qué se puede y qué no, validación).
   const validate = (): ProductFormErrors => {
     const nextErrors: ProductFormErrors = {};
 
@@ -71,12 +69,9 @@ export const ProductForm = ({ product, onClose, onSaved }: ProductFormProps) => 
     return nextErrors;
   };
 
-  // Cuando el admin elige un archivo (por click o arrastrando), lo subimos
-  // enseguida (no esperamos al submit del form): pedimos la URL prefirmada
-  // a nuestra función serverless (fetch, igual que en clase) y subimos la
-  // imagen directo a S3. Mientras sube solo mostramos "Subiendo...", y al
-  // terminar un tilde de éxito o el mensaje de error — sin barra de
-  // progreso real (fetch no la expone, y para esto alcanza).
+  // Cuando el admin elige un archivo, lo subimos
+  // pedimos la URL prefirmada a nuestra función serverless y subimos la
+  // imagen directo a S3. 
   const handleFile = async (file: File) => {
     setImageError(null);
     setImageUploaded(false);
@@ -151,10 +146,6 @@ export const ProductForm = ({ product, onClose, onSaved }: ProductFormProps) => 
         <h2 className="font-heading font-extrabold text-xl text-azul-noche mb-4">
           {isEditing ? "Editar producto" : "Nuevo producto"}
         </h2>
-
-        {/* Imagen a la izquierda, campos a la derecha — mismo orden que el
-            detalle de producto (ProductDetailPage), para que se vea "igual"
-            mientras se está armando. En mobile se apila (imagen arriba). */}
         <div className="grid gap-6 md:grid-cols-2">
           <div className="text-sm font-bold text-azul-noche">
             Imagen

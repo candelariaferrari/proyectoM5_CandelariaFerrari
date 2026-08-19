@@ -1,15 +1,9 @@
-// Iconos SVG con el mismo estilo del mockup (trazo fino, sin relleno).
-// SearchIcon/UserIcon/CartIcon están tomados 1 a 1 del mockup; los de
-// categoría (Lightbulb/Palette/Heart/Compass) son nuevos, el mockup no
-// tenía iconos ahí — se agregan para que las tiles de categoría no queden
-// tan vacías. Evita depender de una librería externa de iconos.
+//presentacional
 interface IconProps {
   className?: string;
   size?: number;
 }
 
-// Tipo compartido para poder guardar un componente de ícono en un array u
-// objeto (ej. una lista de items de navegación) sin repetir la firma.
 export type IconComponent = (props: IconProps) => JSX.Element;
 
 export const SearchIcon = ({ className, size = 15 }: IconProps) => (

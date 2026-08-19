@@ -24,10 +24,7 @@ import { LOW_STOCK_THRESHOLD } from "../constants/stock";
 
 const DEFAULT_PAGE_SIZE = 12;
 
-// Convierte un documento de Firestore a Product: Firestore no guarda el id
-// adentro del documento (viaja aparte, en `docSnap.id`), así que hay que
-// agregarlo a mano en cada mapeo. Una sola función para no repetir este
-// `{ id: docSnap.id, ...docSnap.data() }` en cada lugar que lee productos.
+// Convierte un documento de Firestore a Product
 const docToProduct = (docSnap: QueryDocumentSnapshot<DocumentData>): Product => ({
   id: docSnap.id,
   ...docSnap.data(),
@@ -45,7 +42,7 @@ export const getProductsById = async (id: string): Promise<Product | null> => {
     ...snapshot.data(),
   } as Product;
 };
-
+// Una pag de productos por vez
 export interface ListProductsParams {
   categoryId?: CategoryId | null;
   searchPrefix?: string; // ya en minúsculas
@@ -58,20 +55,11 @@ export interface ListProductsResult {
   nextCursor: QueryDocumentSnapshot<DocumentData> | null; // null = no hay más páginas
 }
 
-// Arma las restricciones de FILTRADO Y ORDEN (sin paginar todavía) según
-// el caso. La comparten `listProducts` (trae una página) y `countProducts`
-// (cuenta el total) para no repetir esta lógica en dos lugares.
-//
-// El orderBy elegido en cada caso no es arbitrario: tiene que coincidir
-// con un índice que ya existe en Firestore, si no la consulta tira error.
-// - Con búsqueda: ordenar por `nameLower` es lo que permite el rango de
-//   prefijo, y es un índice de un solo campo (Firestore lo crea solo).
+// El orderBy tiene que coincidir con un índice que ya existe en Firestore, si no la consulta tira error.
+// - Con búsqueda: ordenar por `nameLower` 
 // - Con categoría: ordenamos por precio para reusar el mismo índice
 //   compuesto (categoryId + price) que ya usaba el código anterior.
-// - Sin filtros: ordenamos por nombre para que la paginación con cursor
-//   tenga un orden estable (si no ordenamos siempre igual, "el último doc
-//   de la página anterior" deja de significar algo consistente entre
-//   una página y la siguiente).
+// - Sin filtros: ordenamos por nombre para que la paginación con cursor tenga un orden estable 
 const buildFilterConstraints = ({
   categoryId,
   searchPrefix,
@@ -91,10 +79,7 @@ const buildFilterConstraints = ({
   return [orderBy("nameLower")];
 };
 
-// Trae UNA PÁGINA de productos desde Firestore usando un cursor real (el
-// último documento de la página anterior) en vez de traer todo el
-// catálogo y cortarlo en el cliente. Así la paginación funciona igual de
-// bien con 60 productos que con 6000: siempre se lee de a `pageSize`.
+// Trae UNA PÁGINA de productos desde Firestore usando cursor 
 export const listProducts = async ({
   categoryId = null,
   searchPrefix = "",
@@ -113,16 +98,14 @@ export const listProducts = async ({
 
   const products = snapshot.docs.map(docToProduct);
   const lastDoc = snapshot.docs[snapshot.docs.length - 1] ?? null;
-  // Si trajo menos de lo pedido, ya sabemos que no hay más páginas
-  // después de esta (nos ahorra un pedido extra "vacío" para averiguarlo).
+  // Si trajo menos de lo pedido, ya sabemos que no hay más páginas después de esta 
   const nextCursor = snapshot.docs.length === pageSize ? lastDoc : null;
 
   return { products, nextCursor };
 };
 
 // Cuenta cuántos productos matchean el filtro, SIN traer los documentos
-// (agregación del lado del servidor) -- lo necesitamos para saber cuántas
-// páginas hay en total y poder mostrar "Página X de Y".
+// para saber cuántas páginas hay en total y poder mostrar "Página X de Y".
 export const countProducts = async (
   params: Pick<ListProductsParams, "categoryId" | "searchPrefix"> = {}
 ): Promise<number> => {
@@ -132,12 +115,7 @@ export const countProducts = async (
   return snapshot.data().count;
 };
 
-// Productos con poco stock, para la sección "Stock a revisar" del
-// dashboard de admin: filtro y orden (ascendente, el más urgente primero)
-// del lado del servidor, en vez de traer todo el catálogo y filtrar en el
-// cliente -- mismo criterio que countProducts/listProducts. `where` y
-// `orderBy` sobre el mismo campo (`stock`) no piden índice compuesto, así
-// que esta consulta no debería necesitar crear nada nuevo en Firestore.
+//productos con poco stock
 export const listLowStockProducts = async (
   maxResults = 5,
   threshold: number = LOW_STOCK_THRESHOLD
@@ -152,8 +130,7 @@ export const listLowStockProducts = async (
   return snapshot.docs.map(docToProduct);
 };
 
-// Crea un producto nuevo. `nameLower` se calcula acá (no lo manda el form)
-// porque lo necesita `listProducts` para poder buscar por prefijo.
+// CRUD
 export const createProduct = async (
   data: Omit<Product, "id">
 ): Promise<void> => {
@@ -163,8 +140,6 @@ export const createProduct = async (
   });
 };
 
-// Edita un producto existente. Si viene `name`, recalculamos `nameLower`
-// para que la búsqueda no quede desincronizada del nombre nuevo.
 export const updateProduct = async (
   id: string,
   data: Partial<Omit<Product, "id">>

@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { CATEGORY_INFO } from "../../constants/categories";
 import type { CategoryId } from "../../types/product.types";
-
+//presentacional
 interface ProductImageProps {
   imageUrl?: string;
   categoryId: CategoryId;
@@ -9,10 +9,7 @@ interface ProductImageProps {
   className?: string; // controla tamaño/bordes, se aplica tanto a la imagen como al placeholder
 }
 
-// Si el producto no tiene `imageUrl`, o la que tiene falla al cargar (link
-// roto, no llegamos a subirla todavía), mostramos un cuadrado del color de
-// su categoría con el ícono correspondiente, en vez del ícono de imagen
-// rota que pone el navegador por default.
+// Si el producto no tiene `imageUrl` mostramos un cuadrado del color de
 export const ProductImage = ({ imageUrl, categoryId, alt, className = "" }: ProductImageProps) => {
   const [failedToLoad, setFailedToLoad] = useState(false);
   const category = CATEGORY_INFO[categoryId];

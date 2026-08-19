@@ -8,9 +8,7 @@ import { OrderItemsSummary } from "../components/orders/OrderItemsSummary";
 import { Button } from "../components/ui/Button";
 import type { OrderItemSnapshot } from "../types/order.types";
 
-// Paso intermedio del checkout: "revisar el carrito, confirmar, crear la
-// orden". Acá todavía no existe ninguna orden --
-// se crea recién cuando se toca "Confirmar compra".
+// Paso intermedio del checkout
 export const CheckoutConfirmPage = () => {
   const { items, clearCart } = useCart();
   const { user } = useAuth();
@@ -41,9 +39,7 @@ export const CheckoutConfirmPage = () => {
         quantity,
       }));
 
-      // Creamos la orden en Firestore con un snapshot de los items (nombre y
-      // precio "congelados" al momento de la compra) y recién si eso se
-      // confirma vaciamos el carrito.
+      // Creamos la orden en Firestore con un snapshot de los items (nombre y precio)
       const orderId = await createOrder(orderItems, total);
       orderPlacedRef.current = true;
       navigate("/pedido-confirmado", { state: { orderId, items: orderItems, total } });

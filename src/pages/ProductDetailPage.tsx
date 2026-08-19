@@ -19,11 +19,6 @@ export const ProductDetailPage = (): JSX.Element => {
 
   useEffect(() => {
     if (!id) return;
-
-    // Falso positivo conocido de esta regla (nueva en eslint-plugin-react-hooks
-    // v7) con el patrón estándar de fetch: mostrar loading mientras se pide
-    // el dato de nuevo cada vez que cambia la dependencia.
-    // https://github.com/react/react/issues/34743
     // eslint-disable-next-line react-hooks/set-state-in-effect
     setLoading(true);
     setQuantity(1);
@@ -72,7 +67,7 @@ export const ProductDetailPage = (): JSX.Element => {
 
   return (
     <div className="max-w-[1280px] mx-auto px-6 py-8">
-      {/* Breadcrumb: ayuda a orientarse y da un camino rápido de vuelta a la categoría */}
+      {/* Breadcrumb */}
       <nav className="text-xs text-azul-noche/50 font-semibold mb-5">
         <Link to="/" className="hover:underline">
           Inicio

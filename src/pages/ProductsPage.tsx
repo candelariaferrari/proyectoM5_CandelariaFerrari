@@ -23,8 +23,7 @@ export const ProductsPage = () => {
   const [priceMin, setPriceMin] = useState("");
   const [priceMax, setPriceMax] = useState("");
 
-  // Si llegamos con ?categoria=x en la URL (por ej. desde una tile de la Home),
-  // lo aplicamos al Context al entrar a la página.
+  //Lee ?categoria= de la URL al entrar (para soportar llegar desde un link de CategoryTiles) y lo aplica al contexto.
   useEffect(() => {
     const fromUrl = searchParams.get("categoria");
     if (fromUrl && CATEGORY_IDS.includes(fromUrl as CategoryId)) {
@@ -45,11 +44,7 @@ export const ProductsPage = () => {
     setPriceMax("");
   };
 
-  // Precio: se filtra en el cliente sobre la página actual que ya trajo el
-  // Context (evita un índice compuesto nuevo en Firestore por un filtro
-  // tan simple). Como consecuencia, si hay un precio cargado, esta página
-  // puede mostrar menos productos que el resto -- es un recorte extra
-  // sobre una página ya paginada del lado del servidor, no un total nuevo.
+  // Precio: se filtra del lado del cliente, no hice indice compuesto
   const filteredProducts = products.filter((product) => {
     const min = priceMin ? Number(priceMin) : 0;
     const max = priceMax ? Number(priceMax) : Infinity;
@@ -59,10 +54,6 @@ export const ProductsPage = () => {
   const hasPriceFilter = priceMin !== "" || priceMax !== "";
 
   return (
-    // md:h-full: toma la altura que le da <main> en App.tsx (que ahí sí
-    // tiene un techo real -ver isFixedShellRoute-); min-h-0 evita que el
-    // contenido "empuje" esa altura hacia arriba, que es lo que rompería
-    // el scroll interno de más abajo.
     <section className="max-w-[1280px] mx-auto px-6 py-6 grid gap-8 md:grid-cols-[220px_1fr] md:h-full md:min-h-0">
       <CategoryFilterSidebar
         categoryFilter={categoryFilter}
@@ -80,9 +71,7 @@ export const ProductsPage = () => {
             {hasPriceFilter ? `${filteredProducts.length} en esta página` : `${totalCount} resultado(s)`}
           </span>
         </h2>
-        {/* Esta es la única parte que scrollea en desktop: el grid de
-            productos. La paginación queda afuera (shrink-0), siempre
-            visible debajo, sin tener que scrollear para llegar a ella. */}
+       
         <div className="md:flex-1 md:overflow-y-auto md:min-h-0 md:pr-1">
           <ProductGrid products={filteredProducts} />
         </div>

@@ -11,9 +11,6 @@ interface ProtectedRouteProps {
 export const ProtectedRoute = ({ children, adminOnly = false }: ProtectedRouteProps) => {
   const { user, isAuthenticated, loading } = useAuth();
 
-  // Mientras Firebase todavía no confirmó si hay una sesión guardada, no
-  // redirigimos: si lo hiciéramos, un admin que refresca /admin rebotaría a
-  // "/" un instante antes de que onAuthStateChanged responda.
   if (loading) {
     return <p className="p-6 text-center text-azul-noche">Verificando sesión...</p>;
   }

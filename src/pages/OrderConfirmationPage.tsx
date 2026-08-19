@@ -5,9 +5,7 @@ import { OrderItemsSummary } from "../components/orders/OrderItemsSummary";
 import type { OrderItemSnapshot } from "../types/order.types";
 
 // Se llega acá solo navegando desde el checkout (CartPage pasa la orden
-// recién creada por state). Si alguien entra directo a esta URL -por
-// ejemplo, recargando la página- no hay state y mandamos a "Mis pedidos",
-// que es donde igual va a estar la orden.
+// recién creada por state)
 interface OrderConfirmationState {
   orderId: string;
   items: OrderItemSnapshot[];
