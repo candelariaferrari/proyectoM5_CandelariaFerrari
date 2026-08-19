@@ -252,7 +252,7 @@ Antes de avanzar con la implementación de funcionalidades, quería validar que 
 >   stock: number;
 > };
 >
-> type UserRole = 'admin' | 'client' | 'guest';
+> type UserRole = "admin" | "customer";
 >
 > export type User = {
 >   userId: string;
@@ -268,7 +268,7 @@ Después de analizar las propuestas, decidí incorporar las mejoras relacionadas
 * agregar `category` y `rating` al tipo `Product`;
 * mantener la separación de responsabilidades relacionada con la autenticación;
 * adaptar la identificación del usuario pensando en la futura integración con Firebase;
-* modelar un usuario no autenticado como `null`, en lugar de utilizar `role: 'guest'`.
+* modelar un usuario no autenticado como `null`, en lugar de utilizar `role: 'custumer`.
 
 No incorporé por el momento la propuesta de modificar `CartItem` para almacenar únicamente `productId` en lugar del objeto `Product`, ya que considero que para la etapa actual del proyecto la estructura existente resulta más sencilla de manejar. Esta decisión podrá revisarse si las necesidades de sincronización entre el carrito y los productos cambian.
 
@@ -344,7 +344,7 @@ Las alternativas eran bloquear el carrito hasta iniciar sesión o permitir que e
 
 ### Qué decidí
 
-Decidí permitir que los usuarios **armen el carrito como invitados**, utilizando la clave `"guest"` para identificarlo.
+Decidí permitir que los usuarios **armen el carrito como invitados**, utilizando la clave `"custumer"` para identificarlo.
 
 La autenticación se solicitará recién al momento de continuar con el checkout, donde realmente será necesaria para identificar al usuario y completar la compra.
 
@@ -678,11 +678,11 @@ Aprendizaje: cuando encuentro el mismo problema (o casi) en dos o tres lugares s
 
 ### Contexto
 
-Un usuario no logueado puede navegar y agregar productos al carrito libremente (mejor UX, es el estándar en e-commerce real: no pedirle cuenta hasta el momento de pagar). Pero como el carrito se guarda separado por usuario (`cartsByUser`, con clave `"guest"` para quien no tiene sesión), surgió la duda: ¿qué pasa con esos productos si el invitado se loguea después?
+Un usuario no logueado puede navegar y agregar productos al carrito libremente (mejor UX, es el estándar en e-commerce real: no pedirle cuenta hasta el momento de pagar). Pero como el carrito se guarda separado por usuario (`cartsByUser`, con clave `"custumer"` para quien no tiene sesión), surgió la duda: ¿qué pasa con esos productos si el invitado se loguea después?
 
 ### Prompt
 
-> En el proyecto decidí permitir que un usuario agregue productos al carrito sin autenticarse, utilizando "guest" como identificador del carrito.
+> En el proyecto decidí permitir que un usuario agregue productos al carrito sin autenticarse, utilizando "custumer" como identificador del carrito.
 > Ahora necesito definir qué debería ocurrir cuando ese usuario inicia sesión: actualmente el carrito de invitado y el carrito del usuario están separados.
 > Compará estas alternativas:
 > perder el carrito de invitado al iniciar sesión;
@@ -694,7 +694,7 @@ Un usuario no logueado puede navegar y agregar productos al carrito libremente (
 
 Evaluamos dos caminos: exigir login para agregar al carrito (más simple de programar, pero mete fricción justo cuando el usuario recién está probando la app), o dejar agregar libremente y fusionar el carrito de invitado con el del usuario en el momento del login (más código, pero es el comportamiento esperado en cualquier tienda online real).
 
-Elegimos fusionar. En `CartContext` agregué un `useEffect` que detecta el instante exacto en que `userKey` pasa de `"guest"` a un uid real (usando un `useRef` para recordar cuál era el valor anterior, porque un componente no tiene memoria del render pasado por sí solo) y, en ese momento, combina los items del carrito de invitado con los del usuario — sumando cantidades si el producto se repite — y borra la entrada de invitado.
+Elegimos fusionar. En `CartContext` agregué un `useEffect` que detecta el instante exacto en que `userKey` pasa de `"custumer"` a un uid real (usando un `useRef` para recordar cuál era el valor anterior, porque un componente no tiene memoria del render pasado por sí solo) y, en ese momento, combina los items del carrito de invitado con los del usuario — sumando cantidades si el producto se repite — y borra la entrada de invitado.
 
 Esto obligó a actualizar un test que ya existía (`CartContext.test.tsx`), que afirmaba como correcto el comportamiento viejo (carrito vacío al loguearse). Aprendizaje: un test no solo verifica que el código funcione, también documenta una decisión de producto — si la decisión cambia, el test tiene que cambiar con ella, no solo el código.
 

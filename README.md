@@ -85,7 +85,7 @@ Ver el detalle completo en [Subida de imágenes a S3](#subida-de-imágenes-a-s3-
 
 ### Roles de usuario
 
-Firebase Authentication resuelve la identidad, pero no el rol — eso vive en Firestore (`users/{uid}.role`). Como el proyecto tiene un único administrador, el rol se asigna automáticamente al crear el perfil: si el email coincide con una constante `ADMIN_EMAIL` (`users.services.ts`), el usuario se crea con `role: "admin"`; en cualquier otro caso, `role: "customer"`. Así no existe ningún flujo público para registrarse como administrador, y las reglas de Firestore (`firestore.rules`) validan ese rol también del lado del servidor — no solo en el frontend — usando un helper `isAdmin()` que lee el propio documento del usuario autenticado.
+Firebase Authentication resuelve la identidad, pero no el rol — eso vive en Firestore (`users/{uid}.role`). No existe ningún código, ni de cliente ni de servidor, que pueda asignar `role: "admin"`: `createUserProfile` (`users.services.ts`) crea todo perfil nuevo siempre como `"customer"`, sin excepción. Las reglas de Firestore (`firestore.rules`) además bloquean por completo cualquier `update` sobre `users/{userId}` (`allow update, delete: if false`), así que ni siquiera un admin puede cambiarle el rol a otro usuario *desde la app*. La única forma de crear un administrador es editando ese campo a mano en la consola de Firebase, con acceso de administrador real fuera de la app — el seeder (`scripts/seed.ts`), por ejemplo, no crea al admin: inicia sesión con las credenciales de un admin que ya tiene que existir de antes (`SEED_ADMIN_EMAIL`/`SEED_ADMIN_PASSWORD`), y usa esa sesión para poder escribir productos. Este diseño responde directamente a que el rol de admin no puede quedar hardcodeado en ningún lugar del código: no hay ninguna ruta, ni siquiera indirecta, para que alguien se autoasigne el rol.
 
 Las rutas se protegen con un único componente reutilizable, `ProtectedRoute` (`src/routes/ProtectedRoute.tsx`), con dos niveles: sesión requerida (`/confirmar-compra`, `/pedidos`, `/pedido-confirmado`) y sesión + rol admin (`/admin/*`). Mientras Firebase todavía no confirmó si hay una sesión guardada (`loading`), no se redirige a nadie — evita que un admin que recarga `/admin` rebote a `/` un instante antes de que responda `onAuthStateChanged`.
 
@@ -103,7 +103,7 @@ graph TD
     H --> I[App]
 ```
 
-El orden `AuthProvider → OrdersProvider → ProductsProvider → CartProvider` no es arbitrario: `OrdersProvider` necesita leer `useAuth()` para saber quién es el usuario y si es admin (así decide si trae solo sus propias órdenes o todas), y `CartProvider` necesita leer `useAuth()` para implementar el carrito por usuario (cada `uid` tiene el suyo, y un usuario sin sesión usa la clave `"guest"`). Como React resuelve el contexto más cercano hacia arriba en el árbol, `OrdersProvider` y `CartProvider` tienen que estar anidados dentro de `AuthProvider` — toda la UI que muestra o modifica órdenes (páginas de cliente y de admin) lee este contexto en vez de pedirle datos directo a Firestore.
+El orden `AuthProvider → OrdersProvider → ProductsProvider → CartProvider` no es arbitrario: `OrdersProvider` necesita leer `useAuth()` para saber quién es el usuario y si es admin (así decide si trae solo sus propias órdenes o todas), y `CartProvider` necesita leer `useAuth()` para implementar el carrito por usuario (cada `uid` tiene el suyo, y un usuario sin sesión usa la clave `"custumer"`). Como React resuelve el contexto más cercano hacia arriba en el árbol, `OrdersProvider` y `CartProvider` tienen que estar anidados dentro de `AuthProvider` — toda la UI que muestra o modifica órdenes (páginas de cliente y de admin) lee este contexto en vez de pedirle datos directo a Firestore.
 
 ### Layer-based, no feature-based
 
@@ -190,7 +190,7 @@ Ver el detalle de cada variable en [Variables de entorno](#variables-de-entorno)
 
 ### 5. Cargar datos de ejemplo (opcional)
 
-El seeder crea un usuario administrador (con las credenciales `SEED_ADMIN_EMAIL`/`SEED_ADMIN_PASSWORD` del `.env` — tienen que corresponder a un usuario ya registrado en Firebase Authentication con ese email) y sube los 60 productos base a Firestore:
+El seeder inicia sesión como un usuario administrador que ya tiene que existir de antes (con las credenciales `SEED_ADMIN_EMAIL`/`SEED_ADMIN_PASSWORD` del `.env` — tienen que corresponder a un usuario ya registrado en Firebase Authentication, con `role: "admin"` ya asignado a mano en Firestore) y, usando esa sesión, sube los 60 productos base a Firestore:
 
 ```bash
 npm run seed
