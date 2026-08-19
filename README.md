@@ -281,7 +281,7 @@ El proyecto está pensado para desplegarse en Vercel:
 2. Cargar las mismas variables de entorno del `.env` en la configuración del proyecto en Vercel (Settings → Environment Variables).
 3. `vercel.json` incluye un rewrite para que cualquier ruta que no sea `/api/*` sirva `index.html` — necesario porque React Router maneja las rutas en el navegador, y sin este rewrite recargar una ruta que no sea `/` (por ejemplo `/carrito` o `/admin`) devuelve 404 antes de que React llegue a cargar.
 
-**URL de producción: (https://proyecto-m5-candelaria-ferrari.vercel.app/) **
+**URL de producción:** https://proyecto-m5-candelaria-ferrari.vercel.app/
 
 ## Bitácora de uso de IA
 
