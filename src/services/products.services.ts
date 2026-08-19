@@ -33,14 +33,6 @@ const docToProduct = (docSnap: QueryDocumentSnapshot<DocumentData>): Product => 
   ...docSnap.data(),
 } as Product);
 
-// Obtener todos los productos (sin paginar). La usa el admin, que necesita
-// el listado completo para poder buscar/filtrar sobre todo el catálogo a
-// la vez, a diferencia del catálogo de cliente que sí pagina.
-export const getProducts = async (): Promise<Product[]> => {
-  const snapshot = await getDocs(collection(db, "products"));
-  return snapshot.docs.map(docToProduct);
-};
-
 // Obtener un producto por id:
 export const getProductsById = async (id: string): Promise<Product | null> => {
   const ref = doc(db, "products", id);

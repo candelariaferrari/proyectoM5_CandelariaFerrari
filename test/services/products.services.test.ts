@@ -1,6 +1,5 @@
 import { describe, expect, it, vi, beforeEach } from "vitest";
 import {
-  collection,
   doc,
   getDocs,
   getDoc,
@@ -15,7 +14,6 @@ import {
   limit,
 } from "firebase/firestore";
 import {
-  getProducts,
   getProductsById,
   listProducts,
   countProducts,
@@ -39,19 +37,6 @@ beforeEach(() => {
 });
 
 describe("products.services", () => {
-  describe("getProducts", () => {
-    it("trae toda la colección (sin filtrar) y mapea cada doc a un Product", async () => {
-      vi.mocked(getDocs).mockResolvedValueOnce({
-        docs: [buildDocSnap("product-1", { name: "Rompecabezas", price: 5000, stock: 10 })],
-      } as never);
-
-      const products = await getProducts();
-
-      expect(collection).toHaveBeenCalledWith(expect.any(Object), "products");
-      expect(products).toEqual([{ id: "product-1", name: "Rompecabezas", price: 5000, stock: 10 }]);
-    });
-  });
-
   describe("getProductsById", () => {
     it("devuelve null si el producto no existe", async () => {
       vi.mocked(getDoc).mockResolvedValueOnce({ exists: () => false } as never);
